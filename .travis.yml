@@ -2,26 +2,42 @@ sudo: required
 language: rust
 rust:
     - nightly
-dist: trusty
+dist: xenial
+notifications:
+  email: false
 matrix:
-    include:
-        - rust: nightly
+  include:
+    - rust: nightly
 env:
     - SYSTEM_CARGO=1
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq apt-utils build-essential pciutils linux-headers-`uname -r` python python3  libssl-dev 
-    - sudo apt-get install -qq libgnutls28 libgnutls-dev libcurl4-gnutls-dev cmake bash libpcap-dev libnuma-dev
-    - ./build.sh deps
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq apt-utils build-essential pciutils linux-headers-`uname -r` python python3  libssl-dev
+  - sudo apt-get install -qq libgnutls30 libgnutls-dev libcurl4-gnutls-dev cmake bash libpcap-dev libnuma-dev
+  - ./build.sh deps
 services:
-    - docker
+  - docker
 before_script:
-    - sudo sysctl -w vm.nr_hugepages=256
-    - sudo mkdir -p /mnt/huge
-    - sudo mount -t hugetlbfs nodev /mnt/huge
+  - sudo sysctl -w vm.nr_hugepages=256
+  - sudo mkdir -p /mnt/huge
+  - sudo mount -t hugetlbfs nodev /mnt/huge
 script:
-    - ./build.sh check_examples
-    - ./build.sh fmt_travis 
-    - ./build.sh build_container 
-    - ./build.sh ctr_test
-install: true
+  #- ./build.sh check_examples
+  #- ./build.sh fmt_travis
+  #- ./build.sh build_container
+  #- ./build.sh ctr_test
+  - ./build.sh
+before_deploy:
+  - cargo doc --all --document-private-items --bins
+  - echo '<meta http-equiv=refresh content=0;url=e2d2/index.html>' > target/doc/index.html
+  #- ./build.sh doc
+  - mkdir public
+  - cp -r target/doc public/
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: false
+  local-dir: public
+  on:
+    branch: beta
