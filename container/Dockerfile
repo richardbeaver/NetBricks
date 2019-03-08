@@ -1,4 +1,5 @@
-FROM debian:testing
+#FROM debian:testing
+FROM ubuntu:artful
 MAINTAINER "Aurojit Panda <apanda@cs.berkeley.edu>"
 ARG dpdk_file="common_linuxapp-16.07.container"
 #COPY container/sources.list /etc/apt/sources.list

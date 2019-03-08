@@ -321,11 +321,12 @@ case $TASK in
             fi
         done
         ;;
-    ctr_create) # FIXME: create vswtch container????
+    ovs_create) # FIXME: create vswtch container????
         clean
         clean_deps
-        docker build -f container/Dockerfile -t netbricks:vswitch --build-arg dpdk_file="common_linuxapp-${DPDK_VER}.vswitch" ${BASE_DIR}
-        echo "Done building container as netbricks:vswitch"
+        docker build -f container/Dockerfile -t jethrosun/netbricks-build:vswitch --build-arg dpdk_file="common_linuxapp-${DPDK_VER}.vswitch" ${BASE_DIR}
+        echo "Done building container as netbricks-build:vswitch"
+        docker push jethrosun/netbricks-build:vswitch
         ;;
     ctr_update) # update the docker image
         docker build --no-cache -f ${BASE_DIR}/build-container/Dockerfile -t jethrosun/netbricks-build:latest \

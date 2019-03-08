@@ -15,6 +15,7 @@ pub fn basic_opts() -> Options {
     opts.optflag("", "primary", "run as a primary process");
     opts.optopt("n", "name", "name to use for the current process", "name");
     opts.optmulti("p", "port", "Port to use", "[type:]id");
+    /// Specify which core to use
     opts.optmulti("c", "core", "Core to use", "core");
     opts.optopt("m", "master", "Master core", "master");
     opts.optopt("f", "configuration", "Configuration file", "path");
@@ -89,11 +90,7 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
 
         let mut cores: Vec<i32> = cores_str
             .iter()
-            .map(|n: &String| {
-                n.parse()
-                    .ok()
-                    .expect(&format!("Core cannot be parsed {}", n))
-            })
+            .map(|n: &String| n.parse().ok().expect(&format!("Core cannot be parsed {}", n)))
             .collect();
 
         let cores_for_port = extract_cores_for_port(&matches.opt_strs("p"), &cores);
@@ -123,10 +120,7 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
 fn extract_cores_for_port(ports: &[String], cores: &[i32]) -> HashMap<String, Vec<i32>> {
     let mut cores_for_port = HashMap::<String, Vec<i32>>::new();
     for (port, core) in ports.iter().zip(cores.iter()) {
-        cores_for_port
-            .entry(port.clone())
-            .or_insert(vec![])
-            .push(*core)
+        cores_for_port.entry(port.clone()).or_insert(vec![]).push(*core)
     }
     cores_for_port
 }

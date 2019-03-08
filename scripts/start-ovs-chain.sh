@@ -1,5 +1,6 @@
 #!/bin/bash
 set -o errexit
+set -x
 # args
 # 1: Master core (5)
 # 2: PMD mask (0x60)
