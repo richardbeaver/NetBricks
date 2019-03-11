@@ -1,7 +1,7 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::{BatchIterator, PacketDescriptor};
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use headers::NullHeader;
@@ -15,6 +15,8 @@ pub struct CompositionBatch {
 }
 
 impl CompositionBatch {
+    /// Return a composition batch.
+    // TODO:doc
     pub fn new<T: EndOffset, M: Sized + Send, V: 'static + Batch<Header = T, Metadata = M>>(
         parent: V,
     ) -> CompositionBatch {
@@ -43,7 +45,7 @@ impl BatchIterator for CompositionBatch {
 
 /// Internal interface for packets.
 impl Act for CompositionBatch {
-    act!{}
+    act! {}
 }
 
 impl Executable for CompositionBatch {

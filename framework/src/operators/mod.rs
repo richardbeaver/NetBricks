@@ -27,6 +27,8 @@ use scheduler::Scheduler;
 mod macros;
 
 mod act;
+mod add_metadata;
+mod add_metadata_mut;
 mod composition_batch;
 mod deparsed_batch;
 mod filter_batch;
@@ -38,11 +40,9 @@ mod packet_batch;
 mod parsed_batch;
 mod receive_batch;
 mod reset_parse;
+mod restore_header;
 mod send_batch;
 mod transform_batch;
-mod restore_header;
-mod add_metadata;
-mod add_metadata_mut;
 
 /// Merge a vector of batches into one batch. Currently this just round-robins between merged batches, but in the future
 /// the precise batch being processed will be determined by the scheduling policy used.
@@ -55,7 +55,7 @@ pub fn merge<T: Batch>(batches: Vec<T>) -> MergeBatch<T> {
 /// places where a Batch type is required. We declare batches as sendable, they cannot be copied but we allow it to be
 /// sent to another thread.
 pub trait Batch: BatchIterator + Act + Send {
-    /// Parse the payload as header of type.
+    /// Parse the payload as header of type T.
     fn parse<T: EndOffset<PreviousHeader = Self::Header>>(self) -> ParsedBatch<T, Self>
     where
         Self: Sized,
@@ -63,6 +63,8 @@ pub trait Batch: BatchIterator + Act + Send {
         ParsedBatch::<T, Self>::new(self)
     }
 
+    /// Add metadata to the batch.
+    // TODO:doc
     fn metadata<M: Sized + Send>(
         self,
         generator: MetadataFn<Self::Header, Self::Metadata, M>,
@@ -73,6 +75,8 @@ pub trait Batch: BatchIterator + Act + Send {
         AddMetadataBatch::new(self, generator)
     }
 
+    /// Mutable add metadata to the batch.
+    // TODO:doc
     fn metadata_mut<M: Sized + Send>(
         self,
         generator: MutableMetadataFn<Self::Header, Self::Metadata, M>,
@@ -146,6 +150,7 @@ pub trait Batch: BatchIterator + Act + Send {
         DeparsedBatch::<Self>::new(self)
     }
 
+    /// Grouping based on groups, group function and the scheduler.
     fn group_by<S: Scheduler + Sized>(
         self,
         groups: usize,

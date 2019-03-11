@@ -1,14 +1,18 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::Packet;
 use interface::PacketTx;
 
+/// Filter function.
+// TODO:doc
 pub type FilterFn<T, M> = Box<FnMut(&Packet<T, M>) -> bool + Send>;
 
+/// Filer batch.
+// TODO:doc
 pub struct FilterBatch<T, V>
 where
     T: EndOffset,
@@ -25,6 +29,8 @@ where
     T: EndOffset,
     V: Batch + BatchIterator<Header = T> + Act,
 {
+    /// Return a filer batch.
+    // TODO:doc
     #[inline]
     pub fn new(parent: V, filter: FilterFn<T, V::Metadata>) -> FilterBatch<T, V> {
         let capacity = parent.capacity() as usize;
@@ -37,7 +43,7 @@ where
     }
 }
 
-batch_no_new!{FilterBatch}
+batch_no_new! {FilterBatch}
 
 impl<T, V> Act for FilterBatch<T, V>
 where
@@ -49,11 +55,7 @@ where
         self.parent.act();
         // Filter during the act
         let iter = PayloadEnumerator::<T, V::Metadata>::new(&mut self.parent);
-        while let Some(ParsedDescriptor {
-            mut packet,
-            index: idx,
-        }) = iter.next(&mut self.parent)
-        {
+        while let Some(ParsedDescriptor { mut packet, index: idx }) = iter.next(&mut self.parent) {
             if !(self.filter)(&mut packet) {
                 self.remove.push(idx)
             }

@@ -1,8 +1,12 @@
 pub use self::asm::*;
 pub use self::flow::*;
-mod flow;
 mod asm;
+mod flow;
 
+/// Hard code page size.
+///
+/// This is different from hugepage/TLB.
+// TODO:doc
 pub const PAGE_SIZE: usize = 4096; // Page size in bytes, not using huge pages here.
 
 /// Round a given buffer to page size units.

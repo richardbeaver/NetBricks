@@ -1,7 +1,7 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use interface::Packet;
 use interface::PacketTx;
@@ -9,6 +9,8 @@ use std::marker::PhantomData;
 
 pub type MetadataFn<T, M, M2> = Box<FnMut(&Packet<T, M>) -> M2 + Send>;
 
+/// Add metadata Batch.
+// TODO:doc
 pub struct AddMetadataBatch<M, V>
 where
     M: Send + Sized,
@@ -25,6 +27,8 @@ where
     M: Send + Sized,
     V: Batch + BatchIterator + Act,
 {
+    /// Return a add metadata batch.
+    // TODO:doc
     pub fn new(parent: V, generator: MetadataFn<V::Header, V::Metadata, M>) -> AddMetadataBatch<M, V> {
         AddMetadataBatch {
             parent: parent,

@@ -1,12 +1,14 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::NullHeader;
 use interface::PacketTx;
 use scheduler::Executable;
 
+/// Send batch.
+// TODO:doc
 pub struct SendBatch<Port, V>
 where
     Port: PacketTx,
@@ -14,6 +16,7 @@ where
 {
     port: Port,
     parent: V,
+    /// Keep track of packets have been sent.
     pub sent: u64,
 }
 
@@ -22,6 +25,8 @@ where
     Port: PacketTx,
     V: Batch + BatchIterator + Act,
 {
+    /// Return a send batch.
+    // TODO:doc
     pub fn new(parent: V, port: Port) -> SendBatch<Port, V> {
         SendBatch {
             port: port,

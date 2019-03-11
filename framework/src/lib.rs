@@ -22,6 +22,8 @@
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
 #![cfg_attr(feature = "dev", deny(warnings))]
+// Try to deny missing doc?
+#![deny(missing_docs)]
 extern crate byteorder;
 extern crate fnv;
 #[macro_use]
@@ -46,18 +48,30 @@ extern crate error_chain;
 
 #[cfg(unix)]
 extern crate nix;
+#[doc(hidden)]
 pub mod allocators;
+#[doc(hidden)]
 pub mod common;
+#[doc(hidden)]
 pub mod config;
+#[doc(hidden)]
 pub mod control;
+#[doc(hidden)]
 pub mod headers;
+#[doc(hidden)]
 pub mod interface;
 #[allow(dead_code)]
 mod native;
 mod native_include;
+#[doc(hidden)]
 pub mod operators;
+#[doc(hidden)]
 pub mod queues;
+#[doc(hidden)]
 pub mod scheduler;
+#[doc(hidden)]
 pub mod shared_state;
+#[doc(hidden)]
 pub mod state;
+#[doc(hidden)]
 pub mod utils;

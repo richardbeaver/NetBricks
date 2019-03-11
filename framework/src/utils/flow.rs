@@ -5,27 +5,37 @@ use std::hash::Hasher;
 use std::mem;
 use std::slice;
 
-// FIXME: Currently just deriving Hash, but figure out if this is a performance problem. By default, Rust uses SipHash
-// which is supposed to have reasonable performance characteristics.
+/// The data type that implements a network flow.
+// FIXME: Currently just deriving Hash, but figure out if this is a performance problem. By
+// default, Rust uses SipHash which is supposed to have reasonable performance characteristics.
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash, Ord, PartialOrd)]
 #[repr(C, packed)]
 pub struct Flow {
+    /// Source IP.
     pub src_ip: u32,
+    /// Destination IP.
     pub dst_ip: u32,
+    /// Source port number.
     pub src_port: u16,
+    /// Destination port number.
     pub dst_port: u16,
+    /// Protocol type.
     pub proto: u8,
 }
 
+/// The main type of IPv4 prefix.
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Ipv4Prefix {
+    /// IP address.
     pub ip_address: u32,
+    /// Prefix.
     pub prefix: u8,
     mask: u32, /* min_address: u32,
                 * max_address: u32, */
 }
 
 impl Ipv4Prefix {
+    /// Return a IPv4 prefix.
     pub fn new(address: u32, prefix: u8) -> Ipv4Prefix {
         let mask = if prefix == 0 {
             0
@@ -40,6 +50,7 @@ impl Ipv4Prefix {
         }
     }
 
+    /// Return true of the address is in the range.
     #[inline]
     pub fn in_range(&self, address: u32) -> bool {
         (address & self.mask) == self.ip_address
@@ -62,6 +73,9 @@ pub fn ipv4_extract_flow(bytes: &[u8]) -> Option<Flow> {
 }
 
 impl Flow {
+    /// Reverse the flow.
+    ///
+    /// Basically just return the opposite of the ip addresses and port numbers.
     #[inline]
     pub fn reverse_flow(&self) -> Flow {
         Flow {
@@ -73,16 +87,15 @@ impl Flow {
         }
     }
 
+    /// IPv4 stamp flow.
+    // TODO:doc
     #[inline]
     pub fn ipv4_stamp_flow(&self, bytes: &mut [u8]) {
         let port_start = (bytes[0] & 0xf) as usize * IHL_TO_BYTE_FACTOR;
         BigEndian::write_u32(&mut bytes[12..16], self.src_ip);
         BigEndian::write_u32(&mut bytes[16..20], self.dst_ip);
         BigEndian::write_u16(&mut bytes[(port_start)..(port_start + 2)], self.src_port);
-        BigEndian::write_u16(
-            &mut bytes[(port_start + 2)..(port_start + 4)],
-            self.dst_port,
-        );
+        BigEndian::write_u16(&mut bytes[(port_start + 2)..(port_start + 4)], self.dst_port);
         BigEndian::write_u16(&mut bytes[10..12], 0);
         let csum = ipcsum(bytes);
         BigEndian::write_u16(&mut bytes[10..12], csum);
@@ -101,6 +114,7 @@ pub fn ipv4_flow_hash(bytes: &[u8], _iv: u32) -> usize {
     }
 }
 
+/// Generate a hash value based on a given flow.
 #[inline]
 pub fn flow_hash(flow: &Flow) -> usize {
     let mut hasher = FnvHasher::default();

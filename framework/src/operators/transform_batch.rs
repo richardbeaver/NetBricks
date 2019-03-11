@@ -1,7 +1,7 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::Packet;
@@ -10,6 +10,8 @@ use std::marker::PhantomData;
 
 pub type TransformFn<T, M> = Box<FnMut(&mut Packet<T, M>) + Send>;
 
+/// Transform batch.
+// TODO:doc
 pub struct TransformBatch<T, V>
 where
     T: EndOffset,
@@ -26,6 +28,8 @@ where
     T: EndOffset,
     V: Batch + BatchIterator<Header = T> + Act,
 {
+    /// Return a transform batch.
+    // TODO:doc
     pub fn new(parent: V, transformer: TransformFn<T, V::Metadata>) -> TransformBatch<T, V> {
         TransformBatch {
             parent: parent,

@@ -1,12 +1,14 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::*;
 use std::marker::PhantomData;
 
+/// Parsed Batch.
+// TODO:doc
 pub struct ParsedBatch<T, V>
 where
     T: EndOffset<PreviousHeader = V::Header>,
@@ -21,7 +23,7 @@ where
     T: EndOffset<PreviousHeader = V::Header>,
     V: Batch + BatchIterator + Act,
 {
-    act!{}
+    act! {}
 }
 
 impl<T, V> Batch for ParsedBatch<T, V>
@@ -36,6 +38,8 @@ where
     V: Batch + BatchIterator + Act,
     T: EndOffset<PreviousHeader = V::Header>,
 {
+    /// Return a parse batch.
+    // TODO:doc
     #[inline]
     pub fn new(parent: V) -> ParsedBatch<T, V> {
         ParsedBatch {

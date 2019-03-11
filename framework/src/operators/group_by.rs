@@ -1,8 +1,8 @@
+use super::act::Act;
+use super::iterator::*;
 use super::Batch;
 use super::ReceiveBatch;
 use super::RestoreHeader;
-use super::act::Act;
-use super::iterator::*;
 use headers::EndOffset;
 use interface::Packet;
 use queues::*;
@@ -10,8 +10,12 @@ use scheduler::{Executable, Scheduler};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
+/// Group function.
+// TODO:doc
 pub type GroupFn<T, M> = Box<FnMut(&Packet<T, M>) -> usize + Send>;
 
+/// Group by.
+// TODO:doc
 pub struct GroupBy<T, V>
 where
     T: EndOffset + 'static,
@@ -66,6 +70,8 @@ where
     T: EndOffset + 'static,
     V: Batch + BatchIterator<Header = T> + Act + 'static,
 {
+    /// Return a group by.
+    // TODO:doc
     pub fn new<S: Scheduler + Sized>(
         parent: V,
         groups: usize,
@@ -95,10 +101,14 @@ where
         }
     }
 
+    /// Return the length of the group.
+    // TODO:doc
     pub fn len(&self) -> usize {
         self.groups
     }
 
+    /// Return a restore header if we can find it based on the group, o/w return None.
+    // TODO:doc
     pub fn get_group(&mut self, group: usize) -> Option<RestoreHeader<T, V::Metadata, ReceiveBatch<MpscConsumer>>> {
         match self.consumers.remove(&group) {
             Some(mut p) => {

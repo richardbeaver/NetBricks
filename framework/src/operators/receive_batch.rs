@@ -1,18 +1,23 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::NullHeader;
 use interface::{PacketRx, PacketTx};
 
+/// Receive batch.
+// TODO:doc
 pub struct ReceiveBatch<T: PacketRx> {
     parent: PacketBatch,
     queue: T,
+    /// Keep track of packet that have received.
     pub received: u64,
 }
 
 impl<T: PacketRx> ReceiveBatch<T> {
+    /// Return a receive batch given a queue and an existing packet batch.
+    // TODO:doc
     pub fn new_with_parent(parent: PacketBatch, queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
             parent: parent,
@@ -21,6 +26,8 @@ impl<T: PacketRx> ReceiveBatch<T> {
         }
     }
 
+    /// Return a new receive batch given a queue.
+    // TODO:doc
     pub fn new(queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
             parent: PacketBatch::new(32),

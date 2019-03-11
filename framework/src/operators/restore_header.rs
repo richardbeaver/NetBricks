@@ -1,12 +1,14 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::*;
 use std::marker::PhantomData;
 
+/// Restore header.
+// TODO:doc
 pub struct RestoreHeader<T, M, V>
 where
     T: EndOffset + 'static,
@@ -24,7 +26,7 @@ where
     M: Sized + Send,
     V: Batch + BatchIterator + Act,
 {
-    act!{}
+    act! {}
 }
 
 impl<T, M, V> Batch for RestoreHeader<T, M, V>
@@ -41,6 +43,8 @@ where
     M: Sized + Send,
     T: EndOffset + 'static,
 {
+    /// Return a restore header.
+    // TODO:doc
     #[inline]
     pub fn new(parent: V) -> RestoreHeader<T, M, V> {
         RestoreHeader {

@@ -1,11 +1,13 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::NullHeader;
 use interface::PacketTx;
 
+/// Reset parsing batch.
+// TODO:doc
 pub struct ResetParsingBatch<V>
 where
     V: Batch + BatchIterator + Act,
@@ -17,6 +19,8 @@ impl<V> ResetParsingBatch<V>
 where
     V: Batch + BatchIterator + Act,
 {
+    /// Return a reset parsing batch.
+    // TODO:doc
     pub fn new(parent: V) -> ResetParsingBatch<V> {
         ResetParsingBatch { parent: parent }
     }
@@ -36,9 +40,7 @@ where
     #[inline]
     unsafe fn next_payload(&mut self, idx: usize) -> Option<PacketDescriptor<NullHeader, EmptyMetadata>> {
         match self.parent.next_payload(idx) {
-            Some(PacketDescriptor { packet }) => Some(PacketDescriptor {
-                packet: packet.reset(),
-            }),
+            Some(PacketDescriptor { packet }) => Some(PacketDescriptor { packet: packet.reset() }),
             None => None,
         }
     }
@@ -49,11 +51,7 @@ impl<V> Act for ResetParsingBatch<V>
 where
     V: Batch + BatchIterator + Act,
 {
-    act!{}
+    act! {}
 }
 
-impl<V> Batch for ResetParsingBatch<V>
-where
-    V: Batch + BatchIterator + Act,
-{
-}
+impl<V> Batch for ResetParsingBatch<V> where V: Batch + BatchIterator + Act {}

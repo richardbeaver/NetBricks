@@ -1,11 +1,13 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::*;
 
+/// Deparsed batch.
+// TODO:doc
 pub struct DeparsedBatch<V>
 where
     V: Batch + BatchIterator + Act,
@@ -17,19 +19,17 @@ impl<V> Act for DeparsedBatch<V>
 where
     V: Batch + BatchIterator + Act,
 {
-    act!{}
+    act! {}
 }
 
-impl<V> Batch for DeparsedBatch<V>
-where
-    V: Batch + BatchIterator + Act,
-{
-}
+impl<V> Batch for DeparsedBatch<V> where V: Batch + BatchIterator + Act {}
 
 impl<V> DeparsedBatch<V>
 where
     V: Batch + BatchIterator + Act,
 {
+    /// Return a deparsed batch.
+    // TODO:doc
     #[inline]
     pub fn new(parent: V) -> DeparsedBatch<V> {
         DeparsedBatch { parent: parent }

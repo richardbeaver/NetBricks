@@ -1,15 +1,19 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
+use super::Batch;
 use common::*;
 use headers::EndOffset;
 use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
+/// Map function.
+// TODO:doc
 pub type MapFn<T, M> = Box<FnMut(&Packet<T, M>) + Send>;
 
+/// Map batch.
+// TODO:doc
 pub struct MapBatch<T, V>
 where
     T: EndOffset,
@@ -26,6 +30,8 @@ where
     T: EndOffset,
     V: Batch + BatchIterator<Header = T> + Act,
 {
+    /// Return a map batch.
+    // TODO:doc
     pub fn new(parent: V, transformer: MapFn<T, V::Metadata>) -> MapBatch<T, V> {
         MapBatch {
             parent: parent,
