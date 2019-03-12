@@ -6,8 +6,8 @@ extern crate time;
 use e2d2::allocators::*;
 use e2d2::common::*;
 use e2d2::headers::*;
-use e2d2::interface::*;
 use e2d2::interface::dpdk::*;
+use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::Executable;
 use e2d2::state::*;
@@ -87,24 +87,20 @@ fn main() {
         .parse()
         .expect("Could not parse master core spec");
     println!("Using master core {}", master_core);
+
     let name = matches.opt_str("n").unwrap_or_else(|| String::from("recv"));
+    println!("Name of this NF is {}", name);
 
     let cores: Vec<i32> = cores_str
         .iter()
-        .map(|n: &String| {
-            n.parse()
-                .ok()
-                .expect(&format!("Core cannot be parsed {}", n))
-        })
+        .map(|n: &String| n.parse().ok().expect(&format!("Core cannot be parsed {}", n)))
         .collect();
+    println!("Cores are {}", cores);
 
     fn extract_cores_for_port(ports: &[String], cores: &[i32]) -> HashMap<String, Vec<i32>> {
         let mut cores_for_port = HashMap::<String, Vec<i32>>::new();
         for (port, core) in ports.iter().zip(cores.iter()) {
-            cores_for_port
-                .entry(port.clone())
-                .or_insert(vec![])
-                .push(*core)
+            cores_for_port.entry(port.clone()).or_insert(vec![]).push(*core)
         }
         cores_for_port
     }
@@ -112,6 +108,7 @@ fn main() {
     let primary = !matches.opt_present("secondary");
 
     let cores_for_port = extract_cores_for_port(&matches.opt_strs("p"), &cores);
+    eprintln!("Cores for port are {}", cores_for_port);
 
     if primary {
         init_system_wl(&name, master_core, &[]);
