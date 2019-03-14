@@ -95,7 +95,7 @@ fn main() {
         .iter()
         .map(|n: &String| n.parse().ok().expect(&format!("Core cannot be parsed {}", n)))
         .collect();
-    println!("Cores are {}", cores);
+    println!("Cores we can use are: {:?}", cores);
 
     fn extract_cores_for_port(ports: &[String], cores: &[i32]) -> HashMap<String, Vec<i32>> {
         let mut cores_for_port = HashMap::<String, Vec<i32>>::new();
@@ -108,11 +108,13 @@ fn main() {
     let primary = !matches.opt_present("secondary");
 
     let cores_for_port = extract_cores_for_port(&matches.opt_strs("p"), &cores);
-    eprintln!("Cores for port are {}", cores_for_port);
+    println!("Cores for port are: {:?}", cores_for_port);
 
     if primary {
+        println!("Start with primary...");
         init_system_wl(&name, master_core, &[]);
     } else {
+        println!("Start with secondary...");
         init_system_secondary(&name, master_core);
     }
 

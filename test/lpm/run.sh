@@ -3,7 +3,7 @@
 #set -x
 set -euo pipefail
 
-TEST_NAME=zcsi-test
+TEST_NAME=zcsi-delay
 M_CORE=0
 CORES="2"
 #PORT_OPTIONS="dpdk:eth_pcap0,rx_pcap=data/http_lemmy.pcap,tx_pcap=/tmp/out.pcap"

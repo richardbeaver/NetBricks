@@ -1,10 +1,14 @@
 #!/bin/bash
 # Stop on any errors
 set -e
+
+# config dpdk version
+#DPDK_VER=${DPDK_VER-"17.08"}
+#DPDK_VER=${DPDK_VER-"18.08"}
+
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 DOWNLOAD_BASE="${1-$BASE_DIR}"
 echo Using "$DOWNLOAD_BASE" for downloads
-DPDK_VER=${DPDK_VER-"17.08"}
 MODE=download # or git
 DOWNLOAD_PATH="${DOWNLOAD_BASE}/dpdk.tar.gz"
 DPDK_RESULT="${BASE_DIR}/dpdk"
