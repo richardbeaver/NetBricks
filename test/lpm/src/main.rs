@@ -1,8 +1,8 @@
 //! Longest Prefix Matching NF implemented in NetBricks.
 //!
 //! ## Description:
-//! This is a longest prefix match (LPM) lookup table using the DIR-24-8 algorithm [16] in Rust, and built
-//! a NetBricks NF that uses this data structure to route IP packets.
+//! This is a longest prefix match (LPM) lookup table using the DIR-24-8 algorithm [16] in Rust,
+//! and built a NetBricks NF that uses this data structure to route IP packets.
 //!
 //! For details please refer to the section 5.2.1 of the NetBricks paper.
 
@@ -32,7 +32,9 @@ where
     T: PacketRx + PacketTx + Display + Clone + 'static,
     S: Scheduler + Sized,
 {
-    println!("Receiving started");
+    println!("Test: Receiving started");
+    //println!("Ports are {?}", ports);
+    //dbg!(ports);
     for port in &ports {
         println!("Receiving port {}", port);
     }
@@ -47,6 +49,7 @@ where
     }
 }
 
+/// Parsing the configuration manually.
 fn main() {
     let mut opts = basic_opts();
     opts.optflag("t", "test", "Test mode do not use real ports");
@@ -64,8 +67,10 @@ fn main() {
             context.start_schedulers();
 
             if phy_ports {
+                println!("Adding the pipeline b/c we just add that pipeline..");
                 context.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| test(p, s)));
             } else {
+                println!("Adding only a test pipeline..");
                 context.add_test_pipeline(Arc::new(move |p, s: &mut StandaloneScheduler| test(p, s)));
             }
             context.execute();
@@ -77,7 +82,7 @@ fn main() {
             let sleep_delay = (PRINT_DELAY / 2.) as u64;
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
             let sleep_time = Duration::from_millis(sleep_delay);
-            println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
+            println!("Init: 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
             loop {
                 thread::sleep(sleep_time); // Sleep for a bit
                 let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
