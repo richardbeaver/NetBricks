@@ -17,8 +17,12 @@ extern crate time;
 use self::nf::*;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::*;
+use e2d2::interface::{PacketRx, PacketTx};
 use e2d2::operators::*;
+use e2d2::operators::{Batch, ReceiveBatch};
 use e2d2::scheduler::*;
+use e2d2::scheduler::{initialize_system, Scheduler, StandaloneScheduler};
+
 use std::env;
 use std::fmt::Display;
 use std::process;

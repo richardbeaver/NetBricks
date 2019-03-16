@@ -2,13 +2,14 @@ use e2d2::common::EmptyMetadata;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use fnv::FnvHasher;
 use std::collections::HashMap;
 use std::convert::From;
 use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
 
+use fnv::FnvHasher;
 type FnvHash = BuildHasherDefault<FnvHasher>;
+
 pub struct IPLookup {
     tbl24: Vec<u16>,
     tbl_long: Vec<u16>,

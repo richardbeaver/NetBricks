@@ -1,4 +1,4 @@
-//! TTL processing Network Funcion implemented in NetBricks.
+//! TTL processing Network Function implemented in NetBricks.
 //!
 //! ## Description:
 //! When received a packet, this NF will parses the packet until the IP header, then decrements the
