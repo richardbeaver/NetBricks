@@ -73,6 +73,7 @@ fn main() {
         .unwrap_or_else(|| String::from("0"))
         .parse()
         .expect("Could not parse test duration");
+    println!("Duration is {}", test_duration);
 
     match initialize_system(&configuration) {
         Ok(mut context) => {

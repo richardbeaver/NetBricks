@@ -12,6 +12,7 @@ extern crate fnv;
 extern crate getopts;
 extern crate rand;
 extern crate time;
+
 use self::nf::chain;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::{PacketRx, PacketTx};
@@ -23,6 +24,7 @@ use std::process;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
 mod nf;
 
 const CONVERSION_FACTOR: f64 = 1000000000.;
@@ -51,6 +53,7 @@ fn main() {
     let mut opts = basic_opts();
     opts.optopt("l", "chain", "Chain length", "length");
     opts.optopt("j", "position", "Chain position (when externally chained)", "position");
+
     let args: Vec<String> = env::args().collect();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -84,6 +87,8 @@ fn main() {
             const PRINT_DELAY: f64 = 30.;
             let sleep_delay = (PRINT_DELAY / 2.) as u64;
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
+            println!("Start time is: {}", start);
+
             let sleep_time = Duration::from_millis(sleep_delay);
             println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
             loop {

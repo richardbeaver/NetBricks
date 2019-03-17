@@ -1,7 +1,8 @@
 #!/bin/bash
-
 #set -x
 set -euo pipefail
+
+# Weird
 
 NF_NAME=macswap
 M_CORE=0
