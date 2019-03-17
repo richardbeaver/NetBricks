@@ -61,14 +61,11 @@ fn main() {
             const PRINT_DELAY: f64 = 60.;
             let sleep_delay = (PRINT_DELAY / 2.) as u64;
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-            println!("Start time is {:.2}", start);
-
             let sleep_time = Duration::from_millis(sleep_delay);
             println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
             loop {
                 thread::sleep(sleep_time); // Sleep for a bit
                 let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-                println!("Now is {:.2}", now);
                 if now - start > PRINT_DELAY {
                     let mut rx = 0;
                     let mut tx = 0;

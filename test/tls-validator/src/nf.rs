@@ -12,7 +12,7 @@ type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
 const PRINT_SIZE: usize = 256;
 
-pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
@@ -60,7 +60,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                                 }
                                 InsertionResult::OutOfMemory { written, .. } => {
                                     if written == 0 {
-                                        // println!("Resetting since receiving data that is too far ahead");
+                                        println!("Resetting since receiving data that is too far ahead");
                                         entry.reset();
                                         entry.seq(seq, p.get_payload());
                                     }

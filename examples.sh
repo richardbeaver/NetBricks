@@ -15,6 +15,7 @@ export examples=(
         test/reset-parse
         test/tcp-reconstruction
         test/acl-fw
+        test/tls-validator
         test/packet_generation
         test/packet-test
         test/embedded-scheduler-test
