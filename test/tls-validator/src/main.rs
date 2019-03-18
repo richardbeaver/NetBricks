@@ -31,7 +31,7 @@ fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S
 
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| reconstruction(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
     for pipeline in pipelines {

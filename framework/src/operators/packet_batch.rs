@@ -1,6 +1,6 @@
-use super::Batch;
 use super::act::Act;
 use super::iterator::{BatchIterator, PacketDescriptor};
+use super::Batch;
 use common::*;
 use headers::NullHeader;
 use interface::*;
@@ -44,8 +44,7 @@ impl PacketBatch {
     #[inline]
     pub fn allocate_batch_with_size(&mut self, len: u16) -> Result<&mut Self> {
         let capacity = self.array.capacity() as i32;
-        self.alloc_packet_batch(len, capacity)
-            .and_then(|_| Ok(self))
+        self.alloc_packet_batch(len, capacity).and_then(|_| Ok(self))
     }
 
     /// Allocate `cnt` mbufs. `len` sets the metadata field indicating how much of the mbuf should be considred when
@@ -254,6 +253,7 @@ impl Act for PacketBatch {
     fn send_q(&mut self, port: &PacketTx) -> Result<u32> {
         let mut total_sent = 0;
         // FIXME: Make it optionally possible to wait for all packets to be sent.
+        // FIXME(jethros): Never actually loop?
         while self.available() > 0 {
             unsafe {
                 // let available = self.available() as i32;
