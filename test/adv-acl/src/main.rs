@@ -1,3 +1,11 @@
+//! Firewall Network Funcion implemented in NetBricks.
+//!
+//! ## Description:
+//! This NF is based on a simple firewall implemented in Click [5]; the firewall performs a linear
+//! scan of an access control list to find the first matching entry.
+//!
+//! For details please refer to the section 5.2.2 of the NetBricks paper.
+
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
@@ -5,19 +13,24 @@ extern crate fnv;
 extern crate getopts;
 extern crate rand;
 extern crate time;
-use self::nf::*;
-use e2d2::allocators::CacheAligned;
-use e2d2::config::*;
-use e2d2::interface::*;
-use e2d2::operators::*;
-use e2d2::scheduler::*;
+
 use std::env;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
+use e2d2::allocators::CacheAligned;
+use e2d2::config::{basic_opts, read_matches};
+use e2d2::interface::PortQueue;
+use e2d2::operators::{Batch, ReceiveBatch};
+use e2d2::scheduler::{initialize_system, Scheduler, StandaloneScheduler};
+use e2d2::utils::Ipv4Prefix;
+
+use self::nf::{acl_match, Acl};
+
 mod nf;
 
-const CONVERSION_FACTOR: f64 = 1_000_000_000.;
+const CONVERSION_FACTOR: f64 = 1000000000.;
 
 fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
     for port in &ports {
@@ -28,10 +41,18 @@ fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S
             port.txq()
         );
     }
-
+    let acls = vec![Acl {
+        src_ip: Some(Ipv4Prefix::new(0, 0)),
+        dst_ip: None,
+        src_port: None,
+        dst_port: None,
+        //established: None,
+        established: None,
+        drop: false,
+    }];
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| reconstruction(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .map(|port| acl_match(ReceiveBatch::new(port.clone()), acls.clone()).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
     for pipeline in pipelines {
@@ -40,9 +61,9 @@ fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S
 }
 
 fn main() {
-    let opts = basic_opts();
-
     let args: Vec<String> = env::args().collect();
+
+    let opts = basic_opts();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string()),

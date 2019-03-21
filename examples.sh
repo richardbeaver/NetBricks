@@ -4,23 +4,26 @@ export examples=(
         test/framework-test
         test/delay-test
         test/shutdown-test
-        test/chain-test
         test/lpm
         test/lpm-embedded
         test/nat
-        test/maglev
         test/tcp-check
         test/sctp-test
         test/config-test
         test/reset-parse
-        test/tcp-reconstruction
-        test/acl-fw
-        test/tls-validator
         test/packet_generation
-        test/packet-test
         test/embedded-scheduler-test
         test/embedded-scheduler-dependency-test
         test/tcp_payload
         test/macswap
+        # ZCSI examples
+        test/acl-fw
+        test/tcp-reconstruction
+        test/maglev
+        test/chain-test
+        test/packet-test
+        # PVN examples
+        test/tls-validator
+        test/adv-acl
 )
 

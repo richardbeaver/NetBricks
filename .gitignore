@@ -32,3 +32,6 @@ target/
 
 # cscope
 cscope*
+
+# ignore example out file
+test/*/out

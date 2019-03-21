@@ -39,7 +39,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
         .parse::<TcpHeader>()
         .transform(box move |p| {
             if !p.get_header().psh_flag() {
-                println!("Packet w/o a psh flag!!");
+                //println!("Packet w/o a psh flag!!");
                 let flow = p.read_metadata();
                 let seq = p.get_header().seq_num();
                 match cache.entry(*flow) {
@@ -95,6 +95,8 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                         Err(_) => (),
                     },
                 }
+            } else {
+                println!("Packet w/ a psh flag!!");
             }
         })
         .compose();

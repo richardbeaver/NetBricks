@@ -5,7 +5,6 @@
 //! scan of an access control list to find the first matching entry.
 //!
 //! For details please refer to the section 5.2.2 of the NetBricks paper.
-
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;

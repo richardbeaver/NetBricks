@@ -1,3 +1,6 @@
+//! TLS Validator.
+//!
+//!
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;

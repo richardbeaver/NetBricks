@@ -19,7 +19,7 @@ use std::time::Duration;
 
 mod nf;
 
-const CONVERSION_FACTOR: f64 = 1000000000.;
+const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 fn test<T, S>(ports: Vec<T>, sched: &mut S)
 where
