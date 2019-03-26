@@ -26,7 +26,15 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
         .parse::<IpHeader>()
         .group_by(
             2,
-            box move |p| if p.get_header().protocol() == 6 { 0 } else { 1 },
+            box move |p| {
+                if p.get_header().protocol() == 6 {
+                    println!("Protocol matched!!");
+                    0
+                } else {
+                    println!("Protocol not matching!!");
+                    1
+                }
+            },
             sched,
         );
     let pipe = groups
@@ -51,6 +59,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
                                     if available > PRINT_SIZE {
+                                        println!("1");
                                         let mut read = 0;
                                         while available - read > PRINT_SIZE {
                                             let avail = entry.read_data(&mut read_buf[..]);
@@ -60,7 +69,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                                 }
                                 InsertionResult::OutOfMemory { written, .. } => {
                                     if written == 0 {
-                                        // println!("Resetting since receiving data that is too far ahead");
+                                        println!("Resetting since receiving data that is too far ahead");
                                         entry.reset();
                                         entry.seq(seq, p.get_payload());
                                     }
@@ -69,6 +78,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                         }
                         if reset {
                             // Reset handling.
+                            println!("TCP RESET, clean entry..");
                             e.remove_entry();
                         }
                     }
@@ -92,7 +102,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                             }
                             e.insert(b);
                         }
-                        Err(_) => (),
+                        Err(_) => (println!("Error for ? reason")),
                     },
                 }
             } else {

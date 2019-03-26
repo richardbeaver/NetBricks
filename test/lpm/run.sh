@@ -1,7 +1,8 @@
 #!/bin/bash
-
-#set -x
 set -euo pipefail
+#set -x
+
+STATUS=fail
 
 NF_NAME=zcsi-lpm
 M_CORE=0

@@ -26,7 +26,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<IpHeader>()
         .group_by(
             2,
-            box move |p| if p.get_header().protocol() == 6 { 0 } else { 1 },
+            box move |p| {
+                if p.get_header().protocol() == 6 {
+                    println!("TCP");
+                    0
+                } else {
+                    println!("UDP");
+                    1
+                }
+            },
             sched,
         );
     let pipe = groups
@@ -39,12 +47,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<TcpHeader>()
         .transform(box move |p| {
             if !p.get_header().psh_flag() {
-                println!("Packet w/o a psh flag!!");
+                //println!("Packet w/o a psh flag!!");
                 let flow = p.read_metadata();
                 let seq = p.get_header().seq_num();
                 match cache.entry(*flow) {
                     Entry::Occupied(mut e) => {
                         let reset = p.get_header().rst_flag();
+                        println!("Occupied");
                         {
                             let entry = e.get_mut();
                             let result = entry.add_data(seq, p.get_payload());
@@ -74,6 +83,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                     Entry::Vacant(e) => match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
+                            println!("Vacant");
                             if !p.get_header().syn_flag() {}
                             let result = b.seq(seq, p.get_payload());
                             match result {

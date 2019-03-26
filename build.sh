@@ -51,6 +51,8 @@ export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 source ${BASE_DIR}/examples.sh
 REQUIRE_RUSTFMT=0
 export RUSTFLAGS="-C target-cpu=native"
+# RUST BACK_TRACE can be 1 or full
+TRACING_LEVEL=1
 
 rust_build_static() {
     if [ ! -d ${RUST_DOWNLOAD_PATH} ]; then
@@ -407,6 +409,40 @@ case $TASK in
         export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
         sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
             $executable "$@"
+        ;;
+    run-trace)
+        shift
+        if [ $# -le 0 ]; then
+            print_examples
+        fi
+        cmd=$1
+        shift
+        executable=${BASE_DIR}/target/release/$cmd
+        if [ ! -e ${executable} ]; then
+            echo "${executable} not found, building"
+            ${BASE_DIR}/${BUILD_SCRIPT} build
+        fi
+        export PATH="${BIN_DIR}:${PATH}"
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
+            RUST_BACKTRACE=1 $executable "$@"
+        ;;
+    run-full)
+        shift
+        if [ $# -le 0 ]; then
+            print_examples
+        fi
+        cmd=$1
+        shift
+        executable=${BASE_DIR}/target/release/$cmd
+        if [ ! -e ${executable} ]; then
+            echo "${executable} not found, building"
+            ${BASE_DIR}/${BUILD_SCRIPT} build
+        fi
+        export PATH="${BIN_DIR}:${PATH}"
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
+            RUST_BACKTRACE=full $executable "$@"
         ;;
     debug)
         shift
