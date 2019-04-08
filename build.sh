@@ -393,6 +393,12 @@ case $TASK in
           popd
         done
         ;;
+    test-cov)
+        pushd $BASE_DIR/framework
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        ${CARGO} tarpaulin  -v
+        popd
+        ;;
     run)
         shift
         if [ $# -le 0 ]; then
@@ -557,6 +563,7 @@ case $TASK in
           ctr_dpdk: Copy DPDK from container
           build_container: Build NetBricks within a container.
           test: Run unit tests.
+          test-cov: Run cov tests.
           run: Run one of the examples (Must specify example name and arguments).
           debug: Debug one of the examples (Must specify example name and examples).
           doc: Run rustdoc and produce documentation
