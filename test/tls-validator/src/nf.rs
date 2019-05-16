@@ -4,20 +4,36 @@ use e2d2::scheduler::*;
 use e2d2::state::*;
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
+use rustls::internal::msgs::{
+    codec::Codec, enums::ContentType, enums::ServerNameType, handshake::ClientHelloPayload,
+    handshake::HandshakePayload, handshake::HasServerExtensions, handshake::ServerHelloPayload,
+    handshake::ServerNamePayload, message::Message as TLSMessage, message::MessagePayload,
+};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
+
 const BUFFER_SIZE: usize = 2048;
 const PRINT_SIZE: usize = 256;
 
+/// TLS validator:
+///
+/// 1. identify TLS handshake messages.
+/// 2. group the same handshake messages into flows
+/// 3. defragment the packets into certificate(s)
+/// 4. verify that the certificate is valid.
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    // Create the flow cache
     let mut cache = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
+
     let mut read_buf: Vec<u8> = (0..PRINT_SIZE).map(|_| 0).collect();
+
+    // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
         .parse::<MacHeader>()
         .transform(box move |p| {
@@ -25,18 +41,18 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<IpHeader>()
         .group_by(
-            2,
+            3,
             box move |p| {
                 if p.get_header().protocol() == 6 {
-                    println!("TCP");
                     0
                 } else {
-                    println!("UDP");
                     1
                 }
             },
             sched,
         );
+
+    // Create the pipeline--we perform the actual packet processing here.
     let pipe = groups
         .get_group(0)
         .unwrap()
@@ -47,33 +63,29 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<TcpHeader>()
         .transform(box move |p| {
             if !p.get_header().psh_flag() {
-                //println!("Packet w/o a psh flag!!");
+                println!("Packet has no Push flag, which means it is a fraction of something!");
+                // TODO Check if the packet is part of a TLS handshake
                 let flow = p.read_metadata();
                 let seq = p.get_header().seq_num();
                 match cache.entry(*flow) {
                     Entry::Occupied(mut e) => {
                         let reset = p.get_header().rst_flag();
+                        let result = entry.add_data(seq, p.get_payload());
                         println!("Occupied");
                         {
                             let entry = e.get_mut();
-                            let result = entry.add_data(seq, p.get_payload());
+                            let result = TLSMessage::read_bytes(&p.get_payload());
                             match result {
-                                InsertionResult::Inserted { available, .. } => {
-                                    if available > PRINT_SIZE {
-                                        let mut read = 0;
-                                        while available - read > PRINT_SIZE {
-                                            let avail = entry.read_data(&mut read_buf[..]);
-                                            read += avail;
-                                        }
+                                Some(mut packet) => {
+                                    // TODO: need to reassemble tcp segements
+                                    if packet.typ == ContentType::Handshake {
+                                        println!("Packet match handshake!");
+                                        println!("{:?}", packet);
+                                    } else {
+                                        println!("Packet type is not matched!")
                                     }
                                 }
-                                InsertionResult::OutOfMemory { written, .. } => {
-                                    if written == 0 {
-                                        println!("Resetting since receiving data that is too far ahead");
-                                        entry.reset();
-                                        entry.seq(seq, p.get_payload());
-                                    }
-                                }
+                                None => println!("There is nothing"),
                             }
                         }
                         if reset {
@@ -84,23 +96,21 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     Entry::Vacant(e) => match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
                             println!("Vacant");
-                            if !p.get_header().syn_flag() {}
-                            let result = b.seq(seq, p.get_payload());
-                            match result {
-                                InsertionResult::Inserted { available, .. } => {
-                                    if available > PRINT_SIZE {
-                                        let mut read = 0;
-                                        while available - read > PRINT_SIZE {
-                                            let avail = b.read_data(&mut read_buf[..]);
-                                            read += avail;
+                            {
+                                let result = TLSMessage::read_bytes(&p.get_payload());
+                                match result {
+                                    Some(mut packet) => {
+                                        // TODO: need to reassemble tcp segements
+                                        if packet.typ == ContentType::Handshake {
+                                            println!("Packet match handshake!");
+                                            println!("{:?}", packet);
+                                        } else {
+                                            println!("Packet type is not matched!")
                                         }
                                     }
-                                }
-                                InsertionResult::OutOfMemory { .. } => {
-                                    println!("Too big a packet?");
+                                    None => println!("There is nothing"),
                                 }
                             }
-                            e.insert(b);
                         }
                         Err(_) => (),
                     },

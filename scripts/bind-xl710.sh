@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# NOTE: This is the script that should be used to setup the environment. Also
+# note that you might need to recompile NetBricks if a system update happened.
+
 set -euo pipefail
 set -x
 

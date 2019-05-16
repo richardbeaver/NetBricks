@@ -1,13 +1,13 @@
-//! TLS Validator.
-//!
-//!
+//! An example NF that works as a TLS validator. For the implementation of the NF, please see nf.rs.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
 extern crate getopts;
 extern crate rand;
+extern crate rustls;
 extern crate time;
+
 use self::nf::*;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
@@ -18,29 +18,10 @@ use std::env;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
 mod nf;
 
-const CONVERSION_FACTOR: f64 = 1000000000.;
-
-fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
-    for port in &ports {
-        println!(
-            "Receiving port {} rxq {} txq {}",
-            port.port.mac_address(),
-            port.rxq(),
-            port.txq()
-        );
-    }
-
-    let pipelines: Vec<_> = ports
-        .iter()
-        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
-        .collect();
-    println!("Running {} pipelines", pipelines.len());
-    for pipeline in pipelines {
-        sched.add_task(pipeline).unwrap();
-    }
-}
+const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 fn main() {
     let opts = basic_opts();
@@ -93,5 +74,26 @@ fn main() {
                 pkts_so_far = pkts;
             }
         }
+    }
+}
+
+/// test that we can ignore
+fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
+    for port in &ports {
+        println!(
+            "Receiving port {} rxq {} txq {}",
+            port.port.mac_address(),
+            port.rxq(),
+            port.txq()
+        );
+    }
+
+    let pipelines: Vec<_> = ports
+        .iter()
+        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .collect();
+    println!("Running {} pipelines", pipelines.len());
+    for pipeline in pipelines {
+        sched.add_task(pipeline).unwrap();
     }
 }
