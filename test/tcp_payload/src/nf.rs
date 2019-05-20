@@ -6,8 +6,8 @@ use e2d2::scheduler::*;
 use e2d2::state::*;
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;

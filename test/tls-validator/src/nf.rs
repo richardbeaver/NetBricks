@@ -5,18 +5,32 @@ use e2d2::state::*;
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
 use rustls::internal::msgs::{
-    codec::Codec, enums::ContentType, enums::ServerNameType, handshake::ClientHelloPayload,
-    handshake::HandshakePayload, handshake::HasServerExtensions, handshake::ServerHelloPayload,
-    handshake::ServerNamePayload, message::Message as TLSMessage, message::MessagePayload,
+    codec::Codec, enums::ContentType, message::Message as TLSMessage, message::MessagePayload,
 };
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
-type FnvHash = BuildHasherDefault<FnvHasher>;
+// use rustls::internal::msgs::{
+//     codec::Codec, enums::ContentType, enums::ServerNameType, handshake::ClientHelloPayload,
+//     handshake::HandshakePayload, handshake::HasServerExtensions, handshake::ServerHelloPayload,
+//     handshake::ServerNamePayload, message::Message as TLSMessage, message::MessagePayload,
+// };
 
+type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
-const PRINT_SIZE: usize = 256;
+const READ_SIZE: usize = 256;
+
+fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
+    let mut read_buf = [0; READ_SIZE];
+    let mut so_far = 0;
+    while to_read > so_far {
+        let payload = payload_cache.entry(flow).or_insert(Vec::new());
+        let n = rb.read_data(&mut read_buf);
+        so_far += n;
+        payload.extend(&read_buf[..n]);
+    }
+}
 
 /// TLS validator:
 ///
@@ -28,10 +42,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // Create the flow cache
-    let mut cache = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
+    let mut rb_map = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
 
-    let mut read_buf: Vec<u8> = (0..PRINT_SIZE).map(|_| 0).collect();
+    // Create the payload cache
+    let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -41,14 +55,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<IpHeader>()
         .group_by(
-            3,
-            box move |p| {
-                if p.get_header().protocol() == 6 {
-                    0
-                } else {
-                    1
-                }
-            },
+            2,
+            box move |p| if p.get_header().protocol() == 6 { 0 } else { 1 },
             sched,
         );
 
@@ -62,58 +70,126 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            if !p.get_header().psh_flag() {
-                println!("Packet has no Push flag, which means it is a fraction of something!");
-                // TODO Check if the packet is part of a TLS handshake
-                let flow = p.read_metadata();
-                let seq = p.get_header().seq_num();
-                match cache.entry(*flow) {
-                    Entry::Occupied(mut e) => {
-                        let reset = p.get_header().rst_flag();
-                        let result = entry.add_data(seq, p.get_payload());
-                        println!("Occupied");
-                        {
-                            let entry = e.get_mut();
-                            let result = TLSMessage::read_bytes(&p.get_payload());
-                            match result {
-                                Some(mut packet) => {
-                                    // TODO: need to reassemble tcp segements
-                                    if packet.typ == ContentType::Handshake {
-                                        println!("Packet match handshake!");
-                                        println!("{:?}", packet);
-                                    } else {
-                                        println!("Packet type is not matched!")
-                                    }
-                                }
-                                None => println!("There is nothing"),
-                            }
-                        }
-                        if reset {
-                            // Reset handling.
-                            e.remove_entry();
-                        }
-                    }
-                    Entry::Vacant(e) => match ReorderedBuffer::new(BUFFER_SIZE) {
-                        Ok(mut b) => {
-                            println!("Vacant");
-                            {
-                                let result = TLSMessage::read_bytes(&p.get_payload());
+            let flow = p.read_metadata();
+            let mut seq = p.get_header().seq_num();
+            let mut seg_len = p.get_header().seg_len();
+            println!("seg length is {}", seg_len);
+            match rb_map.entry(*flow) {
+                // occupied means that there already exists an entry for the flow
+                Entry::Occupied(mut e) => {
+                    println!("\npkt #{} is occupied!", seq);
+                    // get entry
+                    let b = e.get_mut();
+
+                    let tls_result = TLSMessage::read_bytes(&p.get_payload());
+                    let result = b.add_data(seq, p.get_payload());
+
+                    match tls_result {
+                        Some(packet) => {
+                            // TODO: need to reassemble tcp segements
+                            if packet.typ == ContentType::Handshake {
+                                println!("Packet match handshake!");
+                                println!("{:?}", packet);
                                 match result {
-                                    Some(mut packet) => {
-                                        // TODO: need to reassemble tcp segements
-                                        if packet.typ == ContentType::Handshake {
-                                            println!("Packet match handshake!");
-                                            println!("{:?}", packet);
-                                        } else {
-                                            println!("Packet type is not matched!")
+                                    InsertionResult::Inserted { available, .. } => {
+                                        println!("Inserted");
+                                        read_payload(b, available, *flow, &mut payload_cache);
+                                    }
+                                    InsertionResult::OutOfMemory { written, .. } => {
+                                        if written == 0 {
+                                            println!("Resetting since receiving data that is too far ahead");
+                                            b.reset();
+                                            b.seq(seq, p.get_payload());
                                         }
                                     }
-                                    None => println!("There is nothing"),
+                                }
+                            } else {
+                                println!("Packet type is not matched!")
+                            }
+                        }
+                        None => {
+                            println!("\nThere is nothing, that is why we should insert the packet!!!\n");
+                            match result {
+                                InsertionResult::Inserted { available, .. } => {
+                                    println!("Inserted");
+                                    read_payload(b, available, *flow, &mut payload_cache);
+                                }
+                                InsertionResult::OutOfMemory { written, .. } => {
+                                    if written == 0 {
+                                        println!("Resetting since receiving data that is too far ahead");
+                                        b.reset();
+                                        b.seq(seq, p.get_payload());
+                                    }
                                 }
                             }
                         }
-                        Err(_) => (),
-                    },
+                    }
+                    if p.get_header().rst_flag() {
+                        println!("Packet has a reset flag--removing the entry");
+                        e.remove_entry();
+                    } else if p.get_header().fin_flag() {
+                        println!("Packet has a fin flag");
+                        match payload_cache.entry(*flow) {
+                            Entry::Occupied(e) => {
+                                let (_, payload) = e.remove_entry();
+                                println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
+                            }
+                            Entry::Vacant(_) => {
+                                println!("dumped an empty payload for Flow={:?}", flow);
+                            }
+                        }
+                        e.remove_entry();
+                    }
+                }
+                // Vacant means that the entry for doesn't exist yet--we need to create one first
+                Entry::Vacant(e) => {
+                    println!("\nPkt #{} is Vacant", seq);
+                    match ReorderedBuffer::new(BUFFER_SIZE) {
+                        Ok(mut b) => {
+                            println!("  1: Has allocated a new buffer");
+                            if p.get_header().syn_flag() {
+                                println!("    2: packet has a syn flag");
+                                seq += 1;
+                            } else {
+                                println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
+                            }
+
+                            let tls_result = TLSMessage::read_bytes(&p.get_payload());
+                            let result = b.seq(seq, p.get_payload());
+
+                            // match to find TLS handshake
+                            match tls_result {
+                                Some(mut packet) => {
+                                    if packet.typ == ContentType::Handshake {
+                                        println!("\n ************************************************ ");
+                                        println!("      3: Packet match handshake!");
+                                        // match to insert packet into the cache
+                                        println!("      \n{:?}\n", packet);
+                                        match result {
+                                            InsertionResult::Inserted { available, .. } => {
+                                                read_payload(&mut b, available, *flow, &mut payload_cache);
+                                                println!("      4: This packet is inserted");
+                                            }
+                                            InsertionResult::OutOfMemory { .. } => {
+                                                println!("      4: Too big a packet?");
+                                            }
+                                        }
+                                    } else {
+                                        println!("  3: Packet is not a TLS handshake so not displaying");
+                                        //println!("  3: {:?}", packet);
+                                    }
+                                }
+                                None => {
+                                    println!("  3: None in the result");
+                                }
+                            }
+                            e.insert(b);
+                        }
+                        Err(_) => {
+                            println!("\npkt #{} Failed to allocate a buffer for the new flow!", seq);
+                            ()
+                        }
+                    }
                 }
             }
         })

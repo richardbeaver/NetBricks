@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# FIXME: doesn't seem to work
+
 #set -x
 set -euo pipefail
 

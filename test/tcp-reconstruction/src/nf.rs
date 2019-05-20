@@ -1,3 +1,5 @@
+//! This NF reconstructs TCP flows. The entire payload is printed when a FIN packet is received.
+
 use e2d2::headers::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
@@ -10,14 +12,26 @@ use std::hash::BuildHasherDefault;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
-const PRINT_SIZE: usize = 256;
+const READ_SIZE: usize = 256;
+
+fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
+    let mut read_buf = [0; READ_SIZE];
+    let mut so_far = 0;
+    while to_read > so_far {
+        let payload = payload_cache.entry(flow).or_insert(Vec::new());
+        let n = rb.read_data(&mut read_buf);
+        so_far += n;
+        payload.extend(&read_buf[..n]);
+    }
+}
 
 pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let mut cache = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
-    let mut read_buf: Vec<u8> = (0..PRINT_SIZE).map(|_| 0).collect();
+    let mut rb_map = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
+    let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
+
     let mut groups = parent
         .parse::<MacHeader>()
         .transform(box move |p| {
@@ -26,15 +40,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
         .parse::<IpHeader>()
         .group_by(
             2,
-            box move |p| {
-                if p.get_header().protocol() == 6 {
-                    println!("Protocol matched!!");
-                    0
-                } else {
-                    println!("Protocol not matching!!");
-                    1
-                }
-            },
+            box move |p| if p.get_header().protocol() == 6 { 0 } else { 1 },
             sched,
         );
     let pipe = groups
@@ -46,55 +52,52 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            if !p.get_header().psh_flag() {
-                //println!("Packet w/o a psh flag!!");
-                let flow = p.read_metadata();
-                let seq = p.get_header().seq_num();
-                match cache.entry(*flow) {
-                    Entry::Occupied(mut e) => {
-                        let reset = p.get_header().rst_flag();
-                        {
-                            let entry = e.get_mut();
-                            let result = entry.add_data(seq, p.get_payload());
-                            match result {
-                                InsertionResult::Inserted { available, .. } => {
-                                    if available > PRINT_SIZE {
-                                        println!("1");
-                                        let mut read = 0;
-                                        while available - read > PRINT_SIZE {
-                                            let avail = entry.read_data(&mut read_buf[..]);
-                                            read += avail;
-                                        }
-                                    }
-                                }
-                                InsertionResult::OutOfMemory { written, .. } => {
-                                    if written == 0 {
-                                        println!("Resetting since receiving data that is too far ahead");
-                                        entry.reset();
-                                        entry.seq(seq, p.get_payload());
-                                    }
-                                }
+            let flow = p.read_metadata();
+            let mut seq = p.get_header().seq_num();
+            match rb_map.entry(*flow) {
+                Entry::Occupied(mut e) => {
+                    let b = e.get_mut();
+                    let result = b.add_data(seq, p.get_payload());
+                    match result {
+                        InsertionResult::Inserted { available, .. } => {
+                            read_payload(b, available, *flow, &mut payload_cache);
+                        }
+                        InsertionResult::OutOfMemory { written, .. } => {
+                            if written == 0 {
+                                println!("Resetting since receiving data that is too far ahead");
+                                b.reset();
+                                b.seq(seq, p.get_payload());
                             }
                         }
-                        if reset {
-                            // Reset handling.
-                            println!("TCP RESET, clean entry..");
-                            e.remove_entry();
-                        }
                     }
-                    Entry::Vacant(e) => match ReorderedBuffer::new(BUFFER_SIZE) {
+                    if p.get_header().rst_flag() {
+                        e.remove_entry();
+                    } else if p.get_header().fin_flag() {
+                        match payload_cache.entry(*flow) {
+                            Entry::Occupied(e) => {
+                                let (_, payload) = e.remove_entry();
+                                println!("{}", String::from_utf8_lossy(&payload));
+                            }
+                            Entry::Vacant(_) => {
+                                println!("dumped an empty payload for Flow={:?}", flow);
+                            }
+                        }
+                        e.remove_entry();
+                    }
+                }
+                Entry::Vacant(e) => {
+                    match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
-                            if !p.get_header().syn_flag() {}
+                            if p.get_header().syn_flag() {
+                                seq += 1; // Receiver should expect data beginning at seq+1.
+                            } else {
+                                println!("packet received for untracked flow did not have SYN flag, skipping.");
+                            }
+
                             let result = b.seq(seq, p.get_payload());
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
-                                    if available > PRINT_SIZE {
-                                        let mut read = 0;
-                                        while available - read > PRINT_SIZE {
-                                            let avail = b.read_data(&mut read_buf[..]);
-                                            read += avail;
-                                        }
-                                    }
+                                    read_payload(&mut b, available, *flow, &mut payload_cache);
                                 }
                                 InsertionResult::OutOfMemory { .. } => {
                                     println!("Too big a packet?");
@@ -102,11 +105,9 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                             }
                             e.insert(b);
                         }
-                        Err(_) => (println!("Error for ? reason")),
-                    },
+                        Err(_) => (),
+                    }
                 }
-            } else {
-                println!("Packet w/ a psh flag!!");
             }
         })
         .compose();
