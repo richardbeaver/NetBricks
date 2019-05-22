@@ -7,7 +7,7 @@ use std::ptr;
 use std::slice;
 
 /// A packet is a safe wrapper around mbufs, that can be allocated and manipulated.
-/// We associate a header type with a packet to allow safe insertion of headers.
+/// "packet_offset" feature means that We associate a header type with a packet to allow safe insertion of headers.
 #[cfg(not(feature = "packet_offset"))]
 pub struct Packet<T: EndOffset, M: Sized + Send> {
     mbuf: *mut MBuf,
@@ -17,6 +17,7 @@ pub struct Packet<T: EndOffset, M: Sized + Send> {
     offset: usize,
 }
 
+/// Create a packet (mbuf) with offset and header.
 #[inline]
 #[cfg(not(feature = "packet_offset"))]
 fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, offset: usize) -> Packet<T, M> {
@@ -29,6 +30,8 @@ fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, of
     }
 }
 
+/// A packet is a safe wrapper around mbufs, that can be allocated and manipulated.
+/// Without feature "packet_offset" there is no header type with the packet.
 #[cfg(feature = "packet_offset")]
 pub struct Packet<T: EndOffset, M: Sized + Send> {
     mbuf: *mut MBuf,
@@ -36,6 +39,7 @@ pub struct Packet<T: EndOffset, M: Sized + Send> {
     _phantom_m: PhantomData<M>,
 }
 
+/// Create a packet (mbuf) without offset and header.
 #[inline]
 #[cfg(feature = "packet_offset")]
 fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, offset: usiz) -> Packet<T, M> {
@@ -48,6 +52,7 @@ fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, of
     pkt
 }
 
+/// Give a reference to the mbuf.
 fn reference_mbuf(mbuf: *mut MBuf) {
     unsafe { (*mbuf).reference() };
 }
@@ -63,6 +68,7 @@ const END_OF_STACK_SLOT: usize = STACK_OFFSET_SLOT + STACK_SIZE;
 const FREEFORM_METADATA_SLOT: usize = END_OF_STACK_SLOT;
 const FREEFORM_METADATA_SIZE: usize = (METADATA_SLOTS as usize - FREEFORM_METADATA_SLOT) * 8;
 
+/// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
     // Need to up the refcnt, so that things don't drop.
@@ -70,6 +76,7 @@ pub unsafe fn packet_from_mbuf<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> 
     packet_from_mbuf_no_increment(mbuf, offset)
 }
 
+/// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf_no_increment<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
     // Compute the real offset
@@ -77,6 +84,7 @@ pub unsafe fn packet_from_mbuf_no_increment<T: EndOffset>(mbuf: *mut MBuf, offse
     create_packet(mbuf, header, offset)
 }
 
+/// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf_no_free<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
     packet_from_mbuf_no_increment(mbuf, offset)
@@ -247,21 +255,25 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
         unsafe { (*self.mbuf).data_address(0) }
     }
 
+    /// Return the data length.
     #[inline]
     fn data_len(&self) -> usize {
         unsafe { (*self.mbuf).data_len() }
     }
 
+    /// Return the payload size, e.g., data_len - offset - payload_offset.
     #[inline]
     fn payload_size(&self) -> usize {
         self.data_len() - self.offset() - self.payload_offset()
     }
 
+    /// Return the header.
     #[inline]
     pub fn get_header(&self) -> &T {
         unsafe { &(*(self.header())) }
     }
 
+    /// Return a mutable header.
     #[inline]
     pub fn get_mut_header(&mut self) -> &mut T {
         unsafe { &mut (*(self.header())) }

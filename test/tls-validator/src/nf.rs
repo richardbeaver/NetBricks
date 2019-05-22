@@ -4,9 +4,7 @@ use e2d2::scheduler::*;
 use e2d2::state::*;
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
-use rustls::internal::msgs::{
-    codec::Codec, enums::ContentType, message::Message as TLSMessage, message::MessagePayload,
-};
+use rustls::internal::msgs::{codec::Codec, enums::ContentType, message::Message as TLSMessage};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
@@ -66,14 +64,17 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .unwrap()
         .metadata(box move |p| {
             let flow = p.get_header().flow().unwrap();
+            println!("And the flow is: {:?}", flow);
             flow
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let flow = p.read_metadata();
             let mut seq = p.get_header().seq_num();
-            let mut seg_len = p.get_header().seg_len();
-            println!("seg length is {}", seg_len);
+            let tcph = p.get_header();
+            println!("TCP Headers: {}", tcph);
+            //let mut seg_len = p.get_header().seg_len();
+            //println!("seg length is {}", seg_len);
             match rb_map.entry(*flow) {
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
@@ -109,6 +110,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         }
                         None => {
                             println!("\nThere is nothing, that is why we should insert the packet!!!\n");
+
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
                                     println!("Inserted");
@@ -159,7 +161,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                             // match to find TLS handshake
                             match tls_result {
-                                Some(mut packet) => {
+                                Some(packet) => {
                                     if packet.typ == ContentType::Handshake {
                                         println!("\n ************************************************ ");
                                         println!("      3: Packet match handshake!");
@@ -175,12 +177,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             }
                                         }
                                     } else {
-                                        println!("  3: Packet is not a TLS handshake so not displaying");
+                                        println!("      3: Packet is not a TLS handshake so not displaying");
                                         //println!("  3: {:?}", packet);
                                     }
                                 }
                                 None => {
-                                    println!("  3: None in the result");
+                                    println!("      3: None in the result");
                                 }
                             }
                             e.insert(b);

@@ -16,6 +16,14 @@ if [ ! -e ${TOOLS_BASE} ]; then
     mkdir -p ${TOOLS_BASE}
 fi
 
+# cargo target
+if [ ! -e $HOME/data/cargo-target ]; then
+    TARGET_BASE_DIR=$BASE_DIR
+else
+    echo "The cargo target dir has been setup so we should use it"
+    TARGET_BASE_DIR="$HOME/data/cargo-target"
+fi
+
 DPDK_VER=17.08
 DPDK_HOME="${BASE_DIR}/3rdparty/dpdk"
 DPDK_LD_PATH="${DPDK_HOME}/build/lib"
@@ -158,7 +166,7 @@ clean () {
         popd
     done
     make clean -C ${BASE_DIR}/native
-    rm -rf ${BASE_DIR}/target 
+    rm -rf ${BASE_DIR}/target
 }
 
 UNWIND_BUILD="${TOOLS_BASE}"/libunwind
@@ -406,7 +414,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_BASE_DIR}/target/release/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -423,7 +431,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_BASE_DIR}/target/release/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -440,7 +448,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_BASE_DIR}/target/release/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -457,7 +465,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_BASE_DIR}/target/release/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
