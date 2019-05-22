@@ -19,6 +19,7 @@ type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
 const READ_SIZE: usize = 256;
 
+/// Read payload.
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
     let mut read_buf = [0; READ_SIZE];
     let mut so_far = 0;
@@ -79,6 +80,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
                     println!("\npkt #{} is occupied!", seq);
+                    println!("\nEntry is {}", e);
                     // get entry
                     let b = e.get_mut();
 
@@ -110,7 +112,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         }
                         None => {
                             println!("\nThere is nothing, that is why we should insert the packet!!!\n");
-
+                            println!("And the flow is: {:?}", flow);
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
                                     println!("Inserted");
@@ -146,9 +148,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // Vacant means that the entry for doesn't exist yet--we need to create one first
                 Entry::Vacant(e) => {
                     println!("\nPkt #{} is Vacant", seq);
+                    println!("\nEntry is {}", e);
                     match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
-                            println!("  1: Has allocated a new buffer");
+                            println!("  1: Has allocated a new buffer: {}", b);
                             if p.get_header().syn_flag() {
                                 println!("    2: packet has a syn flag");
                                 seq += 1;
