@@ -65,7 +65,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .unwrap()
         .metadata(box move |p| {
             let flow = p.get_header().flow().unwrap();
-            println!("And the flow is: {:?}", flow);
+            println!("{:?}", flow);
             flow
         })
         .parse::<TcpHeader>()
@@ -73,14 +73,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.read_metadata();
             let mut seq = p.get_header().seq_num();
             let tcph = p.get_header();
-            println!("TCP Headers: {}", tcph);
+            println!("\n\nTCP Headers: {}", tcph);
             //let mut seg_len = p.get_header().seg_len();
             //println!("seg length is {}", seg_len);
             match rb_map.entry(*flow) {
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
-                    println!("\npkt #{} is occupied!", seq);
-                    println!("\nEntry is {}", e);
+                    println!("\nPkt #{} is Occupied!", seq);
+                    println!("\nAnd the flow is: {:?}\n", flow);
+                    //println!("\nEntry is {:?}", e);
                     // get entry
                     let b = e.get_mut();
 
@@ -111,8 +112,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             }
                         }
                         None => {
+                            // The rest of the TLS server hello handshake should be captured here.
                             println!("\nThere is nothing, that is why we should insert the packet!!!\n");
-                            println!("And the flow is: {:?}", flow);
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
                                     println!("Inserted");
@@ -147,11 +148,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 }
                 // Vacant means that the entry for doesn't exist yet--we need to create one first
                 Entry::Vacant(e) => {
-                    println!("\nPkt #{} is Vacant", seq);
-                    println!("\nEntry is {}", e);
+                    println!("\n\nPkt #{} is Vacant", seq);
+                    println!("\nAnd the flow is: {:?}\n", flow);
+                    //println!("\nEntry is {:?}", e);
                     match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
-                            println!("  1: Has allocated a new buffer: {}", b);
+                            println!("  1: Has allocated a new buffer:");
                             if p.get_header().syn_flag() {
                                 println!("    2: packet has a syn flag");
                                 seq += 1;

@@ -1,59 +1,1504 @@
-The cargo target dir has been setup so we should use it
-/home/jethros/data/cargo-target/target/release/pvn-tls not found, building
-The cargo target dir has been setup so we should use it
-DPDK found not building
-Building rust
-Done with deps
-make: Entering directory '/home/jethros/dev/netbricks/native'
-make[1]: Nothing to be done for 'all'.
-make: Leaving directory '/home/jethros/dev/netbricks/native'
-make: Entering directory '/home/jethros/dev/netbricks/native'
-cp libzcsi.so /home/jethros/dev/netbricks/target/native
-make: Leaving directory '/home/jethros/dev/netbricks/native'
-SCTP library found
-~/dev/netbricks/framework ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/framework-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/delay-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/shutdown-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/lpm ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/lpm-embedded ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/nat ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tcp-check ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/sctp-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/config-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/reset-parse ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/packet_generation ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/embedded-scheduler-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/embedded-scheduler-dependency-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tcp_payload ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/macswap ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/acl-fw ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tcp-reconstruction ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/maglev ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/chain-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/packet-test ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/adv-acl ~/dev/netbricks/test/tls-validator
-~/dev/netbricks/test/tls-validator
+Going to start with configuration Configuration: name:  =========== Running TLS Validator ============   mempool size: 2047 core cache: 32 primary core: 0
+ Ports:
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 2 ] TXQ_Count: 1 TX_Queues: 2 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 3 ] TXQ_Count: 1 TX_Queues: 3 RXD: 128 TXD: 128 Loopback false
+Cores:
+	2
+	3
+	4
+	5
+
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Running on node 0
+Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
+Running 1 pipelines
+Running on node 0
+Running on node 0
+Receiving port f8:f2:1e:2e:9c:50 rxq 0 txq 0
+Running 0 pipelines
+Running 0 pipelines
+Running 1 pipelines
+Starting scheduler on 3
+Starting scheduler on 2
+Starting scheduler on 5
+Starting scheduler on 4
+0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
+Flow { src_ip: 3338456601, dst_ip: 180932078, src_port: 59071, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3338456601, src_port: 443, dst_port: 59071, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59071 seq 3900289529 ack 3347003301 data_offset 8 flags | ACK PSH |cwnd 62 csum 10537 urgent 0
+
+
+Pkt #3900289529 is Vacant
+
+And the flow is: Flow { src_ip: 3338456601, dst_ip: 180932078, src_port: 59071, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59071 dst_port 443 seq 3347003301 ack 3900289590 data_offset 8 flags | ACK PSH |cwnd 4096 csum 17488 urgent 0
+
+
+Pkt #3347003301 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3338456601, src_port: 443, dst_port: 59071, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343127 ack 2582310255 data_offset 8 flags | ACK PSH |cwnd 4138 csum 5638 urgent 0
+
+
+Pkt #1251343127 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 124, 247, 156, 215, 73, 59, 228, 146, 127, 124, 189, 62, 163, 56, 189, 26, 201, 140, 200, 245, 69, 214, 60, 60, 53, 24, 16, 16, 7, 110, 221, 108, 32, 10, 229, 112, 220, 191, 46, 140, 141, 118, 110, 215, 191, 87, 251, 61, 12, 26, 243, 248, 214, 28, 19, 43, 166, 184, 243, 241, 114, 29, 112, 187, 91, 0, 40, 192, 44, 192, 43, 192, 36, 192, 35, 192, 10, 192, 9, 204, 169, 192, 48, 192, 47, 192, 40, 192, 39, 192, 20, 192, 19, 204, 168, 0, 157, 0, 156, 0, 61, 0, 60, 0, 53, 0, 47, 1, 0, 1, 139, 255, 1, 0, 1, 0, 0, 0, 0, 19, 0, 17, 0, 0, 14, 97, 112, 105, 46, 103, 105, 116, 104, 117, 98, 46, 99, 111, 109, 0, 23, 0, 0, 0, 13, 0, 20, 0, 18, 4, 3, 8, 4, 4, 1, 5, 3, 8, 5, 5, 1, 8, 6, 6, 1, 2, 1, 0, 5, 0, 5, 1, 0, 0, 0, 0, 51, 116, 0, 0, 0, 18, 0, 0, 0, 16, 0, 48, 0, 46, 2, 104, 50, 5, 104, 50, 45, 49, 54, 5, 104, 50, 45, 49, 53, 5, 104, 50, 45, 49, 52, 8, 115, 112, 100, 121, 47, 51, 46, 49, 6, 115, 112, 100, 121, 47, 51, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 11, 0, 2, 1, 0, 0, 10, 0, 10, 0, 8, 0, 29, 0, 23, 0, 24, 0, 25, 0, 21, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
+
+      4: This packet is inserted
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 886015115, src_port: 443, dst_port: 58871, proto: 6 }
+Flow { src_ip: 886015115, dst_ip: 180932078, src_port: 58871, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582310255 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 13755 urgent 0
+
+
+Pkt #2582310255 is Vacant
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 108, 3, 3, 123, 80, 231, 54, 142, 234, 178, 199, 23, 22, 163, 52, 107, 183, 225, 34, 150, 9, 214, 184, 242, 26, 131, 38, 68, 79, 87, 78, 71, 82, 68, 1, 32, 50, 168, 137, 170, 87, 124, 140, 75, 191, 53, 219, 243, 215, 215, 101, 223, 51, 18, 187, 252, 208, 174, 131, 148, 109, 92, 73, 153, 151, 139, 216, 218, 192, 47, 0, 0, 36, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 11, 0, 4, 3, 0, 1, 2, 0, 16, 0, 11, 0, 9, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 23, 0, 0])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582311679 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 1062 urgent 0
+
+Pkt #2582311679 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313103 ack 1251343644 data_offset 8 flags | ACK PSH |cwnd 29 csum 59711 urgent 0
+
+Pkt #2582313103 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343644 ack 2582313541 data_offset 8 flags | ACK PSH |cwnd 4096 csum 16926 urgent 0
+
+Pkt #1251343644 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+
+Packet match handshake!
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 33, 32, 178, 39, 74, 244, 57, 247, 177, 8, 162, 87, 193, 169, 170, 26, 111, 218, 182, 95, 1, 226, 243, 154, 146, 231, 160, 110, 59, 135, 32, 27, 15, 54])) }
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313541 ack 1251343737 data_offset 8 flags | ACK PSH |cwnd 29 csum 33946 urgent 0
+
+Pkt #2582313541 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343737 ack 2582313592 data_offset 8 flags | ACK PSH |cwnd 4096 csum 8323 urgent 0
+
+Pkt #1251343737 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313592 ack 1251344173 data_offset 8 flags | ACK PSH |cwnd 30 csum 16916 urgent 0
+
+Pkt #2582313592 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59295 dst_port 443 seq 1251344173 ack 2582314636 data_offset 8 flags | ACK PSH |cwnd 4096 csum 60557 urgent 0
+
+Pkt #1251344173 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59296 dst_port 443 seq 3700925885 ack 125373809 data_offset 8 flags | ACK PSH |cwnd 4138 csum 58598 urgent 0
+
+
+Pkt #3700925885 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 0, 202, 3, 3, 137, 121, 211, 78, 191, 40, 212, 249, 235, 106, 111, 59, 127, 106, 161, 39, 242, 119, 195, 211, 22, 228, 130, 122, 14, 173, 179, 226, 210, 124, 167, 34, 32, 50, 168, 137, 170, 87, 124, 140, 75, 191, 53, 219, 243, 215, 215, 101, 223, 51, 18, 187, 252, 208, 174, 131, 148, 109, 92, 73, 153, 151, 139, 216, 218, 0, 40, 192, 44, 192, 43, 192, 36, 192, 35, 192, 10, 192, 9, 204, 169, 192, 48, 192, 47, 192, 40, 192, 39, 192, 20, 192, 19, 204, 168, 0, 157, 0, 156, 0, 61, 0, 60, 0, 53, 0, 47, 1, 0, 0, 89, 255, 1, 0, 1, 0, 0, 0, 0, 19, 0, 17, 0, 0, 14, 97, 112, 105, 46, 103, 105, 116, 104, 117, 98, 46, 99, 111, 109, 0, 23, 0, 0, 0, 13, 0, 20, 0, 18, 4, 3, 8, 4, 4, 1, 5, 3, 8, 5, 5, 1, 8, 6, 6, 1, 2, 1, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 18, 0, 0, 0, 11, 0, 2, 1, 0, 0, 10, 0, 10, 0, 8, 0, 29, 0, 23, 0, 24, 0, 25])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59296 seq 125373809 ack 3700926096 data_offset 8 flags | ACK |cwnd 29 csum 36302 urgent 0
+
+
+Pkt #125373809 is Vacant
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 93, 3, 3, 113, 34, 68, 54, 191, 205, 174, 124, 182, 75, 162, 249, 132, 239, 28, 220, 85, 249, 74, 54, 76, 221, 252, 174, 68, 79, 87, 78, 71, 82, 68, 1, 32, 131, 237, 42, 79, 103, 187, 92, 19, 53, 238, 182, 60, 107, 61, 209, 11, 149, 19, 143, 226, 175, 194, 242, 199, 175, 217, 52, 240, 0, 223, 240, 228, 192, 47, 0, 0, 21, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 11, 0, 4, 3, 0, 1, 2, 0, 23, 0, 0])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59296 seq 125375233 ack 3700926096 data_offset 8 flags | ACK |cwnd 29 csum 9524 urgent 0
+
+Pkt #125375233 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59296 seq 125376657 ack 3700926096 data_offset 8 flags | ACK PSH |cwnd 29 csum 7675 urgent 0
+
+Pkt #125376657 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 59296 dst_port 443 seq 3700926096 ack 125377080 data_offset 8 flags | ACK PSH |cwnd 4096 csum 31098 urgent 0
+
+Pkt #3700926096 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+
+Packet match handshake!
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 33, 32, 71, 245, 63, 102, 30, 246, 47, 62, 240, 203, 77, 117, 203, 219, 113, 131, 96, 145, 28, 252, 10, 133, 146, 45, 226, 234, 78, 237, 55, 200, 111, 26])) }
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59296 seq 125377080 ack 3700926189 data_offset 8 flags | ACK PSH |cwnd 29 csum 5938 urgent 0
+
+Pkt #125377080 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59296 dst_port 443 seq 3700926189 ack 125377131 data_offset 8 flags | ACK PSH |cwnd 4096 csum 39085 urgent 0
+
+Pkt #3700926189 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582314636 ack 1251344599 data_offset 8 flags | ACK PSH |cwnd 31 csum 30976 urgent 0
+
+Pkt #2582314636 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+Not writing all, available 952
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59278 dst_port 443 seq 138534218 ack 109519589 data_offset 8 flags | ACK PSH |cwnd 4096 csum 51945 urgent 0
+
+
+Pkt #138534218 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59278 dst_port 443 seq 138534288 ack 109519589 data_offset 8 flags | ACK PSH |cwnd 4096 csum 29017 urgent 0
+
+Pkt #138534288 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59278 seq 109519589 ack 138534334 data_offset 8 flags | ACK PSH |cwnd 227 csum 46929 urgent 0
+
+
+Pkt #109519589 is Vacant
+
+And the flow is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 443 dst_port 59278 seq 109520196 ack 138534334 data_offset 8 flags | ACK PSH |cwnd 227 csum 78 urgent 0
+
+Pkt #109520196 is Occupied!
+
+And the flow is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59296 seq 125377131 ack 3700926614 data_offset 8 flags | ACK PSH |cwnd 30 csum 10517 urgent 0
+
+Pkt #125377131 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 58871 dst_port 443 seq 438467374 ack 2961756620 data_offset 8 flags | ACK PSH |cwnd 4096 csum 29248 urgent 0
+
+
+Pkt #438467374 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 886015115, src_port: 443, dst_port: 58871, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 443 dst_port 58871 seq 2961756620 ack 438467433 data_offset 8 flags | ACK PSH |cwnd 114 csum 7730 urgent 0
+
+
+Pkt #2961756620 is Vacant
+
+And the flow is: Flow { src_ip: 886015115, dst_ip: 180932078, src_port: 58871, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947335944 ack 2840429495 data_offset 8 flags | ACK PSH |cwnd 7387 csum 25069 urgent 0
+
+
+Pkt #2947335944 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336146 ack 2840429495 data_offset 8 flags | ACK PSH |cwnd 7387 csum 47972 urgent 0
+
+Pkt #2947336146 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429495 ack 2947336185 data_offset 8 flags | ACK PSH |cwnd 316 csum 42844 urgent 0
+
+
+Pkt #2840429495 is Vacant
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336185 ack 2840429534 data_offset 8 flags | ACK PSH |cwnd 7387 csum 45059 urgent 0
+
+Pkt #2947336185 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59297 dst_port 443 seq 3374521529 ack 3433449578 data_offset 8 flags | ACK PSH |cwnd 4104 csum 29768 urgent 0
+
+
+Pkt #3374521529 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 126, 212, 172, 106, 182, 70, 190, 128, 187, 104, 215, 194, 139, 48, 147, 186, 22, 58, 195, 249, 154, 140, 104, 15, 87, 27, 46, 99, 102, 132, 83, 209, 32, 186, 229, 46, 216, 245, 6, 45, 50, 121, 62, 197, 122, 43, 1, 83, 150, 9, 170, 254, 204, 25, 150, 220, 19, 80, 205, 28, 153, 254, 152, 2, 239, 0, 34, 90, 90, 19, 1, 19, 2, 19, 3, 192, 43, 192, 47, 192, 44, 192, 48, 204, 169, 204, 168, 192, 19, 192, 20, 0, 156, 0, 157, 0, 47, 0, 53, 0, 10, 1, 0, 1, 145, 234, 234, 0, 0, 0, 0, 0, 22, 0, 20, 0, 0, 17, 102, 111, 110, 116, 115, 46, 103, 115, 116, 97, 116, 105, 99, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 10, 0, 8, 202, 202, 0, 29, 0, 23, 0, 24, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 13, 0, 20, 0, 18, 4, 3, 8, 4, 4, 1, 5, 3, 8, 5, 5, 1, 8, 6, 6, 1, 2, 1, 0, 18, 0, 0, 0, 51, 0, 43, 0, 41, 202, 202, 0, 1, 0, 0, 29, 0, 32, 180, 238, 38, 213, 78, 219, 95, 14, 119, 195, 134, 57, 172, 44, 172, 187, 80, 28, 29, 197, 53, 218, 152, 103, 160, 147, 195, 98, 253, 15, 232, 18, 0, 45, 0, 2, 1, 1, 0, 43, 0, 11, 10, 154, 154, 3, 4, 3, 3, 3, 2, 3, 1, 0, 27, 0, 3, 2, 0, 2, 154, 154, 0, 1, 0, 0, 21, 0, 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429534 ack 2947336249 data_offset 8 flags | ACK PSH |cwnd 316 csum 50537 urgent 0
+
+Pkt #2840429534 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429601 ack 2947336249 data_offset 8 flags | ACK PSH |cwnd 316 csum 7489 urgent 0
+
+Pkt #2840429601 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429632 ack 2947336249 data_offset 8 flags | ACK PSH |cwnd 316 csum 33538 urgent 0
+
+Pkt #2840429632 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336249 ack 2840429671 data_offset 8 flags | ACK PSH |cwnd 7387 csum 52610 urgent 0
+
+Pkt #2947336249 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59297 seq 3433449578 ack 3374522046 data_offset 8 flags | ACK |cwnd 240 csum 59517 urgent 0
+
+
+Pkt #3433449578 is Vacant
+
+And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 118, 3, 3, 248, 97, 131, 169, 91, 181, 46, 137, 24, 77, 216, 8, 172, 81, 252, 11, 20, 63, 10, 116, 216, 104, 2, 47, 32, 55, 180, 134, 213, 96, 215, 162, 32, 186, 229, 46, 216, 245, 6, 45, 50, 121, 62, 197, 122, 43, 1, 83, 150, 9, 170, 254, 204, 25, 150, 220, 19, 80, 205, 28, 153, 254, 152, 2, 239, 19, 1, 0, 0, 46, 0, 51, 0, 36, 0, 29, 0, 32, 30, 38, 116, 30, 251, 108, 177, 99, 237, 237, 111, 221, 169, 32, 105, 46, 72, 35, 236, 30, 189, 100, 234, 162, 10, 138, 0, 176, 85, 55, 75, 94, 0, 43, 0, 2, 3, 4])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59297 seq 3433450996 ack 3374522046 data_offset 8 flags | ACK PSH |cwnd 240 csum 16906 urgent 0
+
+Pkt #3433450996 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 59297 dst_port 443 seq 3374522046 ack 3433452053 data_offset 8 flags | ACK PSH |cwnd 4096 csum 1160 urgent 0
+
+Pkt #3374522046 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59297 seq 3433452053 ack 3374522110 data_offset 8 flags | ACK PSH |cwnd 240 csum 8700 urgent 0
+
+Pkt #3433452053 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59297 seq 3433452555 ack 3374522110 data_offset 8 flags | ACK PSH |cwnd 240 csum 63232 urgent 0
+
+Pkt #3433452555 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429671 ack 2947336288 data_offset 8 flags | ACK PSH |cwnd 316 csum 59924 urgent 0
+
+Pkt #2840429671 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429956 ack 2947336288 data_offset 8 flags | ACK PSH |cwnd 316 csum 59113 urgent 0
+
+Pkt #2840429956 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840431374 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 15650 urgent 0
+
+Pkt #2840431374 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 168
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840432792 ack 2947336288 data_offset 8 flags | ACK PSH |cwnd 316 csum 29918 urgent 0
+
+Pkt #2840432792 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840434210 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 54320 urgent 0
+
+Pkt #2840434210 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840435628 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 10635 urgent 0
+
+Pkt #2840435628 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840437046 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 56947 urgent 0
+
+Pkt #2840437046 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840438464 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 11593 urgent 0
+
+Pkt #2840438464 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840439882 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 12235 urgent 0
+
+Pkt #2840439882 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840441300 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 51491 urgent 0
+
+Pkt #2840441300 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840442718 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 62206 urgent 0
+
+Pkt #2840442718 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840444136 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 13860 urgent 0
+
+Pkt #2840444136 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840445554 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 36970 urgent 0
+
+Pkt #2840445554 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840446972 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 15160 urgent 0
+
+Pkt #2840446972 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840448390 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 62977 urgent 0
+
+Pkt #2840448390 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840449808 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 49709 urgent 0
+
+Pkt #2840449808 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840451226 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 1903 urgent 0
+
+Pkt #2840451226 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840452644 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 47039 urgent 0
+
+Pkt #2840452644 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840454062 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 45612 urgent 0
+
+Pkt #2840454062 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840455480 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 52655 urgent 0
+
+Pkt #2840455480 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840456898 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 25335 urgent 0
+
+Pkt #2840456898 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840458316 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 5621 urgent 0
+
+Pkt #2840458316 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840459734 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 55567 urgent 0
+
+Pkt #2840459734 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840461152 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 335 urgent 0
+
+Pkt #2840461152 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840462570 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 8672 urgent 0
+
+Pkt #2840462570 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840463988 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 38511 urgent 0
+
+Pkt #2840463988 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840465406 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 59057 urgent 0
+
+Pkt #2840465406 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840466824 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 16375 urgent 0
+
+Pkt #2840466824 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840468242 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 49194 urgent 0
+
+Pkt #2840468242 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840469660 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 47794 urgent 0
+
+Pkt #2840469660 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840471078 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 29720 urgent 0
+
+Pkt #2840471078 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840472496 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 27596 urgent 0
+
+Pkt #2840472496 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840473914 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 52809 urgent 0
+
+Pkt #2840473914 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840475332 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 31248 urgent 0
+
+Pkt #2840475332 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840476750 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 22185 urgent 0
+
+Pkt #2840476750 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840478168 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 58840 urgent 0
+
+Pkt #2840478168 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840479586 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 18199 urgent 0
+
+Pkt #2840479586 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840481004 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 56353 urgent 0
+
+Pkt #2840481004 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840482422 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 39319 urgent 0
+
+Pkt #2840482422 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840483840 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 30931 urgent 0
+
+Pkt #2840483840 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840485258 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 55557 urgent 0
+
+Pkt #2840485258 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840486676 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 56292 urgent 0
+
+Pkt #2840486676 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840488094 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 28730 urgent 0
+
+Pkt #2840488094 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840489512 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 50909 urgent 0
+
+Pkt #2840489512 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840490930 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 31613 urgent 0
+
+Pkt #2840490930 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840492348 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 11968 urgent 0
+
+Pkt #2840492348 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840493766 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 40783 urgent 0
+
+Pkt #2840493766 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840495184 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 63017 urgent 0
+
+Pkt #2840495184 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840496602 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 50029 urgent 0
+
+Pkt #2840496602 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840498020 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 38769 urgent 0
+
+Pkt #2840498020 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840499438 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 37329 urgent 0
+
+Pkt #2840499438 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840500856 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 16467 urgent 0
+
+Pkt #2840500856 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Not writing all, available 629
+
+
+There is nothing, that is why we should insert the packet!!!
+
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840502274 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 21929 urgent 0
+
+Pkt #2840502274 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Resetting since receiving data that is too far ahead
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840503692 ack 2947336288 data_offset 8 flags | ACK PSH |cwnd 316 csum 46778 urgent 0
+
+Pkt #2840503692 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336288 ack 2840504020 data_offset 8 flags | ACK PSH |cwnd 7387 csum 34051 urgent 0
+
+Pkt #2947336288 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336327 ack 2840504020 data_offset 8 flags | ACK PSH |cwnd 7387 csum 4663 urgent 0
+
+Pkt #2947336327 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336523 ack 2840504020 data_offset 8 flags | ACK PSH |cwnd 7387 csum 1792 urgent 0
+
+Pkt #2947336523 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336663 ack 2840504020 data_offset 8 flags | ACK PSH |cwnd 7387 csum 41072 urgent 0
+
+Pkt #2947336663 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504020 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 62522 urgent 0
+
+Pkt #2840504020 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504087 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 56255 urgent 0
+
+Pkt #2840504087 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504118 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 29834 urgent 0
+
+Pkt #2840504118 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336834 ack 2840504157 data_offset 8 flags | ACK PSH |cwnd 7387 csum 28072 urgent 0
+
+Pkt #2947336834 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504157 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 33678 urgent 0
+
+Pkt #2840504157 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504224 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 50586 urgent 0
+
+Pkt #2840504224 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336873 ack 2840504255 data_offset 8 flags | ACK PSH |cwnd 7387 csum 32753 urgent 0
+
+Pkt #2947336873 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099361 ack 4276830613 data_offset 8 flags | ACK PSH |cwnd 4096 csum 27806 urgent 0
+
+
+Pkt #1596099361 is Vacant
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099517 ack 4276830613 data_offset 8 flags | ACK PSH |cwnd 4096 csum 2350 urgent 0
+
+Pkt #1596099517 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504255 ack 2947336873 data_offset 8 flags | ACK PSH |cwnd 337 csum 18222 urgent 0
+
+Pkt #2840504255 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504462 ack 2947336873 data_offset 8 flags | ACK PSH |cwnd 337 csum 56221 urgent 0
+
+Pkt #2840504462 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504958 ack 2947337203 data_offset 8 flags | ACK PSH |cwnd 344 csum 8867 urgent 0
+
+Pkt #2840504958 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504990 ack 2947337203 data_offset 8 flags | ACK PSH |cwnd 344 csum 28850 urgent 0
+
+Pkt #2840504990 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840505021 ack 2947337203 data_offset 8 flags | ACK PSH |cwnd 344 csum 13460 urgent 0
+
+Pkt #2840505021 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59282 dst_port 443 seq 2947337203 ack 2840505060 data_offset 8 flags | ACK PSH |cwnd 7387 csum 50478 urgent 0
+
+Pkt #2947337203 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830613 ack 1596099556 data_offset 8 flags | ACK PSH |cwnd 253 csum 42161 urgent 0
+
+
+Pkt #4276830613 is Vacant
+
+And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+      3: Packet is not a TLS handshake so not displaying
+
+
+TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830652 ack 1596099556 data_offset 8 flags | ACK PSH |cwnd 253 csum 34934 urgent 0
+
+Pkt #4276830652 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830721 ack 1596099556 data_offset 8 flags | ACK PSH |cwnd 253 csum 15706 urgent 0
+
+Pkt #4276830721 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830752 ack 1596099556 data_offset 8 flags | ACK PSH |cwnd 253 csum 51302 urgent 0
+
+Pkt #4276830752 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099556 ack 4276830791 data_offset 8 flags | ACK PSH |cwnd 4096 csum 27723 urgent 0
+
+Pkt #1596099556 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+
+Packet type is not matched!
+
+
+TCP Headers: tcp src_port 443 dst_port 59282 seq 2840505060 ack 2947337242 data_offset 8 flags | ACK PSH |cwnd 344 csum 34178 urgent 0
+
+Pkt #2840505060 is Occupied!
+
+And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+
+Packet type is not matched!
+15.01 OVERALL RX 7.93 TX 7.93
+30.01 OVERALL RX 0.00 TX 0.00
+30.01 OVERALL RX 0.00 TX 0.00
+30.01 OVERALL RX 0.00 TX 0.00
+30.01 OVERALL RX 0.00 TX 0.00
