@@ -46,6 +46,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // Create the payload cache
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
+    // Unfortunately we have to store the previous flow as a state here.
+    let mut prev_flow = Flow {
+        src_ip: 0,
+        dst_ip: 0,
+        src_port: 0,
+        dst_port: 0,
+        proto: 0,
+    };
+
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
         .parse::<MacHeader>()
@@ -80,7 +89,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
                     println!("\nPkt #{} is Occupied!", seq);
-                    println!("\nAnd the flow is: {:?}\n", flow);
+                    println!("\nAnd the flow is: {:?}", flow);
+                    println!("Previous one is: {:?}", prev_flow);
+                    if *flow != prev_flow {
+                        println!("flow and prev flow are the same\n");
+                    } else {
+                        println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
+                    }
+
                     //println!("\nEntry is {:?}", e);
                     // get entry
                     let b = e.get_mut();
@@ -149,7 +165,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // Vacant means that the entry for doesn't exist yet--we need to create one first
                 Entry::Vacant(e) => {
                     println!("\n\nPkt #{} is Vacant", seq);
-                    println!("\nAnd the flow is: {:?}\n", flow);
+                    println!("\nAnd the flow is: {:?}", flow);
+                    println!("Previous one is: {:?}", prev_flow);
+                    if *flow != prev_flow {
+                        println!("flow and prev flow are the same\n");
+                    } else {
+                        println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
+                    }
+
                     //println!("\nEntry is {:?}", e);
                     match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
@@ -199,6 +222,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 }
             }
+            prev_flow = *flow;
         })
         .compose();
     merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()

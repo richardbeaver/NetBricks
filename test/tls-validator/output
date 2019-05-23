@@ -22,22 +22,27 @@ EAL:   probe driver: 8086:1583 net_i40e
 Going to try and use port 1
 Running on node 0
 Running on node 0
-Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
-Running 1 pipelines
-Running on node 0
+Running 0 pipelines
 Running on node 0
 Receiving port f8:f2:1e:2e:9c:50 rxq 0 txq 0
-Running 0 pipelines
-Running 0 pipelines
+Running on node 0
 Running 1 pipelines
-Starting scheduler on 3
+Running 0 pipelines
+Starting scheduler on 4
+Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
 Starting scheduler on 2
 Starting scheduler on 5
-Starting scheduler on 4
+Running 1 pipelines
+Starting scheduler on 3
 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
 Flow { src_ip: 3338456601, dst_ip: 180932078, src_port: 59071, dst_port: 443, proto: 6 }
 Flow { src_ip: 180932078, dst_ip: 3338456601, src_port: 443, dst_port: 59071, proto: 6 }
 Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59071 seq 3900289529 ack 3347003301 data_offset 8 flags | ACK PSH |cwnd 62 csum 10537 urgent 0
@@ -46,6 +51,8 @@ TCP Headers: tcp src_port 443 dst_port 59071 seq 3900289529 ack 3347003301 data_
 Pkt #3900289529 is Vacant
 
 And the flow is: Flow { src_ip: 3338456601, dst_ip: 180932078, src_port: 59071, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 0, dst_ip: 0, src_port: 0, dst_port: 0, proto: 0 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -58,6 +65,8 @@ TCP Headers: tcp src_port 59071 dst_port 443 seq 3347003301 ack 3900289590 data_
 Pkt #3347003301 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3338456601, src_port: 443, dst_port: 59071, proto: 6 }
+Previous one is: Flow { src_ip: 3338456601, dst_ip: 180932078, src_port: 59071, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -70,6 +79,8 @@ TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343127 ack 2582310255 data_
 Pkt #1251343127 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3338456601, src_port: 443, dst_port: 59071, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -80,11 +91,78 @@ And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, ds
 Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 124, 247, 156, 215, 73, 59, 228, 146, 127, 124, 189, 62, 163, 56, 189, 26, 201, 140, 200, 245, 69, 214, 60, 60, 53, 24, 16, 16, 7, 110, 221, 108, 32, 10, 229, 112, 220, 191, 46, 140, 141, 118, 110, 215, 191, 87, 251, 61, 12, 26, 243, 248, 214, 28, 19, 43, 166, 184, 243, 241, 114, 29, 112, 187, 91, 0, 40, 192, 44, 192, 43, 192, 36, 192, 35, 192, 10, 192, 9, 204, 169, 192, 48, 192, 47, 192, 40, 192, 39, 192, 20, 192, 19, 204, 168, 0, 157, 0, 156, 0, 61, 0, 60, 0, 53, 0, 47, 1, 0, 1, 139, 255, 1, 0, 1, 0, 0, 0, 0, 19, 0, 17, 0, 0, 14, 97, 112, 105, 46, 103, 105, 116, 104, 117, 98, 46, 99, 111, 109, 0, 23, 0, 0, 0, 13, 0, 20, 0, 18, 4, 3, 8, 4, 4, 1, 5, 3, 8, 5, 5, 1, 8, 6, 6, 1, 2, 1, 0, 5, 0, 5, 1, 0, 0, 0, 0, 51, 116, 0, 0, 0, 18, 0, 0, 0, 16, 0, 48, 0, 46, 2, 104, 50, 5, 104, 50, 45, 49, 54, 5, 104, 50, 45, 49, 53, 5, 104, 50, 45, 49, 52, 8, 115, 112, 100, 121, 47, 51, 46, 49, 6, 115, 112, 100, 121, 47, 51, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 11, 0, 2, 1, 0, 0, 10, 0, 10, 0, 8, 0, 29, 0, 23, 0, 24, 0, 25, 0, 21, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
 
       4: This packet is inserted
-Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
-Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582310255 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 13755 urgent 0
+
+
+Pkt #2582310255 is Vacant
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+flow and prev flow are the same
+
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
+
+ ************************************************ 
+      3: Packet match handshake!
+      
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 108, 3, 3, 123, 80, 231, 54, 142, 234, 178, 199, 23, 22, 163, 52, 107, 183, 225, 34, 150, 9, 214, 184, 242, 26, 131, 38, 68, 79, 87, 78, 71, 82, 68, 1, 32, 50, 168, 137, 170, 87, 124, 140, 75, 191, 53, 219, 243, 215, 215, 101, 223, 51, 18, 187, 252, 208, 174, 131, 148, 109, 92, 73, 153, 151, 139, 216, 218, 192, 47, 0, 0, 36, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 11, 0, 4, 3, 0, 1, 2, 0, 16, 0, 11, 0, 9, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 23, 0, 0])) }
+
+      4: This packet is inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582311679 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 1062 urgent 0
+
+Pkt #2582311679 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313103 ack 1251343644 data_offset 8 flags | ACK PSH |cwnd 29 csum 59711 urgent 0
+
+Pkt #2582313103 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Inserted
+
+
+TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343644 ack 2582313541 data_offset 8 flags | ACK PSH |cwnd 4096 csum 16926 urgent 0
+
+Pkt #1251343644 is Occupied!
+
+And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+flow and prev flow are the same
+
+Packet match handshake!
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 33, 32, 178, 39, 74, 244, 57, 247, 177, 8, 162, 87, 193, 169, 170, 26, 111, 218, 182, 95, 1, 226, 243, 154, 146, 231, 160, 110, 59, 135, 32, 27, 15, 54])) }
+Inserted
+
+
+TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313541 ack 1251343737 data_offset 8 flags | ACK PSH |cwnd 29 csum 33946 urgent 0
+
+Pkt #2582313541 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+flow and prev flow are the same
+
+Packet type is not matched!
 Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
 Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
 Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
@@ -112,68 +190,11 @@ Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, pr
 Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-
-
-TCP Headers: tcp src_port 443 dst_port 59295 seq 2582310255 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 13755 urgent 0
-
-
-Pkt #2582310255 is Vacant
-
-And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 108, 3, 3, 123, 80, 231, 54, 142, 234, 178, 199, 23, 22, 163, 52, 107, 183, 225, 34, 150, 9, 214, 184, 242, 26, 131, 38, 68, 79, 87, 78, 71, 82, 68, 1, 32, 50, 168, 137, 170, 87, 124, 140, 75, 191, 53, 219, 243, 215, 215, 101, 223, 51, 18, 187, 252, 208, 174, 131, 148, 109, 92, 73, 153, 151, 139, 216, 218, 192, 47, 0, 0, 36, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 11, 0, 4, 3, 0, 1, 2, 0, 16, 0, 11, 0, 9, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 23, 0, 0])) }
-
-      4: This packet is inserted
-
-
-TCP Headers: tcp src_port 443 dst_port 59295 seq 2582311679 ack 1251343644 data_offset 8 flags | ACK |cwnd 29 csum 1062 urgent 0
-
-Pkt #2582311679 is Occupied!
-
-And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-
-
-There is nothing, that is why we should insert the packet!!!
-
-Inserted
-
-
-TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313103 ack 1251343644 data_offset 8 flags | ACK PSH |cwnd 29 csum 59711 urgent 0
-
-Pkt #2582313103 is Occupied!
-
-And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-
-
-There is nothing, that is why we should insert the packet!!!
-
-Inserted
-
-
-TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343644 ack 2582313541 data_offset 8 flags | ACK PSH |cwnd 4096 csum 16926 urgent 0
-
-Pkt #1251343644 is Occupied!
-
-And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
-
-Packet match handshake!
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 33, 32, 178, 39, 74, 244, 57, 247, 177, 8, 162, 87, 193, 169, 170, 26, 111, 218, 182, 95, 1, 226, 243, 154, 146, 231, 160, 110, 59, 135, 32, 27, 15, 54])) }
-Inserted
-
-
-TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313541 ack 1251343737 data_offset 8 flags | ACK PSH |cwnd 29 csum 33946 urgent 0
-
-Pkt #2582313541 is Occupied!
-
-And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
-
-Packet type is not matched!
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343737 ack 2582313592 data_offset 8 flags | ACK PSH |cwnd 4096 csum 8323 urgent 0
@@ -181,6 +202,8 @@ TCP Headers: tcp src_port 59295 dst_port 443 seq 1251343737 ack 2582313592 data_
 Pkt #1251343737 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -190,6 +213,8 @@ TCP Headers: tcp src_port 443 dst_port 59295 seq 2582313592 ack 1251344173 data_
 Pkt #2582313592 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -199,6 +224,8 @@ TCP Headers: tcp src_port 59295 dst_port 443 seq 1251344173 ack 2582314636 data_
 Pkt #1251344173 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -209,6 +236,8 @@ TCP Headers: tcp src_port 59296 dst_port 443 seq 3700925885 ack 125373809 data_o
 Pkt #3700925885 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59295, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -227,6 +256,8 @@ TCP Headers: tcp src_port 443 dst_port 59296 seq 125373809 ack 3700926096 data_o
 Pkt #125373809 is Vacant
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -244,6 +275,8 @@ TCP Headers: tcp src_port 443 dst_port 59296 seq 125375233 ack 3700926096 data_o
 Pkt #125375233 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -256,6 +289,8 @@ TCP Headers: tcp src_port 443 dst_port 59296 seq 125376657 ack 3700926096 data_o
 Pkt #125376657 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -268,6 +303,8 @@ TCP Headers: tcp src_port 59296 dst_port 443 seq 3700926096 ack 125377080 data_o
 Pkt #3700926096 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet match handshake!
 Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 33, 32, 71, 245, 63, 102, 30, 246, 47, 62, 240, 203, 77, 117, 203, 219, 113, 131, 96, 145, 28, 252, 10, 133, 146, 45, 226, 234, 78, 237, 55, 200, 111, 26])) }
@@ -279,6 +316,8 @@ TCP Headers: tcp src_port 443 dst_port 59296 seq 125377080 ack 3700926189 data_o
 Pkt #125377080 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -288,6 +327,8 @@ TCP Headers: tcp src_port 59296 dst_port 443 seq 3700926189 ack 125377131 data_o
 Pkt #3700926189 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -297,6 +338,8 @@ TCP Headers: tcp src_port 443 dst_port 59295 seq 2582314636 ack 1251344599 data_
 Pkt #2582314636 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 3223256437, src_port: 443, dst_port: 59296, proto: 6 }
+flow and prev flow are the same
 
 Not writing all, available 952
 
@@ -309,6 +352,8 @@ TCP Headers: tcp src_port 59278 dst_port 443 seq 138534218 ack 109519589 data_of
 Pkt #138534218 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59295, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -320,6 +365,8 @@ TCP Headers: tcp src_port 59278 dst_port 443 seq 138534288 ack 109519589 data_of
 Pkt #138534288 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -330,6 +377,8 @@ TCP Headers: tcp src_port 443 dst_port 59278 seq 109519589 ack 138534334 data_of
 Pkt #109519589 is Vacant
 
 And the flow is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 387301801, src_port: 443, dst_port: 59278, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -341,6 +390,8 @@ TCP Headers: tcp src_port 443 dst_port 59278 seq 109520196 ack 138534334 data_of
 Pkt #109520196 is Occupied!
 
 And the flow is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -350,6 +401,8 @@ TCP Headers: tcp src_port 443 dst_port 59296 seq 125377131 ack 3700926614 data_o
 Pkt #125377131 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 387301801, dst_ip: 180932078, src_port: 59278, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -360,6 +413,8 @@ TCP Headers: tcp src_port 58871 dst_port 443 seq 438467374 ack 2961756620 data_o
 Pkt #438467374 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 886015115, src_port: 443, dst_port: 58871, proto: 6 }
+Previous one is: Flow { src_ip: 3223256437, dst_ip: 180932078, src_port: 59296, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -372,6 +427,8 @@ TCP Headers: tcp src_port 443 dst_port 58871 seq 2961756620 ack 438467433 data_o
 Pkt #2961756620 is Vacant
 
 And the flow is: Flow { src_ip: 886015115, dst_ip: 180932078, src_port: 58871, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 886015115, src_port: 443, dst_port: 58871, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -384,6 +441,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947335944 ack 2840429495 data_
 Pkt #2947335944 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 886015115, dst_ip: 180932078, src_port: 58871, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -395,6 +454,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336146 ack 2840429495 data_
 Pkt #2947336146 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -405,6 +466,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429495 ack 2947336185 data_
 Pkt #2840429495 is Vacant
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -416,6 +479,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336185 ack 2840429534 data_
 Pkt #2947336185 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -426,6 +491,8 @@ TCP Headers: tcp src_port 59297 dst_port 443 seq 3374521529 ack 3433449578 data_
 Pkt #3374521529 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -443,6 +510,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429534 ack 2947336249 data_
 Pkt #2840429534 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -452,6 +521,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429601 ack 2947336249 data_
 Pkt #2840429601 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -461,6 +532,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429632 ack 2947336249 data_
 Pkt #2840429632 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -470,40 +543,10 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336249 ack 2840429671 data_
 Pkt #2947336249 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
-Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
-Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59297 seq 3433449578 ack 3374522046 data_offset 8 flags | ACK |cwnd 240 csum 59517 urgent 0
@@ -512,6 +555,8 @@ TCP Headers: tcp src_port 443 dst_port 59297 seq 3433449578 ack 3374522046 data_
 Pkt #3433449578 is Vacant
 
 And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -529,6 +574,8 @@ TCP Headers: tcp src_port 443 dst_port 59297 seq 3433450996 ack 3374522046 data_
 Pkt #3433450996 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -541,6 +588,8 @@ TCP Headers: tcp src_port 59297 dst_port 443 seq 3374522046 ack 3433452053 data_
 Pkt #3374522046 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+Previous one is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -550,6 +599,8 @@ TCP Headers: tcp src_port 443 dst_port 59297 seq 3433452053 ack 3374522110 data_
 Pkt #3433452053 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905699, src_port: 443, dst_port: 59297, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -559,8 +610,42 @@ TCP Headers: tcp src_port 443 dst_port 59297 seq 3433452555 ack 3374522110 data_
 Pkt #3433452555 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429671 ack 2947336288 data_offset 8 flags | ACK PSH |cwnd 316 csum 59924 urgent 0
@@ -568,6 +653,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429671 ack 2947336288 data_
 Pkt #2840429671 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905699, dst_ip: 180932078, src_port: 59297, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -577,6 +664,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840429956 ack 2947336288 data_
 Pkt #2840429956 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -586,6 +675,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840431374 ack 2947336288 data_
 Pkt #2840431374 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 168
 
@@ -597,6 +688,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840432792 ack 2947336288 data_
 Pkt #2840432792 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -606,6 +699,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840434210 ack 2947336288 data_
 Pkt #2840434210 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -615,6 +710,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840435628 ack 2947336288 data_
 Pkt #2840435628 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -624,6 +721,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840437046 ack 2947336288 data_
 Pkt #2840437046 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -636,6 +735,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840438464 ack 2947336288 data_
 Pkt #2840438464 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -649,6 +750,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840439882 ack 2947336288 data_
 Pkt #2840439882 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -661,6 +764,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840441300 ack 2947336288 data_
 Pkt #2840441300 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -674,6 +779,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840442718 ack 2947336288 data_
 Pkt #2840442718 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -686,6 +793,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840444136 ack 2947336288 data_
 Pkt #2840444136 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -699,6 +808,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840445554 ack 2947336288 data_
 Pkt #2840445554 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -711,6 +822,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840446972 ack 2947336288 data_
 Pkt #2840446972 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -724,6 +837,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840448390 ack 2947336288 data_
 Pkt #2840448390 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -736,6 +851,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840449808 ack 2947336288 data_
 Pkt #2840449808 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -749,6 +866,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840451226 ack 2947336288 data_
 Pkt #2840451226 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -761,6 +880,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840452644 ack 2947336288 data_
 Pkt #2840452644 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -774,6 +895,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840454062 ack 2947336288 data_
 Pkt #2840454062 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -786,6 +909,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840455480 ack 2947336288 data_
 Pkt #2840455480 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -799,6 +924,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840456898 ack 2947336288 data_
 Pkt #2840456898 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -811,6 +938,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840458316 ack 2947336288 data_
 Pkt #2840458316 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -824,6 +953,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840459734 ack 2947336288 data_
 Pkt #2840459734 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -836,6 +967,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840461152 ack 2947336288 data_
 Pkt #2840461152 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -849,6 +982,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840462570 ack 2947336288 data_
 Pkt #2840462570 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -861,6 +996,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840463988 ack 2947336288 data_
 Pkt #2840463988 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -874,43 +1011,13 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840465406 ack 2947336288 data_
 Pkt #2840465406 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
 
 Resetting since receiving data that is too far ahead
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59282 seq 2840466824 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 16375 urgent 0
@@ -918,6 +1025,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840466824 ack 2947336288 data_
 Pkt #2840466824 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -931,6 +1040,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840468242 ack 2947336288 data_
 Pkt #2840468242 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -943,6 +1054,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840469660 ack 2947336288 data_
 Pkt #2840469660 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -956,6 +1069,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840471078 ack 2947336288 data_
 Pkt #2840471078 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -968,12 +1083,46 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840472496 ack 2947336288 data_
 Pkt #2840472496 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
 
 There is nothing, that is why we should insert the packet!!!
 
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59282 seq 2840473914 ack 2947336288 data_offset 8 flags | ACK |cwnd 316 csum 52809 urgent 0
@@ -981,6 +1130,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840473914 ack 2947336288 data_
 Pkt #2840473914 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -993,6 +1144,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840475332 ack 2947336288 data_
 Pkt #2840475332 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1006,6 +1159,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840476750 ack 2947336288 data_
 Pkt #2840476750 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1018,6 +1173,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840478168 ack 2947336288 data_
 Pkt #2840478168 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1031,6 +1188,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840479586 ack 2947336288 data_
 Pkt #2840479586 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1043,6 +1202,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840481004 ack 2947336288 data_
 Pkt #2840481004 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1054,6 +1215,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840482422 ack 2947336288 data_
 Pkt #2840482422 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1066,6 +1229,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840483840 ack 2947336288 data_
 Pkt #2840483840 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1079,6 +1244,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840485258 ack 2947336288 data_
 Pkt #2840485258 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1091,6 +1258,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840486676 ack 2947336288 data_
 Pkt #2840486676 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1104,6 +1273,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840488094 ack 2947336288 data_
 Pkt #2840488094 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1116,6 +1287,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840489512 ack 2947336288 data_
 Pkt #2840489512 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1129,6 +1302,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840490930 ack 2947336288 data_
 Pkt #2840490930 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1141,6 +1316,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840492348 ack 2947336288 data_
 Pkt #2840492348 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1154,6 +1331,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840493766 ack 2947336288 data_
 Pkt #2840493766 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1166,6 +1345,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840495184 ack 2947336288 data_
 Pkt #2840495184 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1179,6 +1360,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840496602 ack 2947336288 data_
 Pkt #2840496602 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1191,6 +1374,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840498020 ack 2947336288 data_
 Pkt #2840498020 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1204,6 +1389,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840499438 ack 2947336288 data_
 Pkt #2840499438 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1216,6 +1403,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840500856 ack 2947336288 data_
 Pkt #2840500856 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Not writing all, available 629
 
@@ -1229,6 +1418,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840502274 ack 2947336288 data_
 Pkt #2840502274 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1241,6 +1432,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840503692 ack 2947336288 data_
 Pkt #2840503692 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 
 There is nothing, that is why we should insert the packet!!!
@@ -1253,6 +1446,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336288 ack 2840504020 data_
 Pkt #2947336288 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1262,6 +1457,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336327 ack 2840504020 data_
 Pkt #2947336327 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1271,6 +1468,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336523 ack 2840504020 data_
 Pkt #2947336523 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1280,6 +1479,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336663 ack 2840504020 data_
 Pkt #2947336663 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1289,28 +1490,10 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504020 ack 2947336834 data_
 Pkt #2840504020 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
-Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
-Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
-Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
-Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504087 ack 2947336834 data_offset 8 flags | ACK PSH |cwnd 337 csum 56255 urgent 0
@@ -1318,6 +1501,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504087 ack 2947336834 data_
 Pkt #2840504087 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1327,6 +1512,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504118 ack 2947336834 data_
 Pkt #2840504118 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1336,6 +1523,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336834 ack 2840504157 data_
 Pkt #2947336834 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1345,6 +1534,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504157 ack 2947336834 data_
 Pkt #2840504157 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1354,8 +1545,25 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504224 ack 2947336834 data_
 Pkt #2840504224 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
 
 
 TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336873 ack 2840504255 data_offset 8 flags | ACK PSH |cwnd 7387 csum 32753 urgent 0
@@ -1363,6 +1571,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947336873 ack 2840504255 data_
 Pkt #2947336873 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1373,6 +1583,8 @@ TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099361 ack 4276830613 data_
 Pkt #1596099361 is Vacant
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -1384,6 +1596,8 @@ TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099517 ack 4276830613 data_
 Pkt #1596099517 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1393,6 +1607,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504255 ack 2947336873 data_
 Pkt #2840504255 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1402,6 +1618,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504462 ack 2947336873 data_
 Pkt #2840504462 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1411,6 +1629,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504958 ack 2947337203 data_
 Pkt #2840504958 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1420,6 +1640,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840504990 ack 2947337203 data_
 Pkt #2840504990 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1429,6 +1651,8 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840505021 ack 2947337203 data_
 Pkt #2840505021 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1438,6 +1662,8 @@ TCP Headers: tcp src_port 59282 dst_port 443 seq 2947337203 ack 2840505060 data_
 Pkt #2947337203 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+Previous one is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1448,6 +1674,8 @@ TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830613 ack 1596099556 data_
 Pkt #4276830613 is Vacant
 
 And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905028, src_port: 443, dst_port: 59282, proto: 6 }
+flow and prev flow are the same
 
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
@@ -1459,6 +1687,8 @@ TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830652 ack 1596099556 data_
 Pkt #4276830652 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1468,6 +1698,8 @@ TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830721 ack 1596099556 data_
 Pkt #4276830721 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1477,6 +1709,8 @@ TCP Headers: tcp src_port 443 dst_port 59287 seq 4276830752 ack 1596099556 data_
 Pkt #4276830752 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+current flow is a new flow, we should invoke the reassemble function for the previous flow
 
 Packet type is not matched!
 
@@ -1486,6 +1720,8 @@ TCP Headers: tcp src_port 59287 dst_port 443 seq 1596099556 ack 4276830791 data_
 Pkt #1596099556 is Occupied!
 
 And the flow is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+Previous one is: Flow { src_ip: 2899905282, dst_ip: 180932078, src_port: 59287, dst_port: 443, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 
@@ -1495,10 +1731,9 @@ TCP Headers: tcp src_port 443 dst_port 59282 seq 2840505060 ack 2947337242 data_
 Pkt #2840505060 is Occupied!
 
 And the flow is: Flow { src_ip: 2899905028, dst_ip: 180932078, src_port: 59282, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 180932078, dst_ip: 2899905282, src_port: 443, dst_port: 59287, proto: 6 }
+flow and prev flow are the same
 
 Packet type is not matched!
 15.01 OVERALL RX 7.93 TX 7.93
-30.01 OVERALL RX 0.00 TX 0.00
-30.01 OVERALL RX 0.00 TX 0.00
-30.01 OVERALL RX 0.00 TX 0.00
 30.01 OVERALL RX 0.00 TX 0.00
