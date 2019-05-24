@@ -12,7 +12,6 @@ libc = ">= 0.2.4"
 time = ">=0.1.0"
 getopts = "*"
 byteorder = "*"
-clippy = { version = "*", optional = true }
 fnv = "*"
 twox-hash = "*"
 regex = "*"
@@ -26,8 +25,9 @@ toml = "*"
 # Hack for SHM
 uuid= { version = "*", features=["v4"] }
 error-chain = "*"
-tokio-core=">=0.1.8"
-futures=">=0.1.14"
+# NOTE(jethros): we don't need tokio-core
+# tokio-core=">=0.1.8"
+# futures=">=0.1.14"
 
 [features]
 default = []
@@ -38,6 +38,7 @@ sctp = ["rust-sctp"]
 
 [build-dependencies]
 # Use Bindgen to generate DPDK structures.
-bindgen = "0.31.3"
+# NOTE(jethros): bumped bindgen version.
+bindgen = ">0.31.3"
 # fix lint
 clippy = { version = "*", optional = true }
