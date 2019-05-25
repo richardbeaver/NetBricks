@@ -9,17 +9,11 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
-// use rustls::internal::msgs::{
-//     codec::Codec, enums::ContentType, enums::ServerNameType, handshake::ClientHelloPayload,
-//     handshake::HandshakePayload, handshake::HasServerExtensions, handshake::ServerHelloPayload,
-//     handshake::ServerNamePayload, message::Message as TLSMessage, message::MessagePayload,
-// };
-
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
 const READ_SIZE: usize = 256;
 
-/// Read payload.
+/// Read payload into the payload cache.
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
     let mut read_buf = [0; READ_SIZE];
     let mut so_far = 0;
@@ -29,6 +23,11 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
         so_far += n;
         payload.extend(&read_buf[..n]);
     }
+}
+
+// FIXME: not correctly reading the payload into the packet
+fn assemble_pkt(flow: Flow) {
+    println!("\nExam the flow: {:?}\n", flow);
 }
 
 /// TLS validator:
@@ -46,7 +45,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // Create the payload cache
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
-    // Unfortunately we have to store the previous flow as a state here.
+    // Unfortunately we have to store the previous flow as a state here, and initialize it with a
+    // bogus flow.
     let mut prev_flow = Flow {
         src_ip: 0,
         dst_ip: 0,
@@ -74,10 +74,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .unwrap()
         .metadata(box move |p| {
             let flow = p.get_header().flow().unwrap();
-            println!("{:?}", flow);
             flow
         })
-        .parse::<TcpHeader>()
+    .parse::<TcpHeader>()
         .transform(box move |p| {
             let flow = p.read_metadata();
             let mut seq = p.get_header().seq_num();
@@ -91,10 +90,39 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     println!("\nPkt #{} is Occupied!", seq);
                     println!("\nAnd the flow is: {:?}", flow);
                     println!("Previous one is: {:?}", prev_flow);
-                    if *flow != prev_flow {
+                    if *flow == prev_flow {
                         println!("flow and prev flow are the same\n");
                     } else {
                         println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
+                        assemble_pkt(prev_flow);
+                        match payload_cache.entry(prev_flow) {
+                            Entry::Occupied(e) => {
+                                let (_, payload) = e.remove_entry();
+                                println!("Occupied, parsing payload \n");
+
+                                let tls_result = TLSMessage::read_bytes(&payload);
+                                match tls_result {
+                                    Some(packet) => {
+                                        // TODO: need to reassemble tcp segements
+                                        if packet.typ == ContentType::Handshake {
+                                            println!("TLS packet match handshake!");
+                                            println!("\n{:?}\n", packet);
+                                        } else {
+                                            println!("Packet type is not matched!")
+                                        }
+                                    }
+                                    None => {
+                                        // The rest of the TLS server hello handshake should be captured here.
+                                        println!("\nThere is nothing, that is why we should insert the packet!!!\n");
+
+                                    }
+                                }
+                        //e.remove_entry();
+                            }
+                            Entry::Vacant(_) => {
+                                println!("dumped an empty payload for Flow={:?}", flow);
+                            }
+                        }
                     }
 
                     //println!("\nEntry is {:?}", e);
@@ -167,12 +195,38 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     println!("\n\nPkt #{} is Vacant", seq);
                     println!("\nAnd the flow is: {:?}", flow);
                     println!("Previous one is: {:?}", prev_flow);
-                    if *flow != prev_flow {
+                    if *flow == prev_flow {
                         println!("flow and prev flow are the same\n");
                     } else {
                         println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
-                    }
+                        assemble_pkt(prev_flow);
+                        match payload_cache.entry(prev_flow) {
+                            Entry::Occupied(e) => {
+                                let (_, payload) = e.remove_entry();
+                                println!("Occupied, start parsing\n");
+                                let tls_result = TLSMessage::read_bytes(&payload);
+                                match tls_result {
+                                    Some(packet) => {
+                                        // TODO: need to reassemble tcp segements
+                                        if packet.typ == ContentType::Handshake {
+                                            println!("TLS packet match handshake!");
+                                            println!("\n{:?}\n", packet);
+                                        } else {
+                                            println!("Packet type is not matched!")
+                                        }
+                                    }
+                                    None => {
+                                        // The rest of the TLS server hello handshake should be captured here.
+                                        println!("\nThere is nothing, that is why we should insert the packet!!!\n");
 
+                                    }
+                                }
+                            }
+                            Entry::Vacant(_) => {
+                                println!("dumped an empty payload for Flow={:?}", flow);
+                            }
+                        }
+                    }
                     //println!("\nEntry is {:?}", e);
                     match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
@@ -224,6 +278,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             }
             prev_flow = *flow;
         })
-        .compose();
+    .compose();
     merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
 }
