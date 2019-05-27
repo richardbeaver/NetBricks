@@ -21,6 +21,10 @@ const READ_SIZE: usize = 256;
 
 /// Read payload into the payload cache.
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
+    println!(
+        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
+        to_read, flow,
+    );
     let mut read_buf = [0; READ_SIZE];
     let mut so_far = 0;
     while to_read > so_far {
