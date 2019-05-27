@@ -16,8 +16,8 @@ use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 2048;
-const READ_SIZE: usize = 256;
+const BUFFER_SIZE: usize = 16384; // 2048
+const READ_SIZE: usize = 1024; // 256
 
 /// Read payload into the payload cache.
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
@@ -32,6 +32,26 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
         let n = rb.read_data(&mut read_buf);
         so_far += n;
         payload.extend(&read_buf[..n]);
+        println!("\n{:?}\n", flow);
+        println!("\nAnd the entries of that flow are: {:?}\n", payload);
+    }
+}
+
+/// Dump the payload from the hashmap.
+fn dump_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
+    println!(
+        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
+        to_read, flow,
+    );
+    let mut read_buf = [0; READ_SIZE];
+    let mut so_far = 0;
+    while to_read > so_far {
+        let payload = payload_cache.entry(flow).or_insert(Vec::new());
+        let n = rb.read_data(&mut read_buf);
+        so_far += n;
+        payload.extend(&read_buf[..n]);
+        println!("\n{:?}\n", flow);
+        println!("\nAnd the entries of that flow are: {:?}\n", payload);
     }
 }
 
