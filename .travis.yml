@@ -9,6 +9,7 @@ matrix:
   include:
     - rust: nightly
 env:
+    - RUSTFLAGS=-D warnings
     - SYSTEM_CARGO=1
 before_install:
   - sudo apt-get update -qq

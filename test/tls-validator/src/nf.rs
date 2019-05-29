@@ -1,19 +1,15 @@
-use e2d2::headers::*;
-use e2d2::operators::*;
-use e2d2::scheduler::*;
-use e2d2::state::*;
+use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
+use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::scheduler::Scheduler;
+use e2d2::state::{InsertionResult, ReorderedBuffer};
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
-use rustls::internal::msgs::{
-    codec::Codec, enums::ContentType, enums::ServerNameType, handshake::ClientHelloPayload,
-    handshake::HandshakeMessagePayload as HSPayload, handshake::HandshakePayload, handshake::HasServerExtensions,
-    handshake::ServerHelloPayload, handshake::ServerNamePayload, message::Message as TLSMessage,
-    message::MessagePayload,
-};
-//use rustls::internal::msgs::{codec::Codec, enums::ContentType, message::Message as TLSMessage};
+use rustls::internal::msgs::{codec::Codec, enums::ContentType, message::Message as TLSMessage};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
+use std::io;
+//message::MessagePayload,enums::ServerNameType, handshake::ClientHelloPayload, handshake::HandshakeMessagePayload as HSPayload, handshake::HandshakePayload, handshake::HasServerExtensions,handshake::ServerHelloPayload, handshake::ServerNamePayload,
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 16384; // 2048
@@ -32,9 +28,10 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
         let n = rb.read_data(&mut read_buf);
         so_far += n;
         payload.extend(&read_buf[..n]);
-        eprintln!("\n{:?}\n", flow);
-        eprintln!("\nAnd the entries of that flow are: {:?}\n", payload);
+        //println!("\n{:?}\n", flow);
+        //println!("\nAnd the entries of that flow are: {:?}\n", payload);
     }
+    println!("size of the entry is: {}", so_far);
 }
 
 /// Dump the payload from the hashmap.
@@ -55,7 +52,7 @@ fn dump_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
 
 // FIXME: not correctly reading the payload into the packet
 fn assemble_pkt(flow: Flow) {
-    eprintln!("\nExam the flow: {:?}\n", flow);
+    println!("\nExam the flow: {:?}\n", flow);
 }
 
 /// TLS validator:
@@ -110,15 +107,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.read_metadata();
             let mut seq = p.get_header().seq_num();
             let tcph = p.get_header();
-            eprintln!("\n\nTCP Headers: {}", tcph);
+            println!("\n\nTCP Headers: {}", tcph);
             //let mut seg_len = p.get_header().seg_len();
             //println!("seg length is {}", seg_len);
             match rb_map.entry(*flow) {
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
-                    eprintln!("\nPkt #{} is Occupied!", seq);
-                    eprintln!("\nAnd the flow is: {:?}", flow);
-                    eprintln!("Previous one is: {:?}", prev_flow);
+                    println!("\nPkt #{} is Occupied!", seq);
+                    println!("\nAnd the flow is: {:?}", flow);
+                    println!("Previous one is: {:?}", prev_flow);
                                         //println!("\nEntry is {:?}", e);
                     // get entry
                     let b = e.get_mut();
@@ -128,19 +125,18 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                     match tls_result {
                         Some(packet) => {
-                            // TODO: need to reassemble tcp segements
                             //println!("Now the packet length is {:?}", packet.length());
                             if packet.typ == ContentType::Handshake {
-                                eprintln!("Packet match handshake!");
-                                eprintln!("{:?}", packet);
+                                println!("Packet match handshake!");
+                                println!("{:?}", packet);
                                 match result {
                                     InsertionResult::Inserted { available, .. } => {
-                                        eprintln!("Inserted");
+                                        println!("Inserted");
                                         read_payload(b, available, *flow, &mut payload_cache);
                                     }
                                     InsertionResult::OutOfMemory { written, .. } => {
                                         if written == 0 {
-                                            eprintln!("Resetting since receiving data that is too far ahead");
+                                            println!("Resetting since receiving data that is too far ahead");
                                             b.reset();
                                             b.seq(seq, p.get_payload());
                                         }
@@ -153,15 +149,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         // NOTE: #679 and #103 are matched and inserted here
                         None => {
                             // The rest of the TLS server hello handshake should be captured here.
-                            eprintln!("\nThere is nothing, that is why we should insert the packet!!!\n");
+                            println!("\nThere is nothing, that is why we should insert the packet!!!\n");
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
-                                    eprintln!("Quack: Inserted");
+                                    println!("Quack: Inserted");
                                     read_payload(b, available, *flow, &mut payload_cache);
                                 }
                                 InsertionResult::OutOfMemory { written, .. } => {
                                     if written == 0 {
-                                        eprintln!("Resetting since receiving data that is too far ahead");
+                                        println!("Resetting since receiving data that is too far ahead");
                                         b.reset();
                                         b.seq(seq, p.get_payload());
                                     }
@@ -169,6 +165,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             }
                         }
                     }
+
+                    // Analyze the flow
                     if p.get_header().rst_flag() {
                         println!("Packet has a reset flag--removing the entry");
                         e.remove_entry();
@@ -194,29 +192,37 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             Entry::Occupied(e) => {
                                 println!("Quack: occupied\n");
                                 let (_, payload) = e.remove_entry();
-                                eprintln!("{:?}", payload);
+                                println!("Displaying the payload\n\n");
                                 //println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
+                                println!("{:?}", payload);
 
-                                // TODO
-                                let tls_result = TLSMessage::read_bytes(&payload);
-                                match tls_result {
-                                    Some(packet) => {
-                                        eprintln!("Packet type is {:?}, and the version is {:?}", packet.typ, packet.version );
-                                        eprintln!("Packet payload is {:?}", packet.payload);
-                                    }
-                                    None => {
-                                        println!("\nThere is nothing!!!\n");
-                                    }
-                                }
-                                // let hs_result  = HSPayload::read_bytes(&payload);
-                                // match hs_result {
+                                // TODO: figure out why the read byte cannot read all the bytes
+                                // from the payload cache.
+                                println!("\n************************************************************\n");
+                                println!("\nTrying to display the payload via rustls...\n");
+                                println!("\n************************************************************\n");
+                                // // NOTE: Should be replaced with the following impl.
+                                // let tls_result = TLSMessage::read_bytes(&payload);
+                                // match tls_result {
                                 //     Some(packet) => {
-                                //         println!("Packet type is {:?}, len is {:?}", packet.typ, packet.length());
+                                //         println!("Packet type is {:?}, and the version is {:?}", packet.typ, packet.version );
+                                //         println!("Packet payload is {:?}", packet.payload);
                                 //     }
                                 //     None => {
                                 //         println!("\nThere is nothing!!!\n");
                                 //     }
                                 // }
+                                //
+                                let record = TLSMessage::read_bytes(&payload[..])
+                                    .and_then(|mut record| {
+                                        if record.decode_payload() {
+                                            Some(record)
+                                        } else {
+                                            None
+                                        }
+                                    })
+                                    .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unable to decode"));
+                                    println!("Record:\n{:?}", record);
                             }
                             Entry::Vacant(_) => {
                                 println!("dumped an empty payload for Flow={:?}", flow);
@@ -230,9 +236,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 }
                 // Vacant means that the entry for doesn't exist yet--we need to create one first
                 Entry::Vacant(e) => {
-                    eprintln!("\n\nPkt #{} is Vacant", seq);
-                    eprintln!("\nAnd the flow is: {:?}", flow);
-                    eprintln!("Previous one is: {:?}", prev_flow);
+                    println!("\n\nPkt #{} is Vacant", seq);
+                    println!("\nAnd the flow is: {:?}", flow);
+                    println!("Previous one is: {:?}", prev_flow);
                     if *flow == prev_flow {
                         println!("flow and prev flow are the same\n");
                     } else {
@@ -241,14 +247,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         match payload_cache.entry(prev_flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
-                                eprintln!("Occupied, start parsing\n");
+                                println!("Occupied, start parsing\n");
                                 let tls_result = TLSMessage::read_bytes(&payload);
                                 match tls_result {
                                     Some(packet) => {
-                                        // TODO: need to reassemble tcp segements
                                         if packet.typ == ContentType::Handshake {
                                             println!("TLS packet match handshake!");
-                                            eprintln!("\n{:?}\n", packet);
+                                            println!("\n{:?}\n", packet);
                                         } else {
                                             println!("Packet type is not matched!")
                                         }
@@ -268,12 +273,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     //println!("\nEntry is {:?}", e);
                     match ReorderedBuffer::new(BUFFER_SIZE) {
                         Ok(mut b) => {
-                            eprintln!("  1: Has allocated a new buffer:");
+                            println!("  1: Has allocated a new buffer:");
                             if p.get_header().syn_flag() {
-                                eprintln!("    2: packet has a syn flag");
+                                println!("    2: packet has a syn flag");
                                 seq += 1;
                             } else {
-                                eprintln!("    2: packet recv for untracked flow did not have a syn flag, skipped");
+                                println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
                             }
 
                             let tls_result = TLSMessage::read_bytes(&p.get_payload());
@@ -284,17 +289,17 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             match tls_result {
                                 Some(packet) => {
                                     if packet.typ == ContentType::Handshake {
-                                        eprintln!("\n ************************************************ ");
+                                        println!("\n ************************************************ ");
                                         println!("      3: Packet match handshake!");
                                         // match to insert packet into the cache
-                                        eprintln!("      \n{:?}\n", packet);
+                                        println!("      \n{:?}\n", packet);
                                         match result {
                                             InsertionResult::Inserted { available, .. } => {
                                                 read_payload(&mut b, available, *flow, &mut payload_cache);
-                                                eprintln!("      4: This packet is inserted, quack");
+                                                println!("      4: This packet is inserted, quack");
                                             }
                                             InsertionResult::OutOfMemory { .. } => {
-                                                eprintln!("      4: Too big a packet?");
+                                                println!("      4: Too big a packet?");
                                             }
                                         }
                                     } else {
