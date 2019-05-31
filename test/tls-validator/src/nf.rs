@@ -4,12 +4,17 @@ use e2d2::scheduler::Scheduler;
 use e2d2::state::{InsertionResult, ReorderedBuffer};
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
-use rustls::internal::msgs::{codec::Codec, enums::ContentType, message::Message as TLSMessage};
+use rustls::internal::msgs::{
+    codec::Codec,
+    enums::{ContentType, ServerNameType},
+    handshake::HandshakePayload::{ClientHello, ServerHello},
+    handshake::{ClientHelloPayload, HasServerExtensions, ServerHelloPayload, ServerNamePayload},
+    message::{Message as TLSMessage, MessagePayload},
+};
+use rustls::{CipherSuite, ProtocolVersion};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
-use std::io;
-//message::MessagePayload,enums::ServerNameType, handshake::ClientHelloPayload, handshake::HandshakeMessagePayload as HSPayload, handshake::HandshakePayload, handshake::HasServerExtensions,handshake::ServerHelloPayload, handshake::ServerNamePayload,
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 16384; // 2048
@@ -34,19 +39,193 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
     println!("size of the entry is: {}", so_far);
 }
 
-/// Dump the payload from the hashmap.
-fn dump_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
-    println!(
-        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
-        to_read, flow,
-    );
-    let mut read_buf = [0; READ_SIZE];
+/// Parse the bytes into tls frames.
+///
+///
+fn tls_to_message(buf: &[u8], offset: usize) {
+    println!("size of the buf is {}", &buf.len());
     let mut so_far = 0;
-    while to_read > so_far {
-        let payload = payload_cache.entry(flow).or_insert(Vec::new());
-        let n = rb.read_data(&mut read_buf);
-        so_far += n;
-        payload.extend(&read_buf[..n]);
+    let mut _version = ProtocolVersion::Unknown(0x0000);
+
+    /////////////////////////////////////////////
+    //
+    //  TLS FRAME One: ServerHello
+    //
+    /////////////////////////////////////////////
+
+    println!("\nHere goes the first frame\n");
+    let (handshake1, _version1) = {
+        let tls_frame1 = TLSMessage::read_bytes(&buf);
+
+        println!("\nBytes in tls frame one is \n{:x?}", tls_frame1);
+
+        match tls_frame1 {
+            Some(mut packet) => {
+                if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                    if let MessagePayload::Handshake(x) = packet.payload {
+                        (x, packet.version)
+                    } else {
+                        return ();
+                    }
+                } else {
+                    return ();
+                }
+            }
+            None => return (),
+        }
+    };
+
+    //let mut tags = tag_ip_and_ports(buf);
+    println!("\nversion {:?} and the payload size {}\n\n", &_version1, 0);
+
+    //use self::HandshakePayload::*;
+    match handshake1.payload {
+        ClientHello(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
+        ServerHello(payload) => println!("{:?}", payload), //parse_serverhello(payload, tags),
+        _ => println!("None"),
+    }
+
+    let test = 117;
+    let (tls_frame1, rest) = buf.split_at(test);
+    println!("\nAnd the magic number is {}\n", test);
+
+    println!("\nLet's get the raw bytes of the first TLS frame\n");
+    println!("{:x?}", tls_frame1);
+
+    println!("\nThe rest on the right is:\n",);
+    //println!("{:x?}", rest);
+
+    /////////////////////////////////////////////
+    //
+    //  TLS FRAME Two: Certificate
+    //
+    /////////////////////////////////////////////
+
+    println!("\nHere goes the second frame\n");
+    let (handshake2, _version2) = {
+        let tls_frame2 = TLSMessage::read_bytes(&rest);
+
+        println!("Bytes in the second tls frame is \n{:x?}", tls_frame2);
+
+        // FIXME
+        match tls_frame2 {
+            Some(mut packet) => {
+                println!("{:?}", packet.typ);
+                if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                    if let MessagePayload::Handshake(x) = packet.payload {
+                        (x, packet.version)
+                    } else {
+                        return ();
+                    }
+                } else {
+                    return ();
+                }
+            }
+            None => return (),
+        }
+    };
+
+    //let mut tags = tag_ip_and_ports(buf);
+    println!("\nversion {:?} and the payload size {}\n\n", &_version2, 0);
+
+    match handshake2.payload {
+        ClientHello(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
+        ServerHello(payload) => println!("{:?}", payload), //parse_serverhello(payload, tags),
+        _ => println!("None"),
+    }
+
+    let magic = 2855;
+    let (tls_frame2, rest) = rest.split_at(magic);
+    println!("\nAnd the magic number is {}\n", magic);
+
+    println!("\nLet's get the raw bytes of the second TLS frame\n");
+    println!("{:x?}", tls_frame2);
+
+    println!("\nThe rest on the right is:\n",);
+    //println!("{:x?}", rest);
+
+    /////////////////////////////////////////////
+    //
+    //  TLS FRAME Three: ServerKeyExchange
+    //
+    /////////////////////////////////////////////
+
+    println!("\nHere goes the third frame\n");
+    let (handshake3, _version3) = {
+        let tls_frame3 = TLSMessage::read_bytes(&rest);
+
+        println!("Bytes in the third tls frame is \n{:x?}", tls_frame3);
+
+        match tls_frame3 {
+            Some(mut packet) => {
+                if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                    if let MessagePayload::Handshake(x) = packet.payload {
+                        (x, packet.version)
+                    } else {
+                        return ();
+                    }
+                } else {
+                    return ();
+                }
+            }
+            None => return (),
+        }
+    };
+
+    println!("\nversion {:?} and the payload size {}\n\n", &_version3, 0);
+
+    match handshake3.payload {
+        ClientHello(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
+        ServerHello(payload) => println!("{:?}", payload), //parse_serverhello(payload, tags),
+        _ => println!("None"),
+    }
+
+    let magic = 305;
+    let (tls_frame3, rest) = rest.split_at(magic);
+    println!("\nAnd the magic number is {}\n", magic);
+
+    println!("\nLet's get the raw bytes of the third TLS frame\n");
+    println!("{:x?}", tls_frame3);
+
+    println!("\nThe rest on the right is:\n",);
+    //println!("{:x?}", rest);
+
+    /////////////////////////////////////////////
+    //
+    //  TLS FRAME Four: ServerHelloDone
+    //
+    /////////////////////////////////////////////
+
+    println!("\nHere goes the fourth frame\n");
+    let (handshake4, _version4) = {
+        let tls_frame4 = TLSMessage::read_bytes(&rest);
+
+        println!("{:?}", tls_frame4);
+
+        match tls_frame4 {
+            Some(mut packet) => {
+                if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                    if let MessagePayload::Handshake(x) = packet.payload {
+                        (x, packet.version)
+                    } else {
+                        return ();
+                    }
+                } else {
+                    return ();
+                }
+            }
+            None => return (),
+        }
+    };
+
+    //let mut tags = tag_ip_and_ports(buf);
+    println!("\nversion {:?} and the payload size {}\n\n", &_version, 0);
+
+    //use self::HandshakePayload::*;
+    match handshake4.payload {
+        ClientHello(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
+        ServerHello(payload) => println!("{:?}", payload), //parse_serverhello(payload, tags),
+        _ => println!("None"),
     }
 }
 
@@ -192,9 +371,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             Entry::Occupied(e) => {
                                 println!("Quack: occupied\n");
                                 let (_, payload) = e.remove_entry();
-                                println!("Displaying the payload\n\n");
+                                println!("Displaying the payload in raw bytes \n");
                                 //println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
-                                println!("{:?}", payload);
+                                println!("{:x?}", payload);
+                                println!("\nThe size of the value is {}", payload.len() );
+                                //println!("{:?}", payload.len());
 
                                 // TODO: figure out why the read byte cannot read all the bytes
                                 // from the payload cache.
@@ -212,17 +393,20 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 //         println!("\nThere is nothing!!!\n");
                                 //     }
                                 // }
+
+                                // let record = TLSMessage::read_bytes(&payload[..payload.len()])
+                                //     .and_then(|mut record| {
+                                //         if record.decode_payload() {
+                                //             Some(record)
+                                //         } else {
+                                //             None
+                                //         }
+                                //     })
+                                //     .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unable to decode"));
+                                // println!("Record:\n{:?}", record);
+
                                 //
-                                let record = TLSMessage::read_bytes(&payload[..])
-                                    .and_then(|mut record| {
-                                        if record.decode_payload() {
-                                            Some(record)
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                    .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Unable to decode"));
-                                    println!("Record:\n{:?}", record);
+                                tls_to_message(&payload, payload.len());
                             }
                             Entry::Vacant(_) => {
                                 println!("dumped an empty payload for Flow={:?}", flow);
