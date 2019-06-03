@@ -41,8 +41,9 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
 /// Parse the bytes into tls frames.
 ///
 ///
-fn tls_to_message(buf: &[u8]) {
-    println!("size of the buf is {}", &buf.len());
+fn parse_tls_frame(buf: &[u8]) {
+    // TLS Header length is 5.
+    let TLS_HDR_LEN = 5;
     let mut _version = ProtocolVersion::Unknown(0x0000);
 
     /////////////////////////////////////////////
@@ -51,13 +52,12 @@ fn tls_to_message(buf: &[u8]) {
     //
     /////////////////////////////////////////////
 
-    println!("\nHere goes the first frame\n");
-
     let (handshake1, _version1) = {
         match TLSMessage::read_bytes(&buf) {
             Some(mut packet) => {
                 println!("\nBytes in tls frame one is \n{:x?}", packet);
                 println!("\nlength of the packet payload is {}\n", packet.payload.length());
+
                 if packet.typ == ContentType::Handshake && packet.decode_payload() {
                     if let MessagePayload::Handshake(x) = packet.payload {
                         (x, packet.version)
@@ -87,6 +87,7 @@ fn tls_to_message(buf: &[u8]) {
     println!("\nAnd the magic number is {}\n", test);
 
     println!("\nLet's get the raw bytes of the first TLS frame\n");
+    println!("{}", tls_frame1.len());
     println!("{:x?}", tls_frame1);
 
     println!("\nThe rest on the right is:\n",);
@@ -216,10 +217,7 @@ fn tls_to_message(buf: &[u8]) {
     }
 }
 
-// FIXME: not correctly reading the payload into the packet
-fn assemble_pkt(flow: Flow) {
-    println!("\nExam the flow: {:?}\n", flow);
-}
+fn on_frame(rest: &[u8]) -> () {}
 
 /// TLS validator:
 ///
@@ -352,7 +350,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         println!("flow and prev flow are the same\n");
                     } else if *flow != prev_flow{
                         println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
-                        assemble_pkt(prev_flow);
                         // NOTE: we matched # 644 and exam our flow to extract certs
                         match payload_cache.entry(prev_flow) {
                             Entry::Occupied(e) => {
@@ -393,7 +390,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 // println!("Record:\n{:?}", record);
 
                                 //
-                                tls_to_message(&payload);
+                                parse_tls_frame(&payload);
                             }
                             Entry::Vacant(_) => {
                                 println!("dumped an empty payload for Flow={:?}", flow);
@@ -414,7 +411,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         println!("flow and prev flow are the same\n");
                     } else {
                         println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
-                        assemble_pkt(prev_flow);
                         match payload_cache.entry(prev_flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
