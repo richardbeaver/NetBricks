@@ -57,6 +57,7 @@ fn tls_to_message(buf: &[u8]) {
         match TLSMessage::read_bytes(&buf) {
             Some(mut packet) => {
                 println!("\nBytes in tls frame one is \n{:x?}", packet);
+                println!("\nlength of the packet payload is {}\n", packet.payload.length());
                 if packet.typ == ContentType::Handshake && packet.decode_payload() {
                     if let MessagePayload::Handshake(x) = packet.payload {
                         (x, packet.version)
@@ -102,6 +103,7 @@ fn tls_to_message(buf: &[u8]) {
         match TLSMessage::read_bytes(&rest) {
             Some(mut packet) => {
                 println!("Bytes in the second tls frame is \n{:x?}", packet);
+                println!("\nlength of the packet payload is {}\n", packet.payload.length());
                 println!("{:?}", packet.typ);
                 if packet.typ == ContentType::Handshake && packet.decode_payload() {
                     if let MessagePayload::Handshake(x) = packet.payload {
@@ -146,6 +148,7 @@ fn tls_to_message(buf: &[u8]) {
         match TLSMessage::read_bytes(&rest) {
             Some(mut packet) => {
                 println!("Bytes in the third tls frame is \n{:x?}", packet);
+                println!("\nlength of the packet payload is {}\n", packet.payload.length());
                 if packet.typ == ContentType::Handshake && packet.decode_payload() {
                     if let MessagePayload::Handshake(x) = packet.payload {
                         (x, packet.version)
@@ -188,6 +191,7 @@ fn tls_to_message(buf: &[u8]) {
         match TLSMessage::read_bytes(&rest) {
             Some(mut packet) => {
                 println!("Raw bytes are {:x?}", packet);
+                println!("\nlength of the packet payload is {}\n", packet.payload.length());
                 if packet.typ == ContentType::Handshake && packet.decode_payload() {
                     if let MessagePayload::Handshake(x) = packet.payload {
                         (x, packet.version)
