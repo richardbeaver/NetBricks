@@ -9,6 +9,8 @@ extern crate getopts;
 extern crate rand;
 extern crate rustls;
 extern crate time;
+extern crate webpki;
+extern crate webpki_roots;
 
 use self::nf::*;
 use e2d2::allocators::CacheAligned;

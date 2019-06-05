@@ -10,7 +10,9 @@ getopts = "*"
 rand = "0.6.0"
 fnv = "*"
 twox-hash = "*"
-rustls = "0.15.2"
+rustls = { git = "https://github.com/jethrosun/rustls", features = ["dangerous_configuration"] }
+webpki = "0.19"
+webpki-roots = "*"
 
 [features]
 default = []

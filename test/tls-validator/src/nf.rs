@@ -7,16 +7,18 @@ use fnv::FnvHasher;
 use rustls::internal::msgs::{
     codec::Codec,
     enums::ContentType,
-    handshake::HandshakePayload::{Certificate, ClientHello, ServerHello, ServerHelloDone, ServerKeyExchange},
+    handshake::HandshakePayload::{
+        Certificate as CertificatePayload, ClientHello, ServerHello, ServerHelloDone, ServerKeyExchange,
+    },
     message::{Message as TLSMessage, MessagePayload},
 };
-use rustls::ProtocolVersion;
+use rustls::{Certificate, ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
-//use std::io::Result;
-
-type Result<T> = std::result::Result<T, CertificateNotExtractedError>;
+use std::time::{Duration, Instant};
+use webpki;
+use webpki_roots;
 
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
@@ -27,6 +29,67 @@ struct CertificateNotExtractedError;
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 16384; // 2048
 const READ_SIZE: usize = 4096; // 256
+
+fn duration_nanos(d: Duration) -> u64 {
+    ((d.as_secs() as f64) * 1e9 + (d.subsec_nanos() as f64)) as u64
+}
+
+fn bench<Fsetup, Ftest, S>(count: usize, name: &'static str, f_setup: Fsetup, f_test: Ftest)
+where
+    Fsetup: Fn() -> S,
+    Ftest: Fn(S),
+{
+    let mut times = Vec::new();
+
+    for _ in 0..count {
+        let state = f_setup();
+        let start = Instant::now();
+        f_test(state);
+        times.push(duration_nanos(Instant::now().duration_since(start)));
+    }
+
+    println!("{}: min {:?}us", name, times.iter().min().unwrap() / 1000);
+}
+
+fn fixed_time() -> Result<webpki::Time, TLSError> {
+    Ok(webpki::Time::from_seconds_since_unix_epoch(1500000000))
+}
+
+static V: &'static WebPKIVerifier = &WebPKIVerifier { time: fixed_time };
+
+fn test_reddit_cert() {
+    let cert0 = Certificate(include_bytes!("testdata/cert-reddit.0.der").to_vec());
+    let cert1 = Certificate(include_bytes!("testdata/cert-reddit.1.der").to_vec());
+    let chain = [cert0, cert1];
+    println!("\nWhat is in the chain?\n{:?}", chain);
+    let mut anchors = RootCertStore::empty();
+    anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    bench(
+        100,
+        "verify_server_cert(reddit)",
+        || (),
+        |_| {
+            let dns_name = webpki::DNSNameRef::try_from_ascii_str("reddit.com").unwrap();
+            V.verify_server_cert(&anchors, &chain[..], dns_name, &[]).unwrap();
+        },
+    );
+}
+
+fn test_extracted_cert(certs: Vec<rustls::Certificate>) -> bool {
+    let mut anchors = RootCertStore::empty();
+    anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+    bench(
+        100,
+        "verify_server_cert(reddit)",
+        || (),
+        |_| {
+            let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+            V.verify_server_cert(&anchors, &certs[..], dns_name, &[]).unwrap();
+        },
+    );
+
+    true
+}
 
 /// Read payload into the payload cache.
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
@@ -48,7 +111,7 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
 }
 
 /// Parse the bytes into tls frames.
-fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>> {
+fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNotExtractedError> {
     // TLS Header length is 5.
     let tls_hdr_len = 5;
     let mut _version = ProtocolVersion::Unknown(0x0000);
@@ -84,7 +147,7 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>> {
     let (handshake2, offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
 
     let certs = match handshake2.payload {
-        Certificate(payload) => {
+        CertificatePayload(payload) => {
             println!("Certificate payload is\n{:?}", payload);
             Ok(payload)
         }
@@ -320,7 +383,23 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 if is_serverhello(&payload) {
                                     println!("DEBUG: entering");
                                     let certs  = parse_tls_frame(&payload);
-                                    println!("We now retrieve the certs from the tcp payload\n{:?}", certs);
+                                    println!("\nWe now retrieve the certs from the tcp payload\n{:?}\n", certs);
+
+                                    println!("\nTesting Reddit cert\n");
+                                    test_reddit_cert();
+
+                                    match certs {
+                                        Ok(chain) => {
+                                            println!("\nTesting our cert\n");
+                                            println!("chain: {:?}", chain);
+                                            test_extracted_cert(chain);
+                                        }
+                                        Err(e) => {
+                                            println!("error: {:?}", e)
+                                        }
+
+                                    }
+
                                 }
                                 else {
                                     println!("We are not getting anything");
