@@ -24,57 +24,19 @@ use webpki_roots;
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
 // implementation, or do something in between.
+// TODO: move to failure crate!!!
 #[derive(Debug, Clone)]
 struct CertificateNotExtractedError;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 16384; // 2048
-const READ_SIZE: usize = 4096; // 256
-
-fn duration_nanos(d: Duration) -> u64 {
-    ((d.as_secs() as f64) * 1e9 + (d.subsec_nanos() as f64)) as u64
-}
-
-fn bench<Fsetup, Ftest, S>(count: usize, name: &'static str, f_setup: Fsetup, f_test: Ftest)
-where
-    Fsetup: Fn() -> S,
-    Ftest: Fn(S),
-{
-    let mut times = Vec::new();
-
-    for _ in 0..count {
-        let state = f_setup();
-        let start = Instant::now();
-        f_test(state);
-        times.push(duration_nanos(Instant::now().duration_since(start)));
-    }
-
-    println!("{}: min {:?}us", name, times.iter().min().unwrap() / 1000);
-}
+const BUFFER_SIZE: usize = 2048; // 2048
+const READ_SIZE: usize = 256; // 256
 
 fn fixed_time() -> Result<webpki::Time, TLSError> {
     Ok(webpki::Time::from_seconds_since_unix_epoch(1500000000))
 }
 
 static V: &'static WebPKIVerifier = &WebPKIVerifier { time: fixed_time };
-
-fn test_reddit_cert() {
-    let cert0 = Certificate(include_bytes!("testdata/cert-reddit.0.der").to_vec());
-    let cert1 = Certificate(include_bytes!("testdata/cert-reddit.1.der").to_vec());
-    let chain = [cert0, cert1];
-    println!("\nWhat is in the chain?\n{:?}", chain);
-    let mut anchors = RootCertStore::empty();
-    anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-    bench(
-        100,
-        "verify_server_cert(reddit)",
-        || (),
-        |_| {
-            let dns_name = webpki::DNSNameRef::try_from_ascii_str("reddit.com").unwrap();
-            V.verify_server_cert(&anchors, &chain[..], dns_name, &[]).unwrap();
-        },
-    );
-}
 
 fn test_extracted_cert(certs: Vec<rustls::Certificate>) -> bool {
     let mut anchors = RootCertStore::empty();
