@@ -8,7 +8,8 @@ use rustls::internal::msgs::{
     codec::Codec,
     enums::ContentType,
     handshake::HandshakePayload::{
-        Certificate as CertificatePayload, ClientHello, ServerHello, ServerHelloDone, ServerKeyExchange,
+        Certificate as CertificatePayload, ClientHello, ClientKeyExchange, ServerHello, ServerHelloDone,
+        ServerKeyExchange,
     },
     message::{Message as TLSMessage, MessagePayload},
 };
@@ -78,17 +79,44 @@ fn test_reddit_cert() {
 fn test_extracted_cert(certs: Vec<rustls::Certificate>) -> bool {
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-    bench(
-        100,
-        "verify_server_cert(reddit)",
-        || (),
-        |_| {
-            let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-            V.verify_server_cert(&anchors, &certs[..], dns_name, &[]).unwrap();
-        },
-    );
+    let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+    let result = V.verify_server_cert(&anchors, &certs[..], dns_name, &[]);
+    match result {
+        Ok(_) => {
+            println!("It worked!!!");
+            return true;
+        }
+        Err(e) => {
+            println!("Oops, error: {}", e);
+            false
+        }
+    }
+}
 
-    true
+/// Read payload into the payload cache.
+fn empty_and_read_payload(
+    rb: &mut ReorderedBuffer,
+    to_read: usize,
+    flow: Flow,
+    payload_cache: &mut HashMap<Flow, Vec<u8>>,
+) {
+    println!("We first empty the value of  {:?}", flow);
+    let _ = payload_cache.remove_entry(&flow);
+    println!(
+        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
+        to_read, flow,
+    );
+    let mut read_buf = [0; READ_SIZE];
+    let mut so_far = 0;
+    while to_read > so_far {
+        let payload = payload_cache.entry(flow).or_insert(Vec::new());
+        let n = rb.read_data(&mut read_buf);
+        so_far += n;
+        payload.extend(&read_buf[..n]);
+        //println!("\n{:?}\n", flow);
+        //println!("\nAnd the entries of that flow are: {:?}\n", payload);
+    }
+    println!("size of the entry is: {}", so_far);
 }
 
 /// Read payload into the payload cache.
@@ -233,6 +261,25 @@ fn is_serverhello(buf: &[u8]) -> bool {
     }
 }
 
+fn is_changeclientspec(buf: &[u8]) -> bool {
+    if on_frame(&buf).is_none() {
+        return false;
+    } else {
+        let (handshake, _) = on_frame(&buf).unwrap();
+
+        match handshake.payload {
+            ClientKeyExchange(_) => {
+                println!("is Client Key Exchange",);
+                true
+            }
+            _ => {
+                println!("not Client Key Exchange",);
+                false
+            }
+        }
+    }
+}
+
 /// TLS validator:
 ///
 /// 1. identify TLS handshake messages.
@@ -305,12 +352,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         Some(packet) => {
                             //println!("Now the packet length is {:?}", packet.length());
                             if packet.typ == ContentType::Handshake {
-                                println!("Packet match handshake!");
+                                println!("\nWe have hit a flow but the current packet match handshake!");
+                                println!("Suppect to be starting a new TLS handshake, we should remove the hash value and start again");
                                 println!("{:?}", packet);
                                 match result {
                                     InsertionResult::Inserted { available, .. } => {
                                         println!("Inserted");
-                                        read_payload(b, available, *flow, &mut payload_cache);
+                                        empty_and_read_payload(b, available, *flow, &mut payload_cache);
                                     }
                                     InsertionResult::OutOfMemory { written, .. } => {
                                         if written == 0 {
@@ -383,16 +431,17 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 if is_serverhello(&payload) {
                                     println!("DEBUG: entering");
                                     let certs  = parse_tls_frame(&payload);
-                                    println!("\nWe now retrieve the certs from the tcp payload\n{:?}\n", certs);
+                                    println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
 
-                                    println!("\nTesting Reddit cert\n");
-                                    test_reddit_cert();
+                                    //println!("\nTesting Reddit cert\n");
+                                    //test_reddit_cert();
 
                                     match certs {
                                         Ok(chain) => {
                                             println!("\nTesting our cert\n");
                                             println!("chain: {:?}", chain);
-                                            test_extracted_cert(chain);
+                                            let result = test_extracted_cert(chain);
+                                            println!("Result of the cert validation is {}",result );
                                         }
                                         Err(e) => {
                                             println!("error: {:?}", e)
