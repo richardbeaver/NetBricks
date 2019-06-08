@@ -1,7 +1,7 @@
 Going to start with configuration Configuration: name:  =========== Running TLS Validator ============   mempool size: 2047 core cache: 32 primary core: 0
  Ports:
-	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 3 ] TXQ_Count: 1 TX_Queues: 3 RXD: 128 TXD: 128 Loopback false
 	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 2 ] TXQ_Count: 1 TX_Queues: 2 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 3 ] TXQ_Count: 1 TX_Queues: 3 RXD: 128 TXD: 128 Loopback false
 Cores:
 	2
 	3
@@ -10,30 +10,30 @@ Cores:
 
 EAL: Probing VFIO support...
 Running on node 0
-Devname: "0000:01:00.1"
-EAL: PCI device 0000:01:00.1 on NUMA socket -1
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
 EAL:   Invalid NUMA socket, default to 0
 EAL:   probe driver: 8086:1583 net_i40e
 Going to try and use port 0
-Devname: "0000:01:00.0"
-EAL: PCI device 0000:01:00.0 on NUMA socket -1
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
 EAL:   Invalid NUMA socket, default to 0
 EAL:   probe driver: 8086:1583 net_i40e
 Going to try and use port 1
 Running on node 0
 Running on node 0
-Running 0 pipelines
 Running on node 0
-Running on node 0
-Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
-Running 0 pipelines
 Receiving port f8:f2:1e:2e:9c:50 rxq 0 txq 0
-Starting scheduler on 5
+Running on node 0
+Running 0 pipelines
+Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
 Running 1 pipelines
+Running 0 pipelines
+Starting scheduler on 2
+Starting scheduler on 4
 Running 1 pipelines
 Starting scheduler on 3
-Starting scheduler on 4
-Starting scheduler on 2
+Starting scheduler on 5
 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
 
 
@@ -44,12 +44,6 @@ Pkt #1121057089 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 0, dst_ip: 0, src_port: 0, dst_port: 0, proto: 0 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100137584 ack 1121057090 data_offset 10 flags | ACK SYN |cwnd 28480 csum 20830 urgent 0
@@ -59,30 +53,15 @@ Pkt #100137584 is Vacant
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057090 ack 100137585 data_offset 8 flags | ACK |cwnd 229 csum 60922 urgent 0
 
-Pkt #1121057090 is Occupied!
+
+Pkt #1121057090 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057090 ack 100137585 data_offset 8 flags | ACK PSH |cwnd 229 csum 54607 urgent 0
@@ -92,8 +71,10 @@ Pkt #1121057090 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-flow and prev flow are the same
-
+is client hello
+Matching server name
+is client hello: ClientHelloPayload { client_version: TLSv1_2, random: Random([150, 43, 134, 173, 225, 98, 54, 0, 0, 4, 238, 3, 232, 150, 167, 238, 61, 82, 212, 11, 58, 34, 1, 160, 178, 0, 9, 171, 67, 235, 194, 89]), session_id: SessionID(97, 145, 85, 7, 144, 202, 204, 23, 26, 45, 64, 101, 39, 176, 107, 42, 214, 197, 33, 142, 8, 162, 186, 18, 247, 124, 109, 183, 95, 176, 2, 45), cipher_suites: [TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA256, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_EMPTY_RENEGOTIATION_INFO_SCSV], compression_methods: [Null], extensions: [ServerName([ServerName { typ: HostName, payload: HostName(DNSName("api.github.com")) }]), ECPointFormats([Uncompressed, ANSIX962CompressedPrime, ANSIX962CompressedChar2]), NamedGroups([X25519, secp256r1, secp521r1, secp384r1]), Unknown(UnknownExtension { typ: NextProtocolNegotiation, payload: Payload([]) }), Protocols([PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])]), Unknown(UnknownExtension { typ: Unknown(22), payload: Payload([]) }), ExtendedMasterSecretRequest, SignatureAlgorithms([RSA_PKCS1_SHA512, Unknown(1538), ECDSA_NISTP521_SHA512, RSA_PKCS1_SHA384, Unknown(1282), ECDSA_NISTP384_SHA384, RSA_PKCS1_SHA256, Unknown(1026), ECDSA_NISTP256_SHA256, Unknown(769), Unknown(770), Unknown(771), RSA_PKCS1_SHA1, Unknown(514), ECDSA_SHA1_Legacy])] }
+is client hello
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
 
@@ -112,50 +93,28 @@ size of the entry is: 246
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100137585 ack 1121057336 data_offset 8 flags | ACK |cwnd 29 csum 6539 urgent 0
 
-Pkt #100137585 is Occupied!
+
+Pkt #100137585 is Vacant
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+not client hello
+not client hello
+is server hello
+  1: Has allocated a new buffer:
+    2: packet recv for untracked flow did not have a syn flag, skipped
 
-We have hit a flow but the current packet match handshake!
-Suppect to be starting a new TLS handshake, we should remove the hash value and start again
+ ************************************************ 
+      3: Packet match handshake!
+      
 Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 108, 3, 3, 5, 17, 153, 38, 47, 90, 148, 13, 128, 158, 238, 14, 135, 231, 221, 125, 179, 60, 235, 4, 122, 222, 128, 29, 68, 79, 87, 78, 71, 82, 68, 1, 32, 134, 39, 220, 195, 186, 104, 187, 64, 147, 5, 175, 255, 215, 58, 182, 83, 241, 117, 96, 42, 129, 157, 120, 241, 176, 5, 243, 231, 244, 9, 62, 54, 192, 47, 0, 0, 36, 255, 1, 0, 1, 0, 0, 0, 0, 0, 0, 11, 0, 4, 3, 0, 1, 2, 0, 16, 0, 11, 0, 9, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 23, 0, 0])) }
-Inserted
-We first empty the value of  Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 reading size of 1348 payload into the flow entry 
 Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 } 
 into the payload cache (hashmap)
 
 size of the entry is: 1348
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 246
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 0, ed, 3, 3, 96, 2b, 86, ad, e1, 62, 36, 0, 0, 4, ee, 3, e8, 96, a7, ee, 3d, 52, d4, b, 3a, 22, 1, a0, b2, 0, 9, ab, 43, eb, c2, 59, 20, 61, 91, 55, 7, 90, ca, cc, 17, 1a, 2d, 40, 65, 27, b0, 6b, 2a, d6, c5, 21, 8e, 8, a2, ba, 12, f7, 7c, 6d, b7, 5f, b0, 2, 2d, 0, 38, c0, 2c, c0, 30, 0, 9f, cc, a9, cc, a8, cc, aa, c0, 2b, c0, 2f, 0, 9e, c0, 24, c0, 28, 0, 6b, c0, 23, c0, 27, 0, 67, c0, a, c0, 14, 0, 39, c0, 9, c0, 13, 0, 33, 0, 9d, 0, 9c, 0, 3d, 0, 3c, 0, 35, 0, 2f, 0, ff, 1, 0, 0, 6c, 0, 0, 0, 13, 0, 11, 0, 0, e, 61, 70, 69, 2e, 67, 69, 74, 68, 75, 62, 2e, 63, 6f, 6d, 0, b, 0, 4, 3, 0, 1, 2, 0, a, 0, a, 0, 8, 0, 1d, 0, 17, 0, 19, 0, 18, 33, 74, 0, 0, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31, 0, 16, 0, 0, 0, 17, 0, 0, 0, d, 0, 20, 0, 1e, 6, 1, 6, 2, 6, 3, 5, 1, 5, 2, 5, 3, 4, 1, 4, 2, 4, 3, 3, 1, 3, 2, 3, 3, 2, 1, 2, 2, 2, 3])) }
-
-length of the packet payload is 241
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 0, ed, 3, 3, 96, 2b, 86, ad, e1, 62, 36, 0, 0, 4, ee, 3, e8, 96, a7, ee, 3d, 52, d4, b, 3a, 22, 1, a0, b2, 0, 9, ab, 43, eb, c2, 59, 20, 61, 91, 55, 7, 90, ca, cc, 17, 1a, 2d, 40, 65, 27, b0, 6b, 2a, d6, c5, 21, 8e, 8, a2, ba, 12, f7, 7c, 6d, b7, 5f, b0, 2, 2d, 0, 38, c0, 2c, c0, 30, 0, 9f, cc, a9, cc, a8, cc, aa, c0, 2b, c0, 2f, 0, 9e, c0, 24, c0, 28, 0, 6b, c0, 23, c0, 27, 0, 67, c0, a, c0, 14, 0, 39, c0, 9, c0, 13, 0, 33, 0, 9d, 0, 9c, 0, 3d, 0, 3c, 0, 35, 0, 2f, 0, ff, 1, 0, 0, 6c, 0, 0, 0, 13, 0, 11, 0, 0, e, 61, 70, 69, 2e, 67, 69, 74, 68, 75, 62, 2e, 63, 6f, 6d, 0, b, 0, 4, 3, 0, 1, 2, 0, a, 0, a, 0, 8, 0, 1d, 0, 17, 0, 19, 0, 18, 33, 74, 0, 0, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31, 0, 16, 0, 0, 0, 17, 0, 0, 0, d, 0, 20, 0, 1e, 6, 1, 6, 2, 6, 3, 5, 1, 5, 2, 5, 3, 4, 1, 4, 2, 4, 3, 3, 1, 3, 2, 3, 3, 2, 1, 2, 2, 2, 3])) }
-
-length of the packet payload is 241
-
-not server hello
-We are not getting anything
+      4: This packet is inserted, quack
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057336 ack 100138933 data_offset 8 flags | ACK |cwnd 250 csum 59259 urgent 0
@@ -164,6 +123,8 @@ Pkt #1121057336 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
@@ -173,58 +134,47 @@ Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, p
 into the payload cache (hashmap)
 
 size of the entry is: 0
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 1348
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: Unknown(1), version: Unknown(bb03), payload: Opaque(Payload([2, 0, 0, 6c, 3, 3, 5, 11, 99, 26, 2f, 5a, 94, d, 80, 9e, ee, e, 87, e7, dd, 7d, b3, 3c, eb, 4, 7a, de, 80, 1d, 44, 4f, 57, 4e, 47, 52, 44, 1, 20, 86, 27, dc, c3, ba, 68, bb, 40, 93, 5, af, ff, d7, 3a, b6, 53, f1, 75, 60, 2a, 81, 9d, 78, f1, b0, 5, f3, e7, f4, 9, 3e, 36, c0, 2f, 0, 0, 24, ff, 1, 0, 1, 0, 0, 0, 0, 0, 0, b, 0, 4, 3, 0, 1, 2, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31, 0, 17, 0, 0])) }
-
-length of the packet payload is 112
-
-We are not getting anything
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100138933 ack 1121057336 data_offset 8 flags | ACK PSH |cwnd 29 csum 34164 urgent 0
 
-
-Pkt #100138933 is Vacant
+Pkt #100138933 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 
-dumped an empty payload for Flow=Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+
+There is nothing, that is why we should insert the packet!!!
+
+Quack: Inserted
+reading size of 1448 payload into the flow entry 
+Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 1448
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057336 ack 100140871 data_offset 8 flags | ACK |cwnd 280 csum 57290 urgent 0
 
-
-Pkt #1121057336 is Vacant
+Pkt #1121057336 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+
+There is nothing, that is why we should insert the packet!!!
+
+Quack: Inserted
+reading size of 0 payload into the flow entry 
+Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 0
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057336 ack 100140871 data_offset 8 flags | ACK PSH |cwnd 280 csum 14999 urgent 0
@@ -233,6 +183,8 @@ Pkt #1121057336 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 
 We have hit a flow but the current packet match handshake!
 Suppect to be starting a new TLS handshake, we should remove the hash value and start again
@@ -244,8 +196,23 @@ Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, p
 into the payload cache (hashmap)
 
 size of the entry is: 93
-flow and prev flow are the same
+is Client Key Exchange
 
+The current packet is a client key exchange, so let's evict the flow entry for Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
+Matching server name
+not client hello
+DEBUG: entering and then parsing the huge payload 
+ServerHelloPayload { legacy_version: TLSv1_2, random: Random([5, 17, 153, 38, 47, 90, 148, 13, 128, 158, 238, 14, 135, 231, 221, 125, 179, 60, 235, 4, 122, 222, 128, 29, 68, 79, 87, 78, 71, 82, 68, 1]), session_id: SessionID(134, 39, 220, 195, 186, 104, 187, 64, 147, 5, 175, 255, 215, 58, 182, 83, 241, 117, 96, 42, 129, 157, 120, 241, 176, 5, 243, 231, 244, 9, 62, 54), cipher_suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, compression_method: Null, extensions: [RenegotiationInfo(PayloadU8([])), ServerNameAck, ECPointFormats([Uncompressed, ANSIX962CompressedPrime, ANSIX962CompressedChar2]), Protocols([PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])]), ExtendedMasterSecretAck] }
+
+And the magic number is 117
+
+Get None, abort
+
+DEBUG: We now retrieve the certs from the tcp payload
+Err(CertificateNotExtractedError)
+
+error: CertificateNotExtractedError
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100140871 ack 1121057429 data_offset 8 flags | ACK PSH |cwnd 29 csum 15180 urgent 0
@@ -254,36 +221,10 @@ Pkt #100140871 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+
 Packet type is not matched!
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 93
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([10, 0, 0, 21, 20, 0, c3, 2f, 67, 17, 5f, 66, 5e, 4, fc, 9b, 37, ed, e0, 8d, 12, 72, cd, 1b, 12, 6e, 14, 38, 74, 5e, dc, 39, 76, f3, 76, 0, 44])) }
-
-length of the packet payload is 37
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([10, 0, 0, 21, 20, 0, c3, 2f, 67, 17, 5f, 66, 5e, 4, fc, 9b, 37, ed, e0, 8d, 12, 72, cd, 1b, 12, 6e, 14, 38, 74, 5e, dc, 39, 76, f3, 76, 0, 44])) }
-
-length of the packet payload is 37
-
-not server hello
-We are not getting anything
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057429 ack 100140922 data_offset 8 flags | ACK PSH |cwnd 280 csum 54583 urgent 0
@@ -292,38 +233,34 @@ Pkt #1121057429 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 Packet type is not matched!
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100140922 ack 1121057643 data_offset 8 flags | ACK PSH |cwnd 30 csum 7231 urgent 0
 
-
-Pkt #100140922 is Vacant
+Pkt #100140922 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 
-dumped an empty payload for Flow=Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
+Packet type is not matched!
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057643 ack 100141929 data_offset 8 flags | ACK PSH |cwnd 301 csum 65316 urgent 0
 
-
-Pkt #1121057643 is Vacant
+Pkt #1121057643 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
+Packet type is not matched!
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057674 ack 100141929 data_offset 8 flags | ACK FIN |cwnd 301 csum 55772 urgent 0
@@ -332,18 +269,18 @@ Pkt #1121057674 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
 Quack: Inserted
-reading size of 31 payload into the flow entry 
+reading size of 245 payload into the flow entry 
 Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 } 
 into the payload cache (hashmap)
 
-size of the entry is: 31
-Packet has a fin flag
-Occupied:  ���!����0v��{=Ę�V~��&����
-
+size of the entry is: 245
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100141929 ack 1121057674 data_offset 8 flags | ACK PSH |cwnd 30 csum 54650 urgent 0
@@ -352,38 +289,10 @@ Pkt #100141929 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+
 Packet type is not matched!
-dumped an empty payload for Flow=Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-
-
-TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057674 ack 0 data_offset 5 flags | RST |cwnd 0 csum 6147 urgent 0
-
-
-Pkt #1121057674 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
-
-
-TCP Headers: tcp src_port 443 dst_port 55818 seq 100141960 ack 1121057674 data_offset 8 flags | ACK FIN |cwnd 30 csum 56007 urgent 0
-
-
-Pkt #100141960 is Vacant
-
-And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057674 ack 0 data_offset 5 flags | RST |cwnd 0 csum 6147 urgent 0
@@ -392,6 +301,8 @@ Pkt #1121057674 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
@@ -401,7 +312,47 @@ Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, p
 into the payload cache (hashmap)
 
 size of the entry is: 6
-Packet has a reset flag--removing the entry
+Passing because is not Change Client Spec
+
+
+TCP Headers: tcp src_port 443 dst_port 55818 seq 100141960 ack 1121057674 data_offset 8 flags | ACK FIN |cwnd 30 csum 56007 urgent 0
+
+Pkt #100141960 is Occupied!
+
+And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Quack: Inserted
+reading size of 0 payload into the flow entry 
+Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 0
+Passing because is not Change Client Spec
+
+
+TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057674 ack 0 data_offset 5 flags | RST |cwnd 0 csum 6147 urgent 0
+
+Pkt #1121057674 is Occupied!
+
+And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
+
+
+There is nothing, that is why we should insert the packet!!!
+
+Quack: Inserted
+reading size of 0 payload into the flow entry 
+Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 0
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 55818 seq 100141961 ack 1121057675 data_offset 8 flags | ACK |cwnd 30 csum 56004 urgent 0
@@ -410,50 +361,38 @@ Pkt #100141961 is Occupied!
 
 And the flow is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
 Quack: Inserted
-reading size of 3 payload into the flow entry 
+reading size of 0 payload into the flow entry 
 Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 } 
 into the payload cache (hashmap)
 
-size of the entry is: 3
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 6
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-We are not getting anything
+size of the entry is: 0
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 55818 dst_port 443 seq 1121057675 ack 0 data_offset 5 flags | RST |cwnd 0 csum 6146 urgent 0
 
-
-Pkt #1121057675 is Vacant
+Pkt #1121057675 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
 Previous one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
+Reverse of the current one is: Flow { src_ip: 3223256436, dst_ip: 2886997012, src_port: 55818, dst_port: 443, proto: 6 }
 
 
 There is nothing, that is why we should insert the packet!!!
 
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+Quack: Inserted
+reading size of 1 payload into the flow entry 
+Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 1
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 60234 dst_port 80 seq 3858204992 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 61336 urgent 0
@@ -463,12 +402,6 @@ Pkt #3858204992 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 3223256436, src_port: 443, dst_port: 55818, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 80 dst_port 60234 seq 746321822 ack 3858204993 data_offset 10 flags | ACK SYN |cwnd 28960 csum 27782 urgent 0
@@ -478,30 +411,15 @@ Pkt #746321822 is Vacant
 
 And the flow is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 60234 dst_port 80 seq 3858204993 ack 746321823 data_offset 8 flags | ACK |cwnd 229 csum 2821 urgent 0
 
-Pkt #3858204993 is Occupied!
+
+Pkt #3858204993 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
 Previous one is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
 
 
 TCP Headers: tcp src_port 60234 dst_port 80 seq 3858204993 ack 746321823 data_offset 8 flags | ACK PSH |cwnd 229 csum 60171 urgent 0
@@ -511,29 +429,15 @@ Pkt #3858204993 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
 
 
 TCP Headers: tcp src_port 80 dst_port 60234 seq 746321823 ack 3858205289 data_offset 8 flags | ACK |cwnd 235 csum 2483 urgent 0
 
-Pkt #746321823 is Occupied!
+
+Pkt #746321823 is Vacant
 
 And the flow is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 2 payload into the flow entry 
-Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 2
-dumped an empty payload for Flow=Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
 
 
 TCP Headers: tcp src_port 80 dst_port 60234 seq 746321823 ack 3858205289 data_offset 8 flags | ACK PSH |cwnd 235 csum 63967 urgent 0
@@ -543,44 +447,15 @@ Pkt #746321823 is Vacant
 
 And the flow is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
 Previous one is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
 
 
 TCP Headers: tcp src_port 60234 dst_port 80 seq 3858205289 ack 746322207 data_offset 8 flags | ACK |cwnd 237 csum 2071 urgent 0
 
-Pkt #3858205289 is Occupied!
+
+Pkt #3858205289 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
 Previous one is: Flow { src_ip: 1749696920, dst_ip: 2886997012, src_port: 60234, dst_port: 80, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 296 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 296
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 2
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-We are not getting anything
 
 
 TCP Headers: tcp src_port 57264 dst_port 443 seq 1019734861 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 42373 urgent 0
@@ -590,16 +465,6 @@ Pkt #1019734861 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 1749696920, src_port: 80, dst_port: 60234, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-
-There is nothing, that is why we should insert the packet!!!
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 36144 dst_port 443 seq 511174884 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 46039 urgent 0
@@ -609,12 +474,6 @@ Pkt #511174884 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 443 dst_port 57264 seq 1006881697 ack 1019734862 data_offset 10 flags | ACK SYN |cwnd 26847 csum 63591 urgent 0
@@ -624,30 +483,15 @@ Pkt #1006881697 is Vacant
 
 And the flow is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 57264 dst_port 443 seq 1019734862 ack 1006881698 data_offset 8 flags | ACK |cwnd 229 csum 36424 urgent 0
 
-Pkt #1019734862 is Occupied!
+
+Pkt #1019734862 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
 Previous one is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
 
 
 TCP Headers: tcp src_port 443 dst_port 36144 seq 290467218 ack 511174885 data_offset 10 flags | ACK SYN |cwnd 28960 csum 52921 urgent 0
@@ -657,30 +501,15 @@ Pkt #290467218 is Vacant
 
 And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 36144 dst_port 443 seq 511174885 ack 290467219 data_offset 8 flags | ACK |cwnd 229 csum 27966 urgent 0
 
-Pkt #511174885 is Occupied!
+
+Pkt #511174885 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 
 
 TCP Headers: tcp src_port 57264 dst_port 443 seq 1019734862 ack 1006881698 data_offset 8 flags | ACK PSH |cwnd 229 csum 44963 urgent 0
@@ -690,9 +519,10 @@ Pkt #1019734862 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
+is client hello
+Matching server name
+is client hello: ClientHelloPayload { client_version: TLSv1_2, random: Random([78, 198, 115, 238, 156, 206, 218, 247, 55, 192, 167, 228, 241, 105, 46, 10, 114, 75, 104, 73, 15, 148, 167, 173, 131, 145, 89, 170, 136, 26, 144, 42]), session_id: SessionID(168, 110, 225, 207, 107, 57, 19, 10, 65, 1, 168, 140, 125, 230, 20, 30, 144, 219, 67, 140, 155, 47, 214, 131, 6, 151, 240, 154, 34, 60, 204, 246), cipher_suites: [TLS13_AES_128_GCM_SHA256, TLS13_CHACHA20_POLY1305_SHA256, TLS13_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_3DES_EDE_CBC_SHA], compression_methods: [Null], extensions: [ServerName([ServerName { typ: HostName, payload: HostName(DNSName("profile.accounts.firefox.com")) }]), ExtendedMasterSecretRequest, Unknown(UnknownExtension { typ: RenegotiationInfo, payload: Payload([0]) }), NamedGroups([X25519, secp256r1, secp384r1, secp521r1, FFDHE2048, FFDHE3072]), ECPointFormats([Uncompressed]), SessionTicketRequest, Protocols([PayloadU8([104, 50]), PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])]), CertificateStatusRequest(OCSP(OCSPCertificateStatusRequest { responder_ids: [], extensions: PayloadU16([]) })), KeyShare([KeyShareEntry { group: X25519, payload: PayloadU16([57, 133, 29, 58, 197, 85, 207, 55, 198, 43, 21, 116, 43, 62, 236, 246, 183, 201, 118, 115, 100, 213, 110, 43, 29, 34, 214, 12, 60, 37, 30, 85]) }, KeyShareEntry { group: secp256r1, payload: PayloadU16([4, 151, 170, 13, 76, 126, 32, 28, 148, 240, 58, 115, 147, 48, 35, 117, 49, 170, 36, 228, 155, 73, 122, 245, 187, 83, 31, 158, 57, 192, 148, 140, 193, 169, 209, 245, 154, 85, 19, 1, 237, 66, 225, 189, 193, 1, 91, 23, 24, 193, 81, 59, 105, 226, 255, 45, 145, 197, 203, 97, 178, 151, 255, 207, 61]) }]), SupportedVersions([TLSv1_3, TLSv1_2, TLSv1_1, TLSv1_0]), SignatureAlgorithms([ECDSA_NISTP256_SHA256, ECDSA_NISTP384_SHA384, ECDSA_NISTP521_SHA512, RSA_PSS_SHA256, RSA_PSS_SHA384, RSA_PSS_SHA512, RSA_PKCS1_SHA256, RSA_PKCS1_SHA384, RSA_PKCS1_SHA512, ECDSA_SHA1_Legacy, RSA_PKCS1_SHA1]), PresharedKeyModes([PSK_DHE_KE]), Unknown(UnknownExtension { typ: Unknown(28), payload: Payload([64, 1]) }), Unknown(UnknownExtension { typ: Padding, payload: Payload([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) })] }
+is client hello
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
 
@@ -716,14 +546,10 @@ Pkt #511174885 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 78, 198, 115, 238, 156, 206, 218, 247, 55, 192, 167, 228, 241, 105, 46, 10, 114, 75, 104, 73, 15, 148, 167, 173, 131, 145, 89, 170, 136, 26, 144, 42, 32, 168, 110, 225, 207, 107, 57, 19, 10, 65, 1, 168, 140, 125, 230, 20, 30, 144, 219, 67, 140, 155, 47, 214, 131, 6, 151, 240, 154, 34, 60, 204, 246, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 33, 0, 31, 0, 0, 28, 112, 114, 111, 102, 105, 108, 101, 46, 97, 99, 99, 111, 117, 110, 116, 115, 46, 102, 105, 114, 101, 102, 111, 120, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 57, 133, 29, 58, 197, 85, 207, 55, 198, 43, 21, 116, 43, 62, 236, 246, 183, 201, 118, 115, 100, 213, 110, 43, 29, 34, 214, 12, 60, 37, 30, 85, 0, 23, 0, 65, 4, 151, 170, 13, 76, 126, 32, 28, 148, 240, 58, 115, 147, 48, 35, 117, 49, 170, 36, 228, 155, 73, 122, 245, 187, 83, 31, 158, 57, 192, 148, 140, 193, 169, 209, 245, 154, 85, 19, 1, 237, 66, 225, 189, 193, 1, 91, 23, 24, 193, 81, 59, 105, 226, 255, 45, 145, 197, 203, 97, 178, 151, 255, 207, 61, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
+is client hello
+Matching server name
+is client hello: ClientHelloPayload { client_version: TLSv1_2, random: Random([180, 194, 199, 125, 254, 74, 20, 224, 231, 20, 23, 25, 59, 239, 87, 193, 144, 114, 16, 55, 82, 43, 113, 169, 36, 227, 192, 5, 240, 96, 250, 193]), session_id: SessionID(14, 208, 151, 20, 18, 92, 112, 80, 55, 75, 98, 123, 182, 165, 252, 189, 77, 191, 207, 6, 88, 131, 244, 157, 193, 164, 100, 105, 89, 185, 179, 116), cipher_suites: [TLS13_AES_128_GCM_SHA256, TLS13_CHACHA20_POLY1305_SHA256, TLS13_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_3DES_EDE_CBC_SHA], compression_methods: [Null], extensions: [ServerName([ServerName { typ: HostName, payload: HostName(DNSName("snippets.cdn.mozilla.net")) }]), ExtendedMasterSecretRequest, Unknown(UnknownExtension { typ: RenegotiationInfo, payload: Payload([0]) }), NamedGroups([X25519, secp256r1, secp384r1, secp521r1, FFDHE2048, FFDHE3072]), ECPointFormats([Uncompressed]), SessionTicketRequest, Protocols([PayloadU8([104, 50]), PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])]), CertificateStatusRequest(OCSP(OCSPCertificateStatusRequest { responder_ids: [], extensions: PayloadU16([]) })), KeyShare([KeyShareEntry { group: X25519, payload: PayloadU16([177, 32, 7, 168, 124, 90, 1, 57, 95, 99, 130, 154, 207, 245, 23, 127, 238, 177, 187, 133, 105, 212, 167, 40, 40, 238, 82, 204, 220, 249, 226, 87]) }, KeyShareEntry { group: secp256r1, payload: PayloadU16([4, 65, 84, 78, 49, 127, 238, 60, 138, 88, 44, 231, 91, 7, 156, 143, 141, 95, 47, 155, 5, 10, 234, 208, 101, 185, 171, 146, 94, 127, 36, 181, 87, 92, 10, 183, 35, 164, 131, 12, 13, 150, 110, 131, 253, 155, 157, 29, 160, 163, 79, 129, 166, 195, 80, 138, 162, 169, 153, 66, 127, 59, 189, 251, 205]) }]), SupportedVersions([TLSv1_3, TLSv1_2, TLSv1_1, TLSv1_0]), SignatureAlgorithms([ECDSA_NISTP256_SHA256, ECDSA_NISTP384_SHA384, ECDSA_NISTP521_SHA512, RSA_PSS_SHA256, RSA_PSS_SHA384, RSA_PSS_SHA512, RSA_PKCS1_SHA256, RSA_PKCS1_SHA384, RSA_PKCS1_SHA512, ECDSA_SHA1_Legacy, RSA_PKCS1_SHA1]), PresharedKeyModes([PSK_DHE_KE]), Unknown(UnknownExtension { typ: Unknown(28), payload: Payload([64, 1]) }), Unknown(UnknownExtension { typ: Padding, payload: Payload([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) })] }
+is client hello
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
 
@@ -742,48 +568,11 @@ size of the entry is: 517
 
 TCP Headers: tcp src_port 443 dst_port 36144 seq 290467219 ack 511175402 data_offset 8 flags | ACK |cwnd 118 csum 27555 urgent 0
 
-Pkt #290467219 is Occupied!
+
+Pkt #290467219 is Vacant
 
 And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 2 payload into the flow entry 
-Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 2
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 517
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, fc, 3, 3, b4, c2, c7, 7d, fe, 4a, 14, e0, e7, 14, 17, 19, 3b, ef, 57, c1, 90, 72, 10, 37, 52, 2b, 71, a9, 24, e3, c0, 5, f0, 60, fa, c1, 20, e, d0, 97, 14, 12, 5c, 70, 50, 37, 4b, 62, 7b, b6, a5, fc, bd, 4d, bf, cf, 6, 58, 83, f4, 9d, c1, a4, 64, 69, 59, b9, b3, 74, 0, 24, 13, 1, 13, 3, 13, 2, c0, 2b, c0, 2f, cc, a9, cc, a8, c0, 2c, c0, 30, c0, a, c0, 9, c0, 13, c0, 14, 0, 33, 0, 39, 0, 2f, 0, 35, 0, a, 1, 0, 1, 8f, 0, 0, 0, 1d, 0, 1b, 0, 0, 18, 73, 6e, 69, 70, 70, 65, 74, 73, 2e, 63, 64, 6e, 2e, 6d, 6f, 7a, 69, 6c, 6c, 61, 2e, 6e, 65, 74, 0, 17, 0, 0, ff, 1, 0, 1, 0, 0, a, 0, e, 0, c, 0, 1d, 0, 17, 0, 18, 0, 19, 1, 0, 1, 1, 0, b, 0, 2, 1, 0, 0, 23, 0, 0, 0, 10, 0, e, 0, c, 2, 68, 32, 8, 68, 74, 74, 70, 2f, 31, 2e, 31, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 33, 0, 6b, 0, 69, 0, 1d, 0, 20, b1, 20, 7, a8, 7c, 5a, 1, 39, 5f, 63, 82, 9a, cf, f5, 17, 7f, ee, b1, bb, 85, 69, d4, a7, 28, 28, ee, 52, cc, dc, f9, e2, 57, 0, 17, 0, 41, 4, 41, 54, 4e, 31, 7f, ee, 3c, 8a, 58, 2c, e7, 5b, 7, 9c, 8f, 8d, 5f, 2f, 9b, 5, a, ea, d0, 65, b9, ab, 92, 5e, 7f, 24, b5, 57, 5c, a, b7, 23, a4, 83, c, d, 96, 6e, 83, fd, 9b, 9d, 1d, a0, a3, 4f, 81, a6, c3, 50, 8a, a2, a9, 99, 42, 7f, 3b, bd, fb, cd, 0, 2b, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, d, 0, 18, 0, 16, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 2d, 0, 2, 1, 1, 0, 1c, 0, 2, 40, 1, 0, 15, 0, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-length of the packet payload is 512
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, fc, 3, 3, b4, c2, c7, 7d, fe, 4a, 14, e0, e7, 14, 17, 19, 3b, ef, 57, c1, 90, 72, 10, 37, 52, 2b, 71, a9, 24, e3, c0, 5, f0, 60, fa, c1, 20, e, d0, 97, 14, 12, 5c, 70, 50, 37, 4b, 62, 7b, b6, a5, fc, bd, 4d, bf, cf, 6, 58, 83, f4, 9d, c1, a4, 64, 69, 59, b9, b3, 74, 0, 24, 13, 1, 13, 3, 13, 2, c0, 2b, c0, 2f, cc, a9, cc, a8, c0, 2c, c0, 30, c0, a, c0, 9, c0, 13, c0, 14, 0, 33, 0, 39, 0, 2f, 0, 35, 0, a, 1, 0, 1, 8f, 0, 0, 0, 1d, 0, 1b, 0, 0, 18, 73, 6e, 69, 70, 70, 65, 74, 73, 2e, 63, 64, 6e, 2e, 6d, 6f, 7a, 69, 6c, 6c, 61, 2e, 6e, 65, 74, 0, 17, 0, 0, ff, 1, 0, 1, 0, 0, a, 0, e, 0, c, 0, 1d, 0, 17, 0, 18, 0, 19, 1, 0, 1, 1, 0, b, 0, 2, 1, 0, 0, 23, 0, 0, 0, 10, 0, e, 0, c, 2, 68, 32, 8, 68, 74, 74, 70, 2f, 31, 2e, 31, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 33, 0, 6b, 0, 69, 0, 1d, 0, 20, b1, 20, 7, a8, 7c, 5a, 1, 39, 5f, 63, 82, 9a, cf, f5, 17, 7f, ee, b1, bb, 85, 69, d4, a7, 28, 28, ee, 52, cc, dc, f9, e2, 57, 0, 17, 0, 41, 4, 41, 54, 4e, 31, 7f, ee, 3c, 8a, 58, 2c, e7, 5b, 7, 9c, 8f, 8d, 5f, 2f, 9b, 5, a, ea, d0, 65, b9, ab, 92, 5e, 7f, 24, b5, 57, 5c, a, b7, 23, a4, 83, c, d, 96, 6e, 83, fd, 9b, 9d, 1d, a0, a3, 4f, 81, a6, c3, 50, 8a, a2, a9, 99, 42, 7f, 3b, bd, fb, cd, 0, 2b, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, d, 0, 18, 0, 16, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 2d, 0, 2, 1, 1, 0, 1c, 0, 2, 40, 1, 0, 15, 0, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-length of the packet payload is 512
-
-not server hello
-We are not getting anything
 
 
 TCP Headers: tcp src_port 49378 dst_port 443 seq 612902753 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 18798 urgent 0
@@ -793,16 +582,6 @@ Pkt #612902753 is Vacant
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
 Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-
-There is nothing, that is why we should insert the packet!!!
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
 
 
 TCP Headers: tcp src_port 443 dst_port 36144 seq 290467219 ack 511175402 data_offset 8 flags | ACK |cwnd 118 csum 51641 urgent 0
@@ -812,9 +591,9 @@ Pkt #290467219 is Vacant
 
 And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+not client hello
+not client hello
+is server hello
   1: Has allocated a new buffer:
     2: packet recv for untracked flow did not have a syn flag, skipped
 
@@ -837,6 +616,8 @@ Pkt #511175402 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
@@ -846,51 +627,7 @@ Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, pr
 into the payload cache (hashmap)
 
 size of the entry is: 0
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 1348
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 50, 3, 3, 14, 90, 5, 6b, e, 6b, 6, f2, 5a, 43, 55, 89, 38, 94, a9, 77, a7, 5e, 88, 89, 1, ad, c9, bd, d7, be, 72, 27, b6, b3, 2c, de, 0, c0, 2f, 0, 0, 28, 0, 0, 0, 0, ff, 1, 0, 1, 0, 0, b, 0, 4, 3, 0, 1, 2, 0, 23, 0, 0, 0, 5, 0, 0, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31])) }
-
-length of the packet payload is 84
-
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 50, 3, 3, 14, 90, 5, 6b, e, 6b, 6, f2, 5a, 43, 55, 89, 38, 94, a9, 77, a7, 5e, 88, 89, 1, ad, c9, bd, d7, be, 72, 27, b6, b3, 2c, de, 0, c0, 2f, 0, 0, 28, 0, 0, 0, 0, ff, 1, 0, 1, 0, 0, b, 0, 4, 3, 0, 1, 2, 0, 23, 0, 0, 0, 5, 0, 0, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31])) }
-
-length of the packet payload is 84
-
-is server hello
-DEBUG: entering
-
-Bytes in tls frame one is 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([2, 0, 0, 50, 3, 3, 14, 90, 5, 6b, e, 6b, 6, f2, 5a, 43, 55, 89, 38, 94, a9, 77, a7, 5e, 88, 89, 1, ad, c9, bd, d7, be, 72, 27, b6, b3, 2c, de, 0, c0, 2f, 0, 0, 28, 0, 0, 0, 0, ff, 1, 0, 1, 0, 0, b, 0, 4, 3, 0, 1, 2, 0, 23, 0, 0, 0, 5, 0, 0, 0, 10, 0, b, 0, 9, 8, 68, 74, 74, 70, 2f, 31, 2e, 31])) }
-
-length of the packet payload is 84
-
-ServerHelloPayload { legacy_version: TLSv1_2, random: Random([20, 144, 5, 107, 14, 107, 6, 242, 90, 67, 85, 137, 56, 148, 169, 119, 167, 94, 136, 137, 1, 173, 201, 189, 215, 190, 114, 39, 182, 179, 44, 222]), session_id: SessionID, cipher_suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, compression_method: Null, extensions: [ServerNameAck, RenegotiationInfo(PayloadU8([])), ECPointFormats([Uncompressed, ANSIX962CompressedPrime, ANSIX962CompressedChar2]), SessionTicketAck, CertificateStatusAck, Protocols([PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])])] }
-
-And the magic number is 89
-
-Get None, abort
-
-DEBUG: We now retrieve the certs from the tcp payload
-Err(CertificateNotExtractedError)
-
-error: CertificateNotExtractedError
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 36144 seq 290468567 ack 511175402 data_offset 8 flags | ACK |cwnd 118 csum 3987 urgent 0
@@ -899,6 +636,8 @@ Pkt #290468567 is Occupied!
 
 And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
@@ -908,41 +647,47 @@ Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, pr
 into the payload cache (hashmap)
 
 size of the entry is: 1348
-dumped an empty payload for Flow=Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 36144 dst_port 443 seq 511175402 ack 290469915 data_offset 8 flags | ACK |cwnd 271 csum 24675 urgent 0
 
-
-Pkt #511175402 is Vacant
+Pkt #511175402 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
+Reverse of the current one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 
 
 There is nothing, that is why we should insert the packet!!!
 
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+Quack: Inserted
+reading size of 0 payload into the flow entry 
+Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 0
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 443 dst_port 36144 seq 290469915 ack 511175402 data_offset 8 flags | ACK PSH |cwnd 118 csum 10074 urgent 0
 
-
-Pkt #290469915 is Vacant
+Pkt #290469915 is Occupied!
 
 And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+Reverse of the current one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 
-dumped an empty payload for Flow=Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
+
+There is nothing, that is why we should insert the packet!!!
+
+Quack: Inserted
+reading size of 1448 payload into the flow entry 
+Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 } 
+into the payload cache (hashmap)
+
+size of the entry is: 1448
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 36144 dst_port 443 seq 511175402 ack 290471621 data_offset 8 flags | ACK |cwnd 297 csum 22942 urgent 0
@@ -951,6 +696,8 @@ Pkt #511175402 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+Reverse of the current one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
+
 
 There is nothing, that is why we should insert the packet!!!
 
@@ -960,760 +707,46 @@ Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, pr
 into the payload cache (hashmap)
 
 size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
+Passing because is not Change Client Spec
 
 
 TCP Headers: tcp src_port 36144 dst_port 443 seq 511175402 ack 290471621 data_offset 8 flags | ACK PSH |cwnd 297 csum 10763 urgent 0
 
-
-Pkt #511175402 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 66, 65, 4, 170, 41, 154, 125, 13, 220, 125, 135, 149, 145, 181, 49, 69, 89, 76, 154, 163, 93, 106, 127, 148, 70, 104, 16, 19, 98, 209, 143, 203, 184, 209, 239, 147, 90, 168, 48, 203, 41, 34, 234, 166, 139, 192, 1, 172, 224, 208, 187, 27, 188, 135, 239, 216, 88, 154, 94, 17, 39, 41, 2, 185, 208, 75, 33])) }
-
-reading size of 126 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 126
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511175528 ack 290471621 data_offset 8 flags | ACK PSH |cwnd 297 csum 11448 urgent 0
-
-Pkt #511175528 is Occupied!
+Pkt #511175402 is Occupied!
 
 And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Packet type is not matched!
-flow and prev flow are the same
+Reverse of the current one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 
-
-
-TCP Headers: tcp src_port 42288 dst_port 443 seq 1141508331 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 17969 urgent 0
-
-
-Pkt #1141508331 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 66, 65, 4, 170, 41, 154, 125, 13, 220, 125, 135, 149, 145, 181, 49, 69, 89, 76, 154, 163, 93, 106, 127, 148, 70, 104, 16, 19, 98, 209, 143, 203, 184, 209, 239, 147, 90, 168, 48, 203, 41, 34, 234, 166, 139, 192, 1, 172, 224, 208, 187, 27, 188, 135, 239, 216, 88, 154, 94, 17, 39, 41, 2, 185, 208, 75, 33])) }
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42290 dst_port 443 seq 595225538 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 1000 urgent 0
-
-
-Pkt #595225538 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42292 dst_port 443 seq 1226146031 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 51485 urgent 0
-
-
-Pkt #1226146031 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42294 dst_port 443 seq 1197078728 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 21246 urgent 0
-
-
-Pkt #1197078728 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 443 dst_port 36144 seq 290471621 ack 511175528 data_offset 8 flags | ACK PSH |cwnd 118 csum 7514 urgent 0
-
-Pkt #290471621 is Occupied!
-
-And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
 
 We have hit a flow but the current packet match handshake!
 Suppect to be starting a new TLS handshake, we should remove the hash value and start again
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([4, 0, 0, 182, 0, 0, 42, 48, 0, 176, 167, 101, 226, 208, 190, 136, 132, 8, 178, 183, 129, 39, 83, 17, 179, 175, 222, 167, 5, 44, 36, 19, 243, 77, 209, 253, 43, 141, 101, 175, 198, 147, 231, 220, 172, 47, 96, 36, 236, 189, 27, 176, 16, 224, 64, 127, 158, 53, 248, 91, 190, 93, 114, 221, 154, 81, 45, 91, 243, 85, 204, 4, 112, 62, 93, 114, 0, 26, 236, 189, 225, 43, 167, 50, 186, 158, 155, 39, 215, 220, 157, 113, 72, 233, 193, 141, 223, 36, 248, 17, 111, 16, 206, 97, 251, 146, 138, 120, 125, 242, 79, 67, 6, 29, 93, 167, 246, 217, 2, 207, 35, 41, 242, 34, 155, 251, 213, 52, 218, 112, 67, 66, 226, 233, 82, 66, 55, 211, 63, 176, 202, 211, 240, 110, 97, 210, 129, 102, 109, 125, 201, 235, 131, 222, 52, 122, 100, 203, 5, 95, 178, 158, 74, 182, 212, 73, 181, 234, 108, 105, 159, 224, 253, 41, 159, 134, 165, 230, 71, 112, 227, 207, 253, 231, 62, 74])) }
+Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 66, 65, 4, 170, 41, 154, 125, 13, 220, 125, 135, 149, 145, 181, 49, 69, 89, 76, 154, 163, 93, 106, 127, 148, 70, 104, 16, 19, 98, 209, 143, 203, 184, 209, 239, 147, 90, 168, 48, 203, 41, 34, 234, 166, 139, 192, 1, 172, 224, 208, 187, 27, 188, 135, 239, 216, 88, 154, 94, 17, 39, 41, 2, 185, 208, 75, 33])) }
 Inserted
-We first empty the value of  Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-reading size of 1448 payload into the flow entry 
-Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 1448
-dumped an empty payload for Flow=Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-
-
-TCP Headers: tcp src_port 443 dst_port 36144 seq 290471863 ack 511175956 data_offset 8 flags | ACK PSH |cwnd 122 csum 39374 urgent 0
-
-
-Pkt #290471863 is Vacant
-
-And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511175956 ack 290472713 data_offset 8 flags | ACK |cwnd 340 csum 21221 urgent 0
-
-Pkt #511175956 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 428 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 428
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 1448
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-We are not getting anything
-
-
-TCP Headers: tcp src_port 443 dst_port 36144 seq 290471621 ack 511175528 data_offset 8 flags | ACK |cwnd 118 csum 22987 urgent 0
-
-Pkt #290471621 is Occupied!
-
-And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 850 payload into the flow entry 
-Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 850
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 428
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-
-Bytes in tls frame one is 
-Message { typ: ApplicationData, version: TLSv1_2, payload: Opaque(Payload([0, 0, 0, 0, 0, 0, 0, 1, 21, 18, 12, 3b, 85, b5, f, 5c, 1b, 3a, ab, d5, a4, ee, 93, c7, 7c, 88, 1c, b7, a5, f0, 73, fa, a0, ea, 99, 83, 82, e2, ba, ae, 48, bb, 62, fd, 91, a6, 8b, e1, 26, 18, 85, 98, 5e, 22, 19, ec, 54, 66, 40, e1, 54, 9f, a2, f, 3, d2, c5, b9, 8f, da, 9b, bf, 3, 77, dd, 67, b, fb, 99, 28, a0, 6, 55, ba, 9b, a2, 42, 1, bc, a5, 1b, 3a, eb, b6, 44, 2e, 59, 2d, 61, 82, 14, c3, e6, a9, 41, b6, 7f, a6, 7f, dc, 6d, bd, aa, be, 36, b6, 33, de, 3a, dc, d4, e1, 94, 36, 0, 60, fc, 38, b5, 21, 9a, 7, f, c9, 79, 1a, 88, ab, 6c, 52, cf, 10, fe, 93, dc, f, 8a, 26, f6, 7b, 62, 3e, 85, 40, 5c, e3, 3e, 70, c6, 7, b8, fd, 7e, 49, 74, 60, db, e9, cc, 7b, bc, f7, 32, b1, 9, b5, dc, 22, 52, 15, 5b, 77, 70, 51, d1, da, 28, fe, 84, b7, 53, bf, cf, 59, dc, dc, 8c, b, 46, 2, 9f, 1a, e5, 60, 85, f1, b7, 1e, 1d, b0, 6f, 1e, 6a, 9e, 23, e8, 8d, 47, 8e, a2, 70, 6d, e9, 3, 4, 0, e9, ea, a8, 52, ee, e, 92, f5, fc, 92, 3b, 84, 17, 99, 94, 71, 68, 28, e1, c6, a2, 36, 81, df, f7, 47, f2, 6f, be, ed, af, ef, a9, cd, 31, 74, 86, f0, a5, 66, 84, 8a, c2, 28, 5d, 1f, 2c, c3, 16, 5e, 62, 64, 2a, 6d, b5, d8, 8a, 8a, 55, cc, 20, f9, 13, 1, 55, 44, 4d, 8e, 76, c0, 46, 9d, 61, f5, 99, c1, 45, 70, 88, 56, 32, 9a, 96, 62, f1, ef, 3e, 33, 65, 5, eb, 78, cb, af, d2, bf, b8, 15, 8, 47, 61, cf, ac, cd, e8, 43, b3, 70, 45, a8, c6, df, 4a, 82, 23, e4, 8c, d7, ec, 7a, f9, e8, c2, 1b, f4, 5b, b8, e2, dd, d0, 79, 32, 6d, 78, 43, 94, 6d, 4, 80, c9, 1b, c0, fd, d6, 3a, c9, 7, d8, bf, f3, b, 38, 9, f4, 8c, e3, 66, 4e, b3, 94, cd, 6b, 53, d9, f5, df, b8, 9c, c6, c4, 2d, 90, 4c, b4, ec, 10, a6, 26, 0, 63, 5c, a2, f7, 5e, 7e, c, c8, 0, 30, 85, 8d, 8a, 9c, 85, bf, e0, 97])) }
-
-length of the packet payload is 423
-
-We are not getting anything
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511175956 ack 290472713 data_offset 8 flags | ACK |cwnd 340 csum 21207 urgent 0
-
-
-Pkt #511175956 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-Packet type is not matched!
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
-
-
-TCP Headers: tcp src_port 443 dst_port 57264 seq 1006881698 ack 1019735379 data_offset 8 flags | ACK |cwnd 110 csum 35993 urgent 0
-
-Pkt #1006881698 is Occupied!
-
-And the flow is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 2 payload into the flow entry 
-Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 2
-dumped an empty payload for Flow=Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-
-
-TCP Headers: tcp src_port 443 dst_port 57264 seq 1006881698 ack 1019735379 data_offset 8 flags | ACK |cwnd 110 csum 35993 urgent 0
-
-
-Pkt #1006881698 is Vacant
-
-And the flow is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
-
-
-TCP Headers: tcp src_port 57264 dst_port 443 seq 1019735379 ack 1006884832 data_offset 8 flags | ACK |cwnd 278 csum 32567 urgent 0
-
-Pkt #1019735379 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-Previous one is: Flow { src_ip: 878292923, dst_ip: 2886997012, src_port: 57264, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-Quack: occupied
-
-Displaying the payload in raw bytes 
-
-
-The size of the value is 2
-
-************************************************************
-
-
-Trying to display the payload via rustls...
-
-
-************************************************************
-
-We are not getting anything
-
-
-TCP Headers: tcp src_port 57264 dst_port 443 seq 1019735379 ack 1006884832 data_offset 8 flags | ACK PSH |cwnd 278 csum 28263 urgent 0
-
-
-Pkt #1019735379 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 66, 65, 4, 215, 164, 142, 168, 53, 80, 64, 27, 61, 120, 171, 55, 202, 239, 144, 48, 15, 31, 88, 240, 1, 60, 15, 32, 123, 18, 139, 70, 3, 223, 12, 15, 214, 192, 41, 174, 197, 20, 207, 132, 137, 210, 77, 93, 142, 240, 134, 240, 190, 113, 134, 117, 131, 228, 206, 95, 151, 161, 169, 100, 0, 66, 2, 101])) }
-
+We first empty the value of  Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
 reading size of 126 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 } 
+Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
 into the payload cache (hashmap)
 
 size of the entry is: 126
-      4: This packet is inserted, quack
+is Client Key Exchange
 
+The current packet is a client key exchange, so let's evict the flow entry for Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
 
-TCP Headers: tcp src_port 443 dst_port 49378 seq 2371506108 ack 612902754 data_offset 10 flags | ACK SYN |cwnd 26847 csum 12215 urgent 0
+Matching server name
+not client hello
+DEBUG: entering and then parsing the huge payload 
+ServerHelloPayload { legacy_version: TLSv1_2, random: Random([20, 144, 5, 107, 14, 107, 6, 242, 90, 67, 85, 137, 56, 148, 169, 119, 167, 94, 136, 137, 1, 173, 201, 189, 215, 190, 114, 39, 182, 179, 44, 222]), session_id: SessionID, cipher_suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, compression_method: Null, extensions: [ServerNameAck, RenegotiationInfo(PayloadU8([])), ECPointFormats([Uncompressed, ANSIX962CompressedPrime, ANSIX962CompressedChar2]), SessionTicketAck, CertificateStatusAck, Protocols([PayloadU8([104, 116, 116, 112, 47, 49, 46, 49])])] }
 
+And the magic number is 89
 
-Pkt #2371506108 is Vacant
+Certificate payload is
+[Certificate(b"0\x82\x0560\x82\x04\x1e\xa0\x03\x02\x01\x02\x02\x10\x0c\xa9\xc6Ca\xbf\xc9*y\xb1\xdd\x9c\xfb\x9eH\xec0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\00M1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x150\x13\x06\x03U\x04\n\x13\x0cDigiCert Inc1'0%\x06\x03U\x04\x03\x13\x1eDigiCert SHA2 Secure Server CA0\x1e\x17\r161103000000Z\x17\r200201120000Z0t1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x130\x11\x06\x03U\x04\x08\x13\nCalifornia1\x160\x14\x06\x03U\x04\x07\x13\rMountain View1\x1c0\x1a\x06\x03U\x04\n\x13\x13Mozilla Corporation1\x1a0\x18\x06\x03U\x04\x03\x0c\x11*.cdn.mozilla.net0\x82\x01\"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\0\x03\x82\x01\x0f\00\x82\x01\n\x02\x82\x01\x01\0\xcd!Mx^zpA[\xa7\x02\x133U/\xa5\xc1\x1cc\xe4\xaf5\x1c\xfbR>\x9d\xf0/\x96q\xfe\x1c\x917\xf1\x85\xe3\x91\xf6xaA)\xfb\xd4\x11\xfe\xe3\x8a\xce\xad\x9b\xf2<H\xdf\xfbh\xde8\xa7@\x1e\xad\x1ew\xa706R\xdf\r\n:ql\xcb\x89\x17\xa5\xefcl\xaf\xfe\x0f\xed\xbbvY\x8c\x12\n\x9f\xf2 G\xf3\xb2w\x81R9\xdaC\x8ce\x0c\xf1mvE&\x9e\x89\x05\x07\x0bP\xee1\x82\xb0\x9c\xfa.\x0e(\xf3\xa1\xd3\x17<6\xbb;\xddlj\x15\xbc\xee\xde\xa5*t\xbb\x13\xd0\xa05\xd9.\xe6\\EL\xe7\xb8\xf3B\x1c\xf7'~rRMe\x9e\x9d6\xd9\xf0a\xfa\xcaj\xacre\02\x04=\x126\xc98Y\xea^\x94?\x95\x06\x88\xc3\x8c\xdd\xccs\xba\xcc\xc0\x1e\xbbL9\xea\xd4\xc6\"@\x8f\xe5\r\xff!\xf5L\xe9\xb5\xedb\x1f\xf3\xd0\xc5})1\xf2\xf1C\xb6\xdc\x8f\x1e\xcb\xa0\xbe\x9b!\xdd\xcd\xf7v\xbf\xdb\xeb\x03\xdd\x1aK\x02\x03\x01\0\x01\xa3\x82\x01\xe90\x82\x01\xe50\x1f\x06\x03U\x1d#\x04\x180\x16\x80\x14\x0f\x80a\x1c\x821a\xd5/(\xe7\x8dF8\xb4,\xe1\xc6\xd9\xe20\x1d\x06\x03U\x1d\x0e\x04\x16\x04\x143\xc0\x98\xd2sP43;\xffw9)\xcc@f\x94\nt=0-\x06\x03U\x1d\x11\x04&0$\x82\x11*.cdn.mozilla.net\x82\x0fcdn.mozilla.net0\x0e\x06\x03U\x1d\x0f\x01\x01\xff\x04\x04\x03\x02\x05\xa00\x1d\x06\x03U\x1d%\x04\x160\x14\x06\x08+\x06\x01\x05\x05\x07\x03\x01\x06\x08+\x06\x01\x05\x05\x07\x03\x020k\x06\x03U\x1d\x1f\x04d0b0/\xa0-\xa0+\x86)http://crl3.digicert.com/ssca-sha2-g5.crl0/\xa0-\xa0+\x86)http://crl4.digicert.com/ssca-sha2-g5.crl0L\x06\x03U\x1d \x04E0C07\x06\t`\x86H\x01\x86\xfdl\x01\x010*0(\x06\x08+\x06\x01\x05\x05\x07\x02\x01\x16\x1chttps://www.digicert.com/CPS0\x08\x06\x06g\x81\x0c\x01\x02\x020|\x06\x08+\x06\x01\x05\x05\x07\x01\x01\x04p0n0$\x06\x08+\x06\x01\x05\x05\x070\x01\x86\x18http://ocsp.digicert.com0F\x06\x08+\x06\x01\x05\x05\x070\x02\x86:http://cacerts.digicert.com/DigiCertSHA2SecureServerCA.crt0\x0c\x06\x03U\x1d\x13\x01\x01\xff\x04\x020\00\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\0\x03\x82\x01\x01\0\x8eS\xb9\xc7\x8cI\xbd$\xb8eMBd\xd4\xb1Q\xf4\x04\x15Uu\x87U\xa2\xf8\xca\xb9D\xcbkCv\xcdo\xb3l\xf76um]x9\x06\x01\xfc\xb8;-)`$\xf4\x86\xc0\x81X\x08X,\02\xa3\xb6+(\xd7\xa8\x85=$\xc5p\xf7\x03T5\x8e\x9d\xc8\x8d\xd8\r`}7\t}`\x0c\xf7\x97\x14\xda\xa0\x93\xd2\xa8}\xf8\xcf\xd6'\x86\x9c\xedF\x86|\x9bF~\x89\x90/x\xd8\xc2\xd8\xd3\x10l\xf2\x0b\xff\xe3\xbc\xd6DJ\xb9`\x03\\!QI\xea4]\x8b\x07\x9e\x0b\x81N\xeeM\x96\x08\xba_\xaa5\xea\xef\xc1k\xbaH\xd6\x01M\xdaB\xd7~Dn\x80\xc1\xab\"\x93U\x8d\xf0'\xfd\xd7\x11\xe6\x97J\xa5q>+0\xaa\xb7y\xf1F\x17\xc4];\xe4\x19\xac\xd2\x04\x9a\x19.[\xfb\xb7\xbc\xa4y\xfc\xee\xadz@[B=\xb1\x84\x99\xb4rJ\xdc\xccY7\x1b\xe2g4\x0e\x10J,\xab\xb4>\xd9\xac\x9bb\xb3\xeaI\xf0TV\x9dvt_\xab"), Certificate(b"0\x82\x04\x940\x82\x03|\xa0\x03\x02\x01\x02\x02\x10\x01\xfd\xa3\xebn\xcau\xc8\x88C\x8brK\xcf\xbc\x910\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\00a1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x150\x13\x06\x03U\x04\n\x13\x0cDigiCert Inc1\x190\x17\x06\x03U\x04\x0b\x13\x10www.digicert.com1 0\x1e\x06\x03U\x04\x03\x13\x17DigiCert Global Root CA0\x1e\x17\r130308120000Z\x17\r230308120000Z0M1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x150\x13\x06\x03U\x04\n\x13\x0cDigiCert Inc1'0%\x06\x03U\x04\x03\x13\x1eDigiCert SHA2 Secure Server CA0\x82\x01\"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\0\x03\x82\x01\x0f\00\x82\x01\n\x02\x82\x01\x01\0\xdc\xaeX\x90M\xc1\xc40\x15\x905[n<\x82\x15\xf5,\\\xbd\xe3\xdb\xffqC\xfad%\x80\xd4\xee\x18\xa2M\xf0f\xd0\nsn\x11\x986\x17d\xaf7\x9d\xfd\xfaA\x84\xaf\xc7\xaf\x8c\xfe\x1asM\xcf3\x97\x90\xa2\x96\x87S\x83+\xb9\xa6uH-\x1dV7{\xda12\x1a\xd7\xac\xab\x06\xf4\xaa]K\xb7GF\xdd*\x93\xc3\x90.y\x80\x80\xef\x13\x04j\x14;\xb5\x9b\x92\xbe\xc2\x07eN\xfc\xda\xfc\xffz\xae\xdc\\~U1\x0c\xe89\x07\xa4\xd7\xbe/\xd3\x0bj\xd2\xb1\xdf_\xfeWtS;5\x80\xdd\xae\x8eD\x98\xb3\x9f\x0e\xd3\xda\xe0\xd7\xf4k)\xabD\xa7KX\x84m\x92K\x81\xc3\xdas\x8b\x12\x97H\x90\x04Eu\x1a\xdd71\x97\x92\xe8\xcdT\r;\xe4\xc1?9^.\xb8\xf3\\~\x10\x8e\x86A\0\x8dEfG\xb0\xa1e\xce\xa0\xaa)\tN\xf3\x97\xeb\xe8.\xab\x0fr\xa70\x0e\xfa\xc7\xf4\xfd\x14w\xc3\xa4[(W\xc2\xb3\xf9\x82\xfd\xb7EX\x9b\x02\x03\x01\0\x01\xa3\x82\x01Z0\x82\x01V0\x12\x06\x03U\x1d\x13\x01\x01\xff\x04\x080\x06\x01\x01\xff\x02\x01\00\x0e\x06\x03U\x1d\x0f\x01\x01\xff\x04\x04\x03\x02\x01\x8604\x06\x08+\x06\x01\x05\x05\x07\x01\x01\x04(0&0$\x06\x08+\x06\x01\x05\x05\x070\x01\x86\x18http://ocsp.digicert.com0{\x06\x03U\x1d\x1f\x04t0r07\xa05\xa03\x861http://crl3.digicert.com/DigiCertGlobalRootCA.crl07\xa05\xa03\x861http://crl4.digicert.com/DigiCertGlobalRootCA.crl0=\x06\x03U\x1d \x0460402\x06\x04U\x1d \00*0(\x06\x08+\x06\x01\x05\x05\x07\x02\x01\x16\x1chttps://www.digicert.com/CPS0\x1d\x06\x03U\x1d\x0e\x04\x16\x04\x14\x0f\x80a\x1c\x821a\xd5/(\xe7\x8dF8\xb4,\xe1\xc6\xd9\xe20\x1f\x06\x03U\x1d#\x04\x180\x16\x80\x14\x03\xdeP5V\xd1L\xbbf\xf0\xa3\xe2\x1b\x1b\xc3\x97\xb2=\xd1U0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x0b\x05\0\x03\x82\x01\x01\0#>\xdfK\xd21B\xa5\xb6~B\\\x1aD\xcci\xd1h\xb4]K\xe0\x04!lK\xe2m\xcc\xb1\xe0\x97\x8f\xa6S\t\xcd\xaa*e\xe59O\x1e\x83\xa5n\\\x98\xa2$&\xe6\xfb\xa1\xed\x93\xc7.\x02\xc6MJ\xbf\xb0B\xdfx\xda\xb3\xa8\xf9m\xff!\x85S6`Lv\xce\xec8\xdc\xd6Q\x80\xf0\xc5\xd6\xe5\xd4M'd\xab\x9b\xc7>q\xfbH\x97\xb83m\xc9\x13\x07\xee\x96\xa2\x1b\x18\x15\xf6\\L@\xed\xb3\xc2\xec\xffq\xc1\xe3G\xff\xd4\xb9\0\xb47B\xda \xc9\xean\x8a\xee\x14\x06\xae}\xa2Y\x98\x88\xa8\x1bo-\xf4\xf2\xc9\x14_&\xcf,\x8d~\xed7\xc0\xa9\xd59\xb9\x82\xbf\x19\x0c\xea4\xaf\0!h\xf8\xads\xe2\xc92\xda8%\x0bU\xd3\x9a\x1d\xf0h\x86\xed.A4\xef|\xa5P\x1d\xbf:\xf9\xd3\xc1\x08\x0c\xe6\xed\x1e\x8aX%\xe4\xb8w\xad-n\xf5R\xdd\xb4t\x8f\xabI.\x9d;\x934(\x1fx\xce\x94\xea\xc7\xbd\xd3\xc9m\x1c\xde\\2\xf3"), Certificate(b"0\x82\x03\xaf0\x82\x02\x97\xa0\x03\x02\x01\x02\x02\x10\x08;\xe0V\x90BF\xb1\xa1uj\xc9Y\x91\xc7J0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x05\x05\00a1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x150\x13\x06\x03U\x04\n\x13\x0cDigiCert Inc1\x190\x17\x06\x03U\x04\x0b\x13\x10www.digicert.com1 0\x1e\x06\x03U\x04\x03\x13\x17DigiCert Global Root CA0\x1e\x17\r061110000000Z\x17\r311110000000Z0a1\x0b0\t\x06\x03U\x04\x06\x13\x02US1\x150\x13\x06\x03U\x04\n\x13\x0cDigiCert Inc1\x190\x17\x06\x03U\x04\x0b\x13\x10www.digicert.com1 0\x1e\x06\x03U\x04\x03\x13\x17DigiCert Global Root CA0\x82\x01\"0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x01\x05\0\x03\x82\x01\x0f\00\x82\x01\n\x02\x82\x01\x01\0\xe2;\xe1\x11r\xde\xa8\xa4\xd3\xa3W\xaaP\xa2\x8f\x0bw\x90\xc9\xa2\xa5\xee\x12\xce\x96[\x01\t \xcc\x01\x93\xa7N0\xb7S\xf7C\xc4i\0W\x9d\xe2\x8d\"\xdd\x87\x06@\0\x81\t\xce\xce\x1b\x83\xbf\xdf\xcd;qF\xe2\xd6f\xc7\x05\xb3v'\x16\x8f{\x9e\x1e\x95}\xee\xb7H\xa3\x08\xda\xd6\xafz\x0c9\x06e\x7fJ]\x1f\xbc\x17\xf8\xab\xbe\xee(\xd7t\x7fzx\x99Y\x85hn\\#2K\xbfN\xc0\xe8Zm\xe3p\xbfw\x10\xbf\xfc\x01\xf6\x85\xd9\xa8D\x10X2\xa9u\x18\xd5\xd1\xa2\xbeG\xe2'j\xf4\x9a3\xf8I\x08`\x8b\xd4_\xb4:\x84\xbf\xa1\xaaJL}>\xcfO_lv^\xa0K7\x91\x9e\xdc\"\xe6m\xce\x14\x1a\x8ej\xcb\xfe\xcd\xb3\x14d\x17\xc7[)\x9e2\xbf\xf2\xee\xfa\xd3\x0bB\xd4\xab\xb7A2\xda\x0c\xd4\xef\xf8\x81\xd5\xbb\x8dX?\xb5\x1b\xe8I(\xa2p\xda1\x04\xdd\xf7\xb2\x16\xf2L\nN\x07\xa8\xedJ=^\xb5\x7f\xa3\x90\xc3\xaf'\x02\x03\x01\0\x01\xa3c0a0\x0e\x06\x03U\x1d\x0f\x01\x01\xff\x04\x04\x03\x02\x01\x860\x0f\x06\x03U\x1d\x13\x01\x01\xff\x04\x050\x03\x01\x01\xff0\x1d\x06\x03U\x1d\x0e\x04\x16\x04\x14\x03\xdeP5V\xd1L\xbbf\xf0\xa3\xe2\x1b\x1b\xc3\x97\xb2=\xd1U0\x1f\x06\x03U\x1d#\x04\x180\x16\x80\x14\x03\xdeP5V\xd1L\xbbf\xf0\xa3\xe2\x1b\x1b\xc3\x97\xb2=\xd1U0\r\x06\t*\x86H\x86\xf7\r\x01\x01\x05\x05\0\x03\x82\x01\x01\0\xcb\x9c7\xaaH\x13\x12\n\xfa\xddD\x9cOR\xb0\xf4\xdf\xae\x04\xf5yy\x08\xa3$\x18\xfcK+\x84\xc0-\xb9\xd5\xc7\xfe\xf4\xc1\x1fX\xcb\xb8m\x9czt\xe7\x98)\xab\x11\xb5\xe3p\xa0\xa1\xcdL\x88\x99\x93\x8c\x91p\xe2\xab\x0f\x1c\xbe\x93\xa9\xffc\xd5\xe4\x07`\xd3\xa3\xbf\x9d[\t\xf1\xd5\x8e\xe3S\xf4\x8ec\xfa?\xa7\xdb\xb4f\xdfbf\xd6\xd1nA\x8d\xf2-\xb5\xeawJ\x9f\x9dX\xe2+Y\xc0@#\xed-(\x82E>yT\x92&\x98\xe0\x80H\xa87\xef\xf0\xd6y`\x16\xde\xac\xe8\x0e\xcdn\xacD\x178/I\xda\xe1E>*\xb96S\xcf:P\x06\xf7.\xe8\xc4WIla!\x18\xd5\x04\xadx<,:\x80k\xa7\xeb\xaf\x15\x14\xe9\xd8\x89\xc1\xb98l\xe2\x91l\x8a\xffd\xb9w%W0\xc0\x1b$\xa3\xe1\xdc\xe9\xdfG|\xb5\xb4$\x08\x050\xec-\xbd\x0b\xbfE\xbfP\xb9\xa9\xf3\xeb\x98\x01\x12\xad\xc8\x88\xc6\x984_\x8d\n<\xc6\xe9\xd5\x95\x95m\xde")]
+Oops, error: invalid certificate: CertNotValidForName
 
-And the flow is: Flow { src_ip: 873107063, dst_ip: 2886997012, src_port: 49378, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 878292923, src_port: 443, dst_port: 57264, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
+And the magic number is 3482
 
-Occupied, start parsing
+None
 
-TLS packet match handshake!
+And the magic number is 484
 
-Message { typ: Handshake, version: TLSv1_2, payload: Opaque(Payload([16, 0, 0, 66, 65, 4, 215, 164, 142, 168, 53, 80, 64, 27, 61, 120, 171, 55, 202, 239, 144, 48, 15, 31, 88, 240, 1, 60, 15, 32, 123, 18, 139, 70, 3, 223, 12, 15, 214, 192, 41, 174, 197, 20, 207, 132, 137, 210, 77, 93, 142, 240, 134, 240, 190, 113, 134, 117, 131, 228, 206, 95, 151, 161, 169, 100, 0, 66, 2, 101])) }
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 49378 dst_port 443 seq 612902754 ack 2371506109 data_offset 8 flags | ACK |cwnd 229 csum 50586 urgent 0
-
-Pkt #612902754 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-Previous one is: Flow { src_ip: 873107063, dst_ip: 2886997012, src_port: 49378, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-
-
-TCP Headers: tcp src_port 49378 dst_port 443 seq 612902754 ack 2371506109 data_offset 8 flags | ACK PSH |cwnd 229 csum 8582 urgent 0
-
-
-Pkt #612902754 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 90, 30, 169, 246, 118, 241, 73, 31, 202, 180, 76, 109, 204, 4, 39, 3, 221, 43, 16, 158, 42, 128, 88, 177, 147, 3, 21, 38, 172, 38, 125, 116, 32, 180, 210, 123, 113, 231, 216, 33, 64, 10, 190, 10, 119, 67, 71, 110, 113, 78, 121, 137, 39, 81, 209, 41, 218, 109, 112, 133, 171, 87, 125, 250, 110, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 30, 0, 28, 0, 0, 25, 112, 117, 115, 104, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 91, 226, 107, 142, 134, 134, 154, 88, 213, 186, 247, 166, 190, 92, 255, 18, 200, 196, 86, 143, 68, 1, 116, 46, 217, 19, 231, 139, 165, 164, 108, 8, 0, 23, 0, 65, 4, 41, 93, 51, 24, 146, 181, 153, 29, 123, 233, 15, 107, 7, 58, 0, 131, 143, 95, 223, 126, 129, 146, 14, 24, 183, 94, 107, 187, 108, 48, 168, 250, 184, 32, 119, 97, 158, 245, 113, 229, 85, 218, 238, 24, 50, 177, 253, 101, 60, 27, 173, 68, 13, 222, 31, 67, 178, 116, 140, 103, 27, 216, 225, 5, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-reading size of 517 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 517
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 443 dst_port 42294 seq 1920387985 ack 1197078729 data_offset 10 flags | ACK SYN |cwnd 26847 csum 54954 urgent 0
-
-
-Pkt #1920387985 is Vacant
-
-And the flow is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42294, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 873107063, src_port: 443, dst_port: 49378, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 90, 30, 169, 246, 118, 241, 73, 31, 202, 180, 76, 109, 204, 4, 39, 3, 221, 43, 16, 158, 42, 128, 88, 177, 147, 3, 21, 38, 172, 38, 125, 116, 32, 180, 210, 123, 113, 231, 216, 33, 64, 10, 190, 10, 119, 67, 71, 110, 113, 78, 121, 137, 39, 81, 209, 41, 218, 109, 112, 133, 171, 87, 125, 250, 110, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 30, 0, 28, 0, 0, 25, 112, 117, 115, 104, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 91, 226, 107, 142, 134, 134, 154, 88, 213, 186, 247, 166, 190, 92, 255, 18, 200, 196, 86, 143, 68, 1, 116, 46, 217, 19, 231, 139, 165, 164, 108, 8, 0, 23, 0, 65, 4, 41, 93, 51, 24, 146, 181, 153, 29, 123, 233, 15, 107, 7, 58, 0, 131, 143, 95, 223, 126, 129, 146, 14, 24, 183, 94, 107, 187, 108, 48, 168, 250, 184, 32, 119, 97, 158, 245, 113, 229, 85, 218, 238, 24, 50, 177, 253, 101, 60, 27, 173, 68, 13, 222, 31, 67, 178, 116, 140, 103, 27, 216, 225, 5, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42294 dst_port 443 seq 1197078729 ack 1920387986 data_offset 8 flags | ACK |cwnd 229 csum 27803 urgent 0
-
-Pkt #1197078729 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-Previous one is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42294, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-
-
-TCP Headers: tcp src_port 42294 dst_port 443 seq 1197078729 ack 1920387986 data_offset 8 flags | ACK PSH |cwnd 229 csum 63630 urgent 0
-
-
-Pkt #1197078729 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 79, 150, 26, 199, 108, 150, 88, 211, 162, 115, 231, 244, 207, 255, 252, 91, 140, 225, 139, 190, 80, 168, 3, 166, 23, 132, 119, 225, 6, 118, 89, 61, 32, 169, 63, 89, 32, 140, 34, 122, 77, 239, 98, 73, 61, 12, 11, 7, 98, 238, 207, 90, 24, 104, 16, 19, 185, 208, 84, 203, 172, 178, 40, 129, 190, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 207, 167, 213, 95, 185, 135, 32, 79, 73, 121, 45, 202, 9, 207, 208, 37, 0, 173, 242, 54, 26, 202, 100, 167, 218, 47, 2, 214, 159, 91, 162, 86, 0, 23, 0, 65, 4, 137, 172, 46, 99, 185, 249, 238, 46, 250, 92, 36, 169, 219, 58, 146, 35, 150, 200, 108, 67, 24, 195, 166, 87, 142, 245, 92, 181, 232, 23, 231, 232, 219, 73, 214, 203, 180, 30, 225, 3, 111, 160, 0, 162, 78, 234, 21, 1, 243, 0, 207, 158, 89, 175, 172, 235, 171, 171, 142, 172, 243, 133, 152, 143, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-reading size of 517 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 517
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 43234 dst_port 80 seq 2769848443 ack 0 data_offset 10 flags | SYN |cwnd 29200 csum 64661 urgent 0
-
-
-Pkt #2769848443 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42294, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 79, 150, 26, 199, 108, 150, 88, 211, 162, 115, 231, 244, 207, 255, 252, 91, 140, 225, 139, 190, 80, 168, 3, 166, 23, 132, 119, 225, 6, 118, 89, 61, 32, 169, 63, 89, 32, 140, 34, 122, 77, 239, 98, 73, 61, 12, 11, 7, 98, 238, 207, 90, 24, 104, 16, 19, 185, 208, 84, 203, 172, 178, 40, 129, 190, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 207, 167, 213, 95, 185, 135, 32, 79, 73, 121, 45, 202, 9, 207, 208, 37, 0, 173, 242, 54, 26, 202, 100, 167, 218, 47, 2, 214, 159, 91, 162, 86, 0, 23, 0, 65, 4, 137, 172, 46, 99, 185, 249, 238, 46, 250, 92, 36, 169, 219, 58, 146, 35, 150, 200, 108, 67, 24, 195, 166, 87, 142, 245, 92, 181, 232, 23, 231, 232, 219, 73, 214, 203, 180, 30, 225, 3, 111, 160, 0, 162, 78, 234, 21, 1, 243, 0, 207, 158, 89, 175, 172, 235, 171, 171, 142, 172, 243, 133, 152, 143, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511175956 ack 290472713 data_offset 8 flags | ACK PSH |cwnd 340 csum 25408 urgent 0
-
-Pkt #511175956 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-Packet type is not matched!
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511176299 ack 290472713 data_offset 8 flags | ACK PSH FIN |cwnd 340 csum 27000 urgent 0
-
-
-Pkt #511176299 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
-
-
-TCP Headers: tcp src_port 443 dst_port 42288 seq 892461140 ack 1141508332 data_offset 10 flags | ACK SYN |cwnd 26847 csum 62044 urgent 0
-
-
-Pkt #892461140 is Vacant
-
-And the flow is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42288, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42288, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42288 dst_port 443 seq 1141508332 ack 892461141 data_offset 8 flags | ACK |cwnd 229 csum 34863 urgent 0
-
-Pkt #1141508332 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-Previous one is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42288, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-
-
-TCP Headers: tcp src_port 443 dst_port 42292 seq 2978238648 ack 1226146032 data_offset 10 flags | ACK SYN |cwnd 26847 csum 34988 urgent 0
-
-
-Pkt #2978238648 is Vacant
-
-And the flow is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42292, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42292, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42292 dst_port 443 seq 1226146032 ack 2978238649 data_offset 8 flags | ACK |cwnd 229 csum 7807 urgent 0
-
-Pkt #1226146032 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-Previous one is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42292, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-
-
-TCP Headers: tcp src_port 443 dst_port 42290 seq 3821793892 ack 595225539 data_offset 10 flags | ACK SYN |cwnd 26847 csum 61314 urgent 0
-
-
-Pkt #3821793892 is Vacant
-
-And the flow is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42290, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42290, dst_port: 443, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42290 dst_port 443 seq 595225539 ack 3821793893 data_offset 8 flags | ACK |cwnd 229 csum 34132 urgent 0
-
-Pkt #595225539 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-Previous one is: Flow { src_ip: 584092160, dst_ip: 2886997012, src_port: 42290, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-
-
-TCP Headers: tcp src_port 80 dst_port 43234 seq 1882931933 ack 2769848444 data_offset 10 flags | ACK SYN |cwnd 65535 csum 48084 urgent 0
-
-
-Pkt #1882931933 is Vacant
-
-And the flow is: Flow { src_ip: 1209359133, dst_ip: 2886997012, src_port: 43234, dst_port: 80, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 1209359133, dst_ip: 2886997012, src_port: 43234, dst_port: 80, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet has a syn flag
-      3: None in the result
-
-
-TCP Headers: tcp src_port 43234 dst_port 80 seq 2769848444 ack 1882931934 data_offset 8 flags | ACK |cwnd 229 csum 59710 urgent 0
-
-Pkt #2769848444 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-Previous one is: Flow { src_ip: 1209359133, dst_ip: 2886997012, src_port: 43234, dst_port: 80, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 0 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 0
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-
-
-TCP Headers: tcp src_port 43234 dst_port 80 seq 2769848444 ack 1882931934 data_offset 8 flags | ACK PSH |cwnd 229 csum 27263 urgent 0
-
-
-Pkt #2769848444 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-flow and prev flow are the same
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: None in the result
-
-
-TCP Headers: tcp src_port 42292 dst_port 443 seq 1226146032 ack 2978238649 data_offset 8 flags | ACK PSH |cwnd 229 csum 9333 urgent 0
-
-
-Pkt #1226146032 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 1209359133, src_port: 80, dst_port: 43234, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-dumped an empty payload for Flow=Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 159, 239, 99, 172, 18, 28, 97, 199, 46, 111, 138, 161, 196, 68, 226, 222, 40, 212, 150, 38, 215, 145, 173, 97, 50, 182, 135, 45, 39, 120, 131, 168, 32, 249, 232, 75, 247, 9, 37, 134, 77, 123, 234, 116, 21, 217, 29, 255, 221, 5, 217, 111, 149, 108, 253, 170, 11, 61, 243, 122, 167, 206, 70, 201, 113, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 46, 44, 236, 24, 68, 29, 85, 247, 58, 19, 35, 206, 124, 171, 97, 247, 108, 103, 184, 203, 163, 230, 37, 81, 104, 123, 155, 176, 183, 196, 78, 16, 0, 23, 0, 65, 4, 121, 190, 25, 22, 182, 254, 206, 92, 138, 93, 193, 136, 99, 10, 31, 229, 148, 30, 156, 76, 35, 50, 239, 55, 137, 116, 88, 106, 250, 162, 158, 47, 156, 94, 37, 104, 18, 59, 33, 223, 253, 120, 163, 111, 9, 41, 151, 141, 135, 130, 15, 19, 94, 207, 119, 214, 182, 83, 240, 130, 45, 207, 178, 197, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-reading size of 517 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 517
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 42290 dst_port 443 seq 595225539 ack 3821793893 data_offset 8 flags | ACK PSH |cwnd 229 csum 16733 urgent 0
-
-
-Pkt #595225539 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42292, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 159, 239, 99, 172, 18, 28, 97, 199, 46, 111, 138, 161, 196, 68, 226, 222, 40, 212, 150, 38, 215, 145, 173, 97, 50, 182, 135, 45, 39, 120, 131, 168, 32, 249, 232, 75, 247, 9, 37, 134, 77, 123, 234, 116, 21, 217, 29, 255, 221, 5, 217, 111, 149, 108, 253, 170, 11, 61, 243, 122, 167, 206, 70, 201, 113, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 46, 44, 236, 24, 68, 29, 85, 247, 58, 19, 35, 206, 124, 171, 97, 247, 108, 103, 184, 203, 163, 230, 37, 81, 104, 123, 155, 176, 183, 196, 78, 16, 0, 23, 0, 65, 4, 121, 190, 25, 22, 182, 254, 206, 92, 138, 93, 193, 136, 99, 10, 31, 229, 148, 30, 156, 76, 35, 50, 239, 55, 137, 116, 88, 106, 250, 162, 158, 47, 156, 94, 37, 104, 18, 59, 33, 223, 253, 120, 163, 111, 9, 41, 151, 141, 135, 130, 15, 19, 94, 207, 119, 214, 182, 83, 240, 130, 45, 207, 178, 197, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 86, 242, 194, 13, 59, 110, 215, 151, 56, 133, 198, 50, 18, 141, 154, 94, 69, 230, 90, 148, 23, 60, 233, 169, 127, 180, 128, 56, 32, 140, 160, 112, 32, 176, 162, 100, 113, 172, 26, 241, 136, 192, 69, 11, 61, 79, 220, 118, 212, 25, 255, 89, 237, 4, 64, 41, 210, 81, 5, 133, 189, 221, 105, 9, 121, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 21, 209, 49, 102, 71, 190, 100, 41, 157, 29, 194, 77, 10, 254, 84, 177, 8, 172, 92, 156, 122, 23, 8, 69, 251, 38, 199, 134, 124, 2, 178, 44, 0, 23, 0, 65, 4, 71, 193, 185, 40, 192, 48, 140, 65, 241, 158, 179, 144, 162, 74, 224, 14, 24, 230, 133, 185, 167, 253, 86, 51, 233, 118, 164, 89, 251, 27, 28, 195, 73, 152, 81, 187, 4, 184, 9, 121, 161, 216, 190, 71, 143, 45, 10, 185, 183, 15, 69, 80, 102, 229, 138, 208, 112, 15, 11, 242, 159, 219, 204, 235, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-reading size of 517 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 517
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 42288 dst_port 443 seq 1141508332 ack 892461141 data_offset 8 flags | ACK PSH |cwnd 229 csum 28539 urgent 0
-
-
-Pkt #1141508332 is Vacant
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42290, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 86, 242, 194, 13, 59, 110, 215, 151, 56, 133, 198, 50, 18, 141, 154, 94, 69, 230, 90, 148, 23, 60, 233, 169, 127, 180, 128, 56, 32, 140, 160, 112, 32, 176, 162, 100, 113, 172, 26, 241, 136, 192, 69, 11, 61, 79, 220, 118, 212, 25, 255, 89, 237, 4, 64, 41, 210, 81, 5, 133, 189, 221, 105, 9, 121, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 21, 209, 49, 102, 71, 190, 100, 41, 157, 29, 194, 77, 10, 254, 84, 177, 8, 172, 92, 156, 122, 23, 8, 69, 251, 38, 199, 134, 124, 2, 178, 44, 0, 23, 0, 65, 4, 71, 193, 185, 40, 192, 48, 140, 65, 241, 158, 179, 144, 162, 74, 224, 14, 24, 230, 133, 185, 167, 253, 86, 51, 233, 118, 164, 89, 251, 27, 28, 195, 73, 152, 81, 187, 4, 184, 9, 121, 161, 216, 190, 71, 143, 45, 10, 185, 183, 15, 69, 80, 102, 229, 138, 208, 112, 15, 11, 242, 159, 219, 204, 235, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-
- ************************************************ 
-      3: Packet match handshake!
-      
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 57, 151, 19, 47, 199, 46, 58, 58, 206, 40, 4, 104, 72, 83, 254, 19, 100, 71, 124, 35, 140, 128, 5, 80, 5, 9, 58, 161, 205, 113, 25, 129, 32, 147, 42, 61, 108, 51, 97, 155, 213, 163, 203, 207, 55, 127, 210, 208, 227, 71, 142, 10, 45, 185, 57, 62, 142, 147, 156, 214, 119, 68, 181, 206, 79, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 20, 129, 109, 251, 111, 108, 241, 245, 84, 108, 200, 157, 233, 215, 115, 48, 61, 196, 104, 215, 175, 163, 2, 246, 218, 44, 199, 238, 25, 163, 0, 66, 0, 23, 0, 65, 4, 72, 209, 14, 163, 200, 250, 29, 253, 46, 141, 10, 74, 237, 17, 172, 248, 212, 106, 224, 105, 197, 74, 194, 238, 107, 12, 162, 36, 151, 247, 93, 44, 112, 157, 153, 153, 0, 183, 104, 49, 41, 60, 61, 9, 159, 100, 22, 2, 112, 57, 158, 201, 152, 200, 145, 54, 252, 11, 150, 20, 233, 181, 116, 241, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-reading size of 517 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 517
-      4: This packet is inserted, quack
-
-
-TCP Headers: tcp src_port 443 dst_port 36144 seq 290472713 ack 511176299 data_offset 8 flags | ACK PSH |cwnd 126 csum 1351 urgent 0
-
-
-Pkt #290472713 is Vacant
-
-And the flow is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-Previous one is: Flow { src_ip: 2886997012, dst_ip: 584092160, src_port: 443, dst_port: 42288, proto: 6 }
-current flow is a new flow, we should invoke the reassemble function for the previous flow
-
-Occupied, start parsing
-
-TLS packet match handshake!
-
-Message { typ: Handshake, version: TLSv1_0, payload: Opaque(Payload([1, 0, 1, 252, 3, 3, 57, 151, 19, 47, 199, 46, 58, 58, 206, 40, 4, 104, 72, 83, 254, 19, 100, 71, 124, 35, 140, 128, 5, 80, 5, 9, 58, 161, 205, 113, 25, 129, 32, 147, 42, 61, 108, 51, 97, 155, 213, 163, 203, 207, 55, 127, 210, 208, 227, 71, 142, 10, 45, 185, 57, 62, 142, 147, 156, 214, 119, 68, 181, 206, 79, 0, 36, 19, 1, 19, 3, 19, 2, 192, 43, 192, 47, 204, 169, 204, 168, 192, 44, 192, 48, 192, 10, 192, 9, 192, 19, 192, 20, 0, 51, 0, 57, 0, 47, 0, 53, 0, 10, 1, 0, 1, 143, 0, 0, 0, 31, 0, 29, 0, 0, 26, 116, 105, 108, 101, 115, 46, 115, 101, 114, 118, 105, 99, 101, 115, 46, 109, 111, 122, 105, 108, 108, 97, 46, 99, 111, 109, 0, 23, 0, 0, 255, 1, 0, 1, 0, 0, 10, 0, 14, 0, 12, 0, 29, 0, 23, 0, 24, 0, 25, 1, 0, 1, 1, 0, 11, 0, 2, 1, 0, 0, 35, 0, 0, 0, 16, 0, 14, 0, 12, 2, 104, 50, 8, 104, 116, 116, 112, 47, 49, 46, 49, 0, 5, 0, 5, 1, 0, 0, 0, 0, 0, 51, 0, 107, 0, 105, 0, 29, 0, 32, 20, 129, 109, 251, 111, 108, 241, 245, 84, 108, 200, 157, 233, 215, 115, 48, 61, 196, 104, 215, 175, 163, 2, 246, 218, 44, 199, 238, 25, 163, 0, 66, 0, 23, 0, 65, 4, 72, 209, 14, 163, 200, 250, 29, 253, 46, 141, 10, 74, 237, 17, 172, 248, 212, 106, 224, 105, 197, 74, 194, 238, 107, 12, 162, 36, 151, 247, 93, 44, 112, 157, 153, 153, 0, 183, 104, 49, 41, 60, 61, 9, 159, 100, 22, 2, 112, 57, 158, 201, 152, 200, 145, 54, 252, 11, 150, 20, 233, 181, 116, 241, 0, 43, 0, 9, 8, 3, 4, 3, 3, 3, 2, 3, 1, 0, 13, 0, 24, 0, 22, 4, 3, 5, 3, 6, 3, 8, 4, 8, 5, 8, 6, 4, 1, 5, 1, 6, 1, 2, 3, 2, 1, 0, 45, 0, 2, 1, 1, 0, 28, 0, 2, 64, 1, 0, 21, 0, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])) }
-
-  1: Has allocated a new buffer:
-    2: packet recv for untracked flow did not have a syn flag, skipped
-      3: Packet is not a TLS handshake so not displaying
-
-
-TCP Headers: tcp src_port 36144 dst_port 443 seq 511176299 ack 0 data_offset 5 flags | RST |cwnd 0 csum 62344 urgent 0
-
-Pkt #511176299 is Occupied!
-
-And the flow is: Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 }
-Previous one is: Flow { src_ip: 220418878, dst_ip: 2886997012, src_port: 36144, dst_port: 443, proto: 6 }
-
-There is nothing, that is why we should insert the packet!!!
-
-Quack: Inserted
-reading size of 31 payload into the flow entry 
-Flow { src_ip: 2886997012, dst_ip: 220418878, src_port: 443, dst_port: 36144, proto: 6 } 
-into the payload cache (hashmap)
-
-size of the entry is: 31
-Packet has a reset flag--removing the entry

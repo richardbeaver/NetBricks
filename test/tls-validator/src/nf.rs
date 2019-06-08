@@ -11,6 +11,7 @@ use rustls::internal::msgs::{
         Certificate as CertificatePayload, ClientHello, ClientKeyExchange, ServerHello, ServerHelloDone,
         ServerKeyExchange,
     },
+    handshake::{ServerName, ServerNamePayload},
     message::{Message as TLSMessage, MessagePayload},
 };
 use rustls::{Certificate, ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
@@ -20,6 +21,48 @@ use std::hash::BuildHasherDefault;
 use std::time::{Duration, Instant};
 use webpki;
 use webpki_roots;
+
+fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
+    println!("Matching server name");
+
+    if on_frame(&buf).is_none() {
+        return None;
+    } else {
+        let (handshake, _) = on_frame(&buf).unwrap();
+
+        match handshake.payload {
+            ClientHello(x) => {
+                println!("is client hello: {:?}", x);
+                None
+            }
+            _ => {
+                println!("not client hello",);
+                None
+            }
+        }
+    }
+
+    // match ServerName::read_bytes(&buf) {
+    //     Some(packet) => {
+    //         println!("Packet is {:?}", packet);
+    //         if let ServerNamePayload::HostName(x) = packet.payload {
+    //             println!("DNS name is {:?}", x);
+    //             Some(x)
+    //         } else {
+    //             None
+    //         }
+    //     }
+    //     None => None,
+    // }
+
+    // let (handshake, offset1) = on_frame(&buf).expect("oh no!  parsing the ServerHello failed!!");
+    //
+    // //use self::HandshakePayload::*;
+    // match handshake.payload {
+    //     ServerNamePayload(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
+    //     _ => println!("None"),
+    // }
+}
 
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
@@ -100,6 +143,88 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
     println!("size of the entry is: {}", so_far);
 }
 
+/// Parse a slice of bytes into a TLS frame and the size of payload.
+fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
+    match TLSMessage::read_bytes(&rest) {
+        Some(mut packet) => {
+            //println!("\n\nParsing this TLS frame is \n{:x?}", packet);
+            //println!("\nlength of the packet payload is {}\n", packet.payload.length());
+
+            let frame_len = packet.payload.length();
+            if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                if let MessagePayload::Handshake(x) = packet.payload {
+                    Some((x, frame_len))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
+}
+
+/// Test if the current TLS frame is a ServerHello.
+fn is_server_hello(buf: &[u8]) -> bool {
+    if on_frame(&buf).is_none() {
+        return false;
+    } else {
+        let (handshake, _) = on_frame(&buf).unwrap();
+
+        match handshake.payload {
+            ServerHello(_) => {
+                println!("is server hello",);
+                true
+            }
+            _ => {
+                println!("not server hello",);
+                false
+            }
+        }
+    }
+}
+
+/// Test if the current TLS frame is a ClientHello.
+fn is_client_hello(buf: &[u8]) -> bool {
+    if on_frame(&buf).is_none() {
+        return false;
+    } else {
+        let (handshake, _) = on_frame(&buf).unwrap();
+
+        match handshake.payload {
+            ClientHello(_) => {
+                println!("is client hello",);
+                true
+            }
+            _ => {
+                println!("not client hello",);
+                false
+            }
+        }
+    }
+}
+
+/// Test if the current TLS frame is ClientKeyExchange.
+fn is_client_key_exchange(buf: &[u8]) -> bool {
+    if on_frame(&buf).is_none() {
+        return false;
+    } else {
+        let (handshake, _) = on_frame(&buf).unwrap();
+
+        match handshake.payload {
+            ClientKeyExchange(_) => {
+                println!("is Client Key Exchange",);
+                true
+            }
+            _ => {
+                println!("not Client Key Exchange",);
+                false
+            }
+        }
+    }
+}
+
 /// Parse the bytes into tls frames.
 fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNotExtractedError> {
     // TLS Header length is 5.
@@ -139,6 +264,10 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
             println!("Certificate payload is\n{:?}", payload);
+
+            // FIXME: only for debuging
+            test_extracted_cert(payload.clone());
+
             Ok(payload)
         }
         _ => {
@@ -180,66 +309,6 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
     println!("\nAnd the magic number is {}\n", offset4 + tls_hdr_len);
 
     certs
-}
-
-/// Parse a slice of bytes into a TLS frame and the size of payload.
-fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
-    match TLSMessage::read_bytes(&rest) {
-        Some(mut packet) => {
-            println!("\nBytes in tls frame one is \n{:x?}", packet);
-            println!("\nlength of the packet payload is {}\n", packet.payload.length());
-
-            let frame_len = packet.payload.length();
-            if packet.typ == ContentType::Handshake && packet.decode_payload() {
-                if let MessagePayload::Handshake(x) = packet.payload {
-                    Some((x, frame_len))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        }
-        None => None,
-    }
-}
-
-fn is_serverhello(buf: &[u8]) -> bool {
-    if on_frame(&buf).is_none() {
-        return false;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
-
-        match handshake.payload {
-            ServerHello(_) => {
-                println!("is server hello",);
-                true
-            }
-            _ => {
-                println!("not server hello",);
-                false
-            }
-        }
-    }
-}
-
-fn is_changeclientspec(buf: &[u8]) -> bool {
-    if on_frame(&buf).is_none() {
-        return false;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
-
-        match handshake.payload {
-            ClientKeyExchange(_) => {
-                println!("is Client Key Exchange",);
-                true
-            }
-            _ => {
-                println!("not Client Key Exchange",);
-                false
-            }
-        }
-    }
 }
 
 /// TLS validator:
@@ -289,9 +358,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.get_header().flow().unwrap();
             flow
         })
-    .parse::<TcpHeader>()
+        .parse::<TcpHeader>()
         .transform(box move |p| {
             let flow = p.read_metadata();
+            let rev_flow = flow.reverse_flow();
             let mut seq = p.get_header().seq_num();
             let tcph = p.get_header();
             println!("\n\nTCP Headers: {}", tcph);
@@ -300,12 +370,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             match rb_map.entry(*flow) {
                 // occupied means that there already exists an entry for the flow
                 Entry::Occupied(mut e) => {
+                    // get entry
+                    let b = e.get_mut();
+
+                    // TODO: rm later
                     println!("\nPkt #{} is Occupied!", seq);
                     println!("\nAnd the flow is: {:?}", flow);
                     println!("Previous one is: {:?}", prev_flow);
-                                        //println!("\nEntry is {:?}", e);
-                    // get entry
-                    let b = e.get_mut();
+                    println!("Reverse of the current one is: {:?}\n", rev_flow);
 
                     let tls_result = TLSMessage::read_bytes(&p.get_payload());
                     let result = b.add_data(seq, p.get_payload());
@@ -354,76 +426,109 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         }
                     }
 
-                    // Analyze the flow
-                    if p.get_header().rst_flag() {
-                        println!("Packet has a reset flag--removing the entry");
-                        e.remove_entry();
-                    } else if p.get_header().fin_flag() {
-                        println!("Packet has a fin flag");
-                        match payload_cache.entry(*flow) {
+                    // The only case that we remove the flow is because we have a ChangeClientSpec
+                    // packet.
+                    if is_client_key_exchange(&p.get_payload()) {
+                        // We should remove the entry of the reverse flow, and parse the entry of
+                        // the current flow.
+                        println!("\nThe current packet is a client key exchange, so let's evict the flow entry for {:?}\n", rev_flow);
+
+                        let dns_name = match payload_cache.entry(*flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
-                                println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
+                                get_server_name(&payload)
                             }
                             Entry::Vacant(_) => {
-                                println!("dumped an empty payload for Flow={:?}", flow);
+                                println!("We had a problem", );
+                                None
                             }
-                        }
-                        e.remove_entry();
-                    } else if *flow == prev_flow {
-                        println!("flow and prev flow are the same\n");
-                    } else if *flow != prev_flow{
-                        // NOTE: we matched # 644 and exam our flow to extract certs
-                        match payload_cache.entry(prev_flow) {
+                        };
+
+                        match payload_cache.entry(rev_flow) {
                             Entry::Occupied(e) => {
-                                println!("Quack: occupied\n");
                                 let (_, payload) = e.remove_entry();
-                                println!("Displaying the payload in raw bytes \n");
-                                //println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
-                                //println!("{:x?}", payload);
-                                println!("\nThe size of the value is {}", payload.len() );
-                                //println!("{:?}", payload.len());
+                                //println!("DEBUG: entering parsing the huge payload {:?}", payload);
+                                println!("DEBUG: entering and then parsing the huge payload ");
+                                let certs  = parse_tls_frame(&payload);
+                                println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
 
-                                // TODO: figure out why the read byte cannot read all the bytes
-                                // from the payload cache.
-                                println!("\n************************************************************\n");
-                                println!("\nTrying to display the payload via rustls...\n");
-                                println!("\n************************************************************\n");
-
-                                if is_serverhello(&payload) {
-                                    println!("DEBUG: entering");
-                                    let certs  = parse_tls_frame(&payload);
-                                    println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
-
-                                    //println!("\nTesting Reddit cert\n");
-                                    //test_reddit_cert();
-
-                                    match certs {
-                                        Ok(chain) => {
-                                            println!("\nTesting our cert\n");
-                                            println!("chain: {:?}", chain);
-                                            let result = test_extracted_cert(chain);
-                                            println!("Result of the cert validation is {}",result );
-                                        }
-                                        Err(e) => {
-                                            println!("error: {:?}", e)
-                                        }
-
+                                match certs {
+                                    Ok(chain) => {
+                                        println!("\nTesting our cert\n");
+                                        println!("chain: {:?}", chain);
+                                        let result = test_extracted_cert(chain);
+                                        println!("Result of the cert validation is {}",result );
+                                    }
+                                    Err(e) => {
+                                        println!("error: {:?}", e)
                                     }
 
                                 }
-                                else {
-                                    println!("We are not getting anything");
-                                }
                             }
                             Entry::Vacant(_) => {
-                                println!("dumped an empty payload for Flow={:?}", flow);
+                                println!("We had a problem", )
                             }
                         }
-                        e.remove_entry();
+
                     } else {
-                        println!("Weird case");
+                        println!("Passing because is not Change Client Spec", );
                     }
+
+                    // // Analyze the flow
+                    // if *flow == prev_flow {
+                    //     println!("flow and prev flow are the same\n");
+                    // } else if *flow != prev_flow{
+                    //     // NOTE: we matched # 644 and exam our flow to extract certs
+                    //     match payload_cache.entry(prev_flow) {
+                    //         Entry::Occupied(e) => {
+                    //             println!("Quack: occupied\n");
+                    //             let (_, payload) = e.remove_entry();
+                    //             println!("Displaying the payload in raw bytes \n");
+                    //             //println!("Occupied: {}\n", String::from_utf8_lossy(&payload));
+                    //             //println!("{:x?}", payload);
+                    //             println!("\nThe size of the value is {}", payload.len() );
+                    //             //println!("{:?}", payload.len());
+                    //
+                    //             // TODO: figure out why the read byte cannot read all the bytes
+                    //             // from the payload cache.
+                    //             println!("\n************************************************************\n");
+                    //             println!("\nTrying to display the payload via rustls...\n");
+                    //             println!("\n************************************************************\n");
+                    //
+                    //             if is_server_hello(&payload) {
+                    //                 println!("DEBUG: entering");
+                    //                 let certs  = parse_tls_frame(&payload);
+                    //                 println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
+                    //
+                    //                 //println!("\nTesting Reddit cert\n");
+                    //                 //test_reddit_cert();
+                    //
+                    //                 match certs {
+                    //                     Ok(chain) => {
+                    //                         println!("\nTesting our cert\n");
+                    //                         println!("chain: {:?}", chain);
+                    //                         let result = test_extracted_cert(chain);
+                    //                         println!("Result of the cert validation is {}",result );
+                    //                     }
+                    //                     Err(e) => {
+                    //                         println!("error: {:?}", e)
+                    //                     }
+                    //
+                    //                 }
+                    //
+                    //             }
+                    //             else {
+                    //                 println!("We are not getting anything");
+                    //             }
+                    //         }
+                    //         Entry::Vacant(_) => {
+                    //             println!("dumped an empty payload for Flow={:?}", flow);
+                    //         }
+                    //     }
+                    //     e.remove_entry();
+                    // } else {
+                    //     println!("Weird case");
+                    // }
 
                 }
                 // Vacant means that the entry for doesn't exist yet--we need to create one first
@@ -431,82 +536,61 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     println!("\n\nPkt #{} is Vacant", seq);
                     println!("\nAnd the flow is: {:?}", flow);
                     println!("Previous one is: {:?}", prev_flow);
-                    if *flow == prev_flow {
-                        println!("flow and prev flow are the same\n");
-                    } else {
-                        println!("current flow is a new flow, we should invoke the reassemble function for the previous flow\n");
-                        match payload_cache.entry(prev_flow) {
-                            Entry::Occupied(e) => {
-                                let (_, payload) = e.remove_entry();
-                                println!("Occupied, start parsing\n");
-                                let tls_result = TLSMessage::read_bytes(&payload);
+
+                    if is_client_hello(&p.get_payload())  {
+                        get_server_name(&p.get_payload());
+                    }
+                    // We only create new buffers if the current flow matches client hello or
+                    // server hello.
+                    //println!("\nis server hello?: {}", is_server_hello(&p.get_payload()));
+                    //println!("is client hello?: {}\n", is_client_hello(&p.get_payload()));
+                    if is_client_hello(&p.get_payload()) || is_server_hello(&p.get_payload()) {
+                        match ReorderedBuffer::new(BUFFER_SIZE) {
+                            Ok(mut b) => {
+                                println!("  1: Has allocated a new buffer:");
+                                if p.get_header().syn_flag() {
+                                    println!("    2: packet has a syn flag");
+                                    seq += 1;
+                                } else {
+                                    println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
+                                }
+
+                                let tls_result = TLSMessage::read_bytes(&p.get_payload());
+                                let result = b.seq(seq, p.get_payload());
+
+                                // match to find TLS handshake
+                                // NOTE: #255 is matched and inserted here
                                 match tls_result {
                                     Some(packet) => {
                                         if packet.typ == ContentType::Handshake {
-                                            println!("TLS packet match handshake!");
-                                            println!("\n{:?}\n", packet);
+                                            println!("\n ************************************************ ");
+                                            println!("      3: Packet match handshake!");
+                                            // match to insert packet into the cache
+                                            println!("      \n{:?}\n", packet);
+                                            match result {
+                                                InsertionResult::Inserted { available, .. } => {
+                                                    read_payload(&mut b, available, *flow, &mut payload_cache);
+                                                    println!("      4: This packet is inserted, quack");
+                                                }
+                                                InsertionResult::OutOfMemory { .. } => {
+                                                    println!("      4: Too big a packet?");
+                                                }
+                                            }
                                         } else {
-                                            println!("Packet type is not matched!")
+                                            println!("      3: Packet is not a TLS handshake so not displaying");
+                                            //println!("  3: {:?}", packet);
                                         }
                                     }
                                     None => {
-                                        // The rest of the TLS server hello handshake should be captured here.
-                                        println!("\nThere is nothing, that is why we should insert the packet!!!\n");
-
+                                        println!("      3: None in the result");
                                     }
                                 }
+                                e.insert(b);
                             }
-                            Entry::Vacant(_) => {
-                                println!("dumped an empty payload for Flow={:?}", flow);
+                            Err(_) => {
+                                println!("\npkt #{} Failed to allocate a buffer for the new flow!", seq);
+                                ()
                             }
-                        }
-                    }
-                    //println!("\nEntry is {:?}", e);
-                    match ReorderedBuffer::new(BUFFER_SIZE) {
-                        Ok(mut b) => {
-                            println!("  1: Has allocated a new buffer:");
-                            if p.get_header().syn_flag() {
-                                println!("    2: packet has a syn flag");
-                                seq += 1;
-                            } else {
-                                println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
-                            }
-
-                            let tls_result = TLSMessage::read_bytes(&p.get_payload());
-                            let result = b.seq(seq, p.get_payload());
-
-                            // match to find TLS handshake
-                            // NOTE: #255 is matched and inserted here
-                            match tls_result {
-                                Some(packet) => {
-                                    if packet.typ == ContentType::Handshake {
-                                        println!("\n ************************************************ ");
-                                        println!("      3: Packet match handshake!");
-                                        // match to insert packet into the cache
-                                        println!("      \n{:?}\n", packet);
-                                        match result {
-                                            InsertionResult::Inserted { available, .. } => {
-                                                read_payload(&mut b, available, *flow, &mut payload_cache);
-                                                println!("      4: This packet is inserted, quack");
-                                            }
-                                            InsertionResult::OutOfMemory { .. } => {
-                                                println!("      4: Too big a packet?");
-                                            }
-                                        }
-                                    } else {
-                                        println!("      3: Packet is not a TLS handshake so not displaying");
-                                        //println!("  3: {:?}", packet);
-                                    }
-                                }
-                                None => {
-                                    println!("      3: None in the result");
-                                }
-                            }
-                            e.insert(b);
-                        }
-                        Err(_) => {
-                            println!("\npkt #{} Failed to allocate a buffer for the new flow!", seq);
-                            ()
                         }
                     }
                 }
