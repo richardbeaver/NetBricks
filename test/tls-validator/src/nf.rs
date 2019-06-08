@@ -6,7 +6,7 @@ use e2d2::utils::Flow;
 use fnv::FnvHasher;
 use rustls::internal::msgs::{
     codec::Codec,
-    enums::ContentType,
+    enums::{ContentType, ExtensionType},
     handshake::HandshakePayload::{
         Certificate as CertificatePayload, ClientHello, ClientKeyExchange, ServerHello, ServerHelloDone,
         ServerKeyExchange,
@@ -22,10 +22,12 @@ use std::time::{Duration, Instant};
 use webpki;
 use webpki_roots;
 
+// FIXME: This function needs substential amount of effort to refactor...
 fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     println!("Matching server name");
 
     if on_frame(&buf).is_none() {
+        println!("On frame read none bytes",);
         return None;
     } else {
         let (handshake, _) = on_frame(&buf).unwrap();
@@ -33,23 +35,25 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
         match handshake.payload {
             ClientHello(mut x) => {
                 println!("\nis client hello: {:?}\n", x.extensions);
-                // let name = ServerName {
-                //     typ: ServerNameType::HostName,
-                //     payload: ServerNamePayload::HostName(dns_name.into()),
-                // };
-                let server_name = match &x.extensions[0] {
-                    ClientExtension::ServerName(x) => x,
-                    _ => return None,
-                };
-                println!("Server name : {:?}", server_name);
-                let ServerName { typ: _, payload: x } = &server_name[0];
-                println!("payload to be: {:?}", x);
-                match x.clone() {
-                    ServerNamePayload::HostName(mut dns_name) => {
-                        println!("DNS name is : {:?}", dns_name);
-                        Some(dns_name)
+                let mut i = 0;
+                while i != x.extensions.len() {
+                    if ClientExtension::get_type(&x.extensions[i]) == ExtensionType::ServerName {
+                        let server_name = match x.extensions.remove(i) {
+                            ClientExtension::ServerName(x) => x,
+                            _ => return None,
+                        };
+                        let ServerName { typ: _, payload: x } = &server_name[0];
+
+                        match x {
+                            ServerNamePayload::HostName(mut dns_name) => {
+                                println!("DNS name is : {:?}", dns_name);
+                                return Some(dns_name);
+                            }
+                            _ => return None,
+                        }
+                    } else {
+                        i += 1;
                     }
-                    _ => None,
                 }
             }
             _ => {
@@ -58,32 +62,6 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
             }
         }
     }
-
-    // match server_name_blob.unwrap().unwrap() {
-    //     ServerName { typ: x, payload: y } => println!("{:?} {:?}", x, y),
-    //     _ => println!("??>",),
-    // }
-
-    // match ServerName::read_bytes(&buf) {
-    //     Some(packet) => {
-    //         println!("Packet is {:?}", packet);
-    //         if let ServerNamePayload::HostName(x) = packet.payload {
-    //             println!("DNS name is {:?}", x);
-    //             Some(x)
-    //         } else {
-    //             None
-    //         }
-    //     }
-    //     None => None,
-    // }
-
-    // let (handshake, offset1) = on_frame(&buf).expect("oh no!  parsing the ServerHello failed!!");
-    //
-    // //use self::HandshakePayload::*;
-    // match handshake.payload {
-    //     ServerNamePayload(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
-    //     _ => println!("None"),
-    // }
 }
 
 // Define our error types. These may be customized for our error handling cases.
@@ -103,11 +81,14 @@ fn fixed_time() -> Result<webpki::Time, TLSError> {
 
 static V: &'static WebPKIVerifier = &WebPKIVerifier { time: fixed_time };
 
-fn test_extracted_cert(certs: Vec<rustls::Certificate>) -> bool {
+fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
+    println!("DEBUG: Validating certs",);
+    println!("\ndns name is {:?}\n", dns_name);
+    println!("\ncerts are {:?}\n", certs);
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-    let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-    let result = V.verify_server_cert(&anchors, &certs[..], dns_name, &[]);
+    //let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+    let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
     match result {
         Ok(_) => {
             println!("\nIt worked!!!");
@@ -169,21 +150,26 @@ fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_ca
 fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
-            //println!("\n\nParsing this TLS frame is \n{:x?}", packet);
-            //println!("\nlength of the packet payload is {}\n", packet.payload.length());
+            // println!("\n\nParsing this TLS frame is \n{:x?}", packet);
+            // println!("\nlength of the packet payload is {}\n", packet.payload.length());
 
             let frame_len = packet.payload.length();
             if packet.typ == ContentType::Handshake && packet.decode_payload() {
                 if let MessagePayload::Handshake(x) = packet.payload {
                     Some((x, frame_len))
                 } else {
+                    println!("Message is not handshake",);
                     None
                 }
             } else {
+                println!("Packet type doesn't match or we can't decode payload",);
                 None
             }
         }
-        None => None,
+        None => {
+            println!("Read bytes but got None {:x?}", rest);
+            None
+        }
     }
 }
 
@@ -263,13 +249,14 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
 
     //use self::HandshakePayload::*;
     match handshake1.payload {
-        ClientHello(payload) => println!("{:?}", payload), //parse_clienthello(payload, tags),
-        ServerHello(payload) => println!("{:?}", payload), //parse_serverhello(payload, tags),
+        ClientHello(payload) => println!("{:x?}", payload), //parse_clienthello(payload, tags),
+        ServerHello(payload) => println!("{:x?}", payload), //parse_serverhello(payload, tags),
         _ => println!("None"),
     }
 
     let (_, rest) = buf.split_at(offset1 + tls_hdr_len);
     println!("\nAnd the magic number is {}\n", offset1 + tls_hdr_len);
+    println!("DEBUG: The SECOND TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -285,10 +272,10 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
 
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
-            println!("Certificate payload is\n{:?}", payload);
+            println!("Certificate payload is\n{:x?}", payload);
 
             // FIXME: only for debuging
-            test_extracted_cert(payload.clone());
+            //test_extracted_cert(payload.clone());
 
             Ok(payload)
         }
@@ -297,9 +284,11 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
             Err(CertificateNotExtractedError)
         }
     };
+    return certs;
 
     let (_, rest) = rest.split_at(offset2 + tls_hdr_len);
     println!("\nAnd the magic number is {}\n", offset2 + tls_hdr_len);
+    println!("The THIRD TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -310,12 +299,13 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
     let (handshake3, offset3) = on_frame(&rest).expect("oh no! parsing the ServerKeyExchange failed!!");
 
     match handshake3.payload {
-        ServerKeyExchange(payload) => println!("\nServer Key Exchange \n{:?}", payload), //parse_serverhello(payload, tags),
+        ServerKeyExchange(payload) => println!("\nServer Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
         _ => println!("None"),
     }
 
     let (_, rest) = rest.split_at(offset3 + tls_hdr_len);
     println!("\nAnd the magic number is {}\n", offset3 + tls_hdr_len);
+    println!("The FOURTH TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -403,6 +393,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                     let tls_result = TLSMessage::read_bytes(&p.get_payload());
                     let result = b.add_data(seq, p.get_payload());
+                    println!("Raw payload bytes are: {:x?}\n", p.get_payload());
 
                     match tls_result {
                         Some(packet) => {
@@ -413,8 +404,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 println!("{:x?}", packet);
                                 match result {
                                     InsertionResult::Inserted { available, .. } => {
-                                        println!("Inserted");
-                                        read_payload(b, available, *flow, &mut payload_cache);
+                                        println!("Try to insert {}", available);
+                                        if available > 0 {
+                                            println!("\nInserted\n ");
+                                            read_payload(b, available, *flow, &mut payload_cache);
+                                        }
                                     }
                                     InsertionResult::OutOfMemory { written, .. } => {
                                         if written == 0 {
@@ -434,8 +428,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             println!("\nThere is nothing, that is why we should insert the packet!!!\n");
                             match result {
                                 InsertionResult::Inserted { available, .. } => {
-                                    println!("Quack: Inserted");
-                                    read_payload(b, available, *flow, &mut payload_cache);
+                                    println!("Quack: try to insert {}", available);
+                                    if available > 0 {
+                                        println!("\nInserted\n");
+                                        read_payload(b, available, *flow, &mut payload_cache);
+                                    }
                                 }
                                 InsertionResult::OutOfMemory { written, .. } => {
                                     if written == 0 {
@@ -453,7 +450,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     if is_client_key_exchange(&p.get_payload()) {
                         // We need to retrieve the DNS name from the entry of the current flow, and
                         // also parse the entry for the reverse flow.
-                        println!("\nThe current packet is a client key exchange\n");
+                        println!("\nDEBUG: The current packet is a client key exchange\n");
 
                         println!("Try to get the dns name from the entry of the {:?}", flow);
                         let dns_name = match payload_cache.entry(*flow) {
@@ -467,22 +464,26 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 None
                             }
                         };
+                        println!("ServerName is: {:?}", dns_name);
 
                         println!("Try to parse the hug payload of {:?}", rev_flow);
                         match payload_cache.entry(rev_flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
-                                //println!("DEBUG: entering parsing the huge payload {:?}", payload);
-                                println!("DEBUG: entering and then parsing the huge payload ");
+                                println!("\nDEBUG: entering parsing the huge payload {:x?}\n", payload);
+                                println!("\nDEBUG: entering and then parsing the huge payload \n");
                                 let certs  = parse_tls_frame(&payload);
-                                println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
+                                //println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
+                                println!("\nDEBUG: We now retrieve the certs from the tcp payload\n\n");
 
                                 match certs {
                                     Ok(chain) => {
                                         println!("\nTesting our cert\n");
-                                        println!("chain: {:?}", chain);
-                                        let result = test_extracted_cert(chain);
-                                        println!("Result of the cert validation is {}",result );
+                                        //println!("chain: {:?}", chain);
+                                        // FIXME: it is just a fix, and we definitely need to fix
+                                        // the ServerName parsing problem in linux01-all.pcap.
+                                        let result = test_extracted_cert(chain, dns_name.unwrap_or_else(|| webpki::DNSNameRef::try_from_ascii_str("api.github.com").unwrap().to_owned()));
+                                        println!("Result of the cert validation is {}", result);
                                     }
                                     Err(e) => {
                                         println!("error: {:?}", e)
@@ -582,7 +583,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                                 //let tls_result = TLSMessage::read_bytes(&p.get_payload());
                                 let result = b.seq(seq, p.get_payload());
-                                println!("\nresult is seq: {:?}, payload: {:x?}\n", seq, p.get_payload());
+                                //println!("\nresult is seq: {:?}, payload: \n{:x?}\n", seq, p.get_payload());
 
                                 // match to find TLS handshake
                                 // NOTE: #255 is matched and inserted here
