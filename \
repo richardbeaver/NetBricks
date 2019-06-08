@@ -43,14 +43,7 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
                 };
                 println!("Server name : {:?}", server_name);
                 let ServerName { typ: _, payload: x } = &server_name[0];
-                println!("payload to be: {:?}", x);
-                match x.clone() {
-                    ServerNamePayload::HostName(mut dns_name) => {
-                        println!("DNS name is : {:?}", dns_name);
-                        Some(dns_name)
-                    }
-                    _ => None,
-                }
+                None
             }
             _ => {
                 println!("not client hello",);
