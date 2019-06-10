@@ -22,39 +22,42 @@ use std::time::{Duration, Instant};
 use webpki;
 use webpki_roots;
 
-// FIXME: This function needs substential amount of effort to refactor...
 fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
-    println!("Matching server name");
+    eprintln!("Matching server name");
 
     if on_frame(&buf).is_none() {
-        println!("On frame read none bytes",);
+        eprintln!("On frame read none bytes",);
         return None;
     } else {
         let (handshake, _) = on_frame(&buf).unwrap();
 
         match handshake.payload {
-            ClientHello(mut x) => {
-                println!("\nis client hello: {:?}\n", x.extensions);
-                let mut i = 0;
-                while i != x.extensions.len() {
-                    if ClientExtension::get_type(&x.extensions[i]) == ExtensionType::ServerName {
-                        let server_name = match x.extensions.remove(i) {
+            ClientHello(x) => {
+                eprintln!("\nis client hello: {:?}\n", x.extensions);
+                let mut _iterator = x.extensions.iter();
+                let mut result = None;
+                while let Some(val) = _iterator.next() {
+                    if ClientExtension::get_type(val) == ExtensionType::ServerName {
+                        eprintln!("Getting a ServerName type {:?}\n", val);
+                        let server_name = match val {
                             ClientExtension::ServerName(x) => x,
                             _ => return None,
                         };
                         let ServerName { typ: _, payload: x } = &server_name[0];
 
-                        match x {
-                            ServerNamePayload::HostName(mut dns_name) => {
-                                println!("DNS name is : {:?}", dns_name);
-                                return Some(dns_name);
+                        match x.clone() {
+                            ServerNamePayload::HostName(dns_name) => {
+                                eprintln!("DNS name is : {:?}", dns_name);
+                                result = Some(dns_name);
                             }
-                            _ => return None,
+                            _ => (),
                         }
                     } else {
-                        i += 1;
+                        continue;
                     }
                 }
+                eprintln!("Result is {:?}", result);
+                result
             }
             _ => {
                 println!("not client hello",);
@@ -84,7 +87,7 @@ static V: &'static WebPKIVerifier = &WebPKIVerifier { time: fixed_time };
 fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
     println!("DEBUG: Validating certs",);
     println!("\ndns name is {:?}\n", dns_name);
-    println!("\ncerts are {:?}\n", certs);
+    //println!("\ncerts are {:?}\n", certs);
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     //let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
@@ -272,7 +275,8 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
 
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
-            println!("Certificate payload is\n{:x?}", payload);
+            //println!("Certificate payload is\n{:x?}", payload);
+            println!("Parsing the certificate payload..",);
 
             // FIXME: only for debuging
             //test_extracted_cert(payload.clone());
@@ -482,7 +486,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                         //println!("chain: {:?}", chain);
                                         // FIXME: it is just a fix, and we definitely need to fix
                                         // the ServerName parsing problem in linux01-all.pcap.
-                                        let result = test_extracted_cert(chain, dns_name.unwrap_or_else(|| webpki::DNSNameRef::try_from_ascii_str("api.github.com").unwrap().to_owned()));
+                                        let result = test_extracted_cert(chain, dns_name.unwrap());
                                         println!("Result of the cert validation is {}", result);
                                     }
                                     Err(e) => {
