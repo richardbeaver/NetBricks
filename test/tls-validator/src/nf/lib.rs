@@ -14,12 +14,10 @@ use rustls::internal::msgs::{
     handshake::{ClientExtension, ServerName, ServerNamePayload},
     message::{Message as TLSMessage, MessagePayload},
 };
-use rustls::{Certificate, ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
+use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::hash::BuildHasherDefault;
-use std::mem;
-//use std::time::{Duration, Instant};
 use webpki;
 use webpki_roots;
 
@@ -95,11 +93,11 @@ fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSNam
     let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
     match result {
         Ok(_) => {
-            println!("DEBUG: validate extracted certs: \nIt worked!!!");
+            println!("DEBUG: \nIt worked!!!");
             return true;
         }
         Err(e) => {
-            println!("DEBUG: validate extracted certs: \nOops, error: {}", e);
+            println!("DEBUG: \nOops, error: {}", e);
             false
         }
     }
@@ -136,17 +134,17 @@ fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Handshake
                 if let MessagePayload::Handshake(x) = packet.payload {
                     Some((x, frame_len))
                 } else {
-                    println!("Message is not handshake",);
+                    eprintln!("Message is not handshake",);
                     None
                 }
             } else {
-                println!("Packet type doesn't match or we can't decode payload",);
+                eprintln!("Packet type doesn't match or we can't decode payload",);
                 None
             }
         }
         None => {
             //println!("\nON FRAME: Read bytes but got None {:x?}", rest);
-            println!("\nON FRAME: Read bytes but got None");
+            eprintln!("\nON FRAME: Read bytes but got None");
             None
         }
     }
@@ -181,11 +179,11 @@ fn is_client_hello(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ClientHello(_) => {
-                println!("is client hello",);
+                eprintln!("is client hello",);
                 true
             }
             _ => {
-                println!("not client hello",);
+                eprintln!("not client hello",);
                 false
             }
         }
@@ -253,7 +251,7 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
         println!("Get None, abort",);
         return Err(CertificateNotExtractedError);
     }
-    let (handshake2, offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
+    let (handshake2, _offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
 
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
@@ -271,8 +269,8 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
     // FIXME: we probably don't want to do this...
     return certs;
 
-    let (_, rest) = rest.split_at(offset2 + tls_hdr_len);
-    println!("\nAnd the magic number is {}\n", offset2 + tls_hdr_len);
+    let (_, rest) = rest.split_at(_offset2 + tls_hdr_len);
+    println!("\nAnd the magic number is {}\n", _offset2 + tls_hdr_len);
     println!("The THIRD TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
@@ -394,7 +392,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                         InsertionResult::Inserted { available, .. } => {
                                             println!("Try to insert {}", available);
                                             if available > 0 {
-                                                println!("\nInserted");
+                                                println!("Inserted");
                                                 read_payload(b, available, *flow, &mut payload_cache);
                                             }
                                         }
@@ -418,7 +416,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     InsertionResult::Inserted { available, .. } => {
                                         println!("Quack: try to insert {}", available);
                                         if available > 0 {
-                                            println!("\nInserted");
+                                            println!("Inserted");
                                             read_payload(b, available, *flow, &mut payload_cache);
                                         }
                                     }
@@ -459,7 +457,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 Entry::Occupied(e) => {
                                     let (_, payload) = e.remove_entry();
                                     //eprintln!("\nDEBUG: entering parsing the huge payload {:x?}\n", payload);
-                                    println!("\nDEBUG: entering and then parsing the huge payload \n");
+                                    eprintln!("\nDEBUG: entering and then parsing the huge payload \n");
                                     let certs  = parse_tls_frame(&payload);
                                     //println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
                                     println!("\nDEBUG: We now retrieve the certs from the tcp payload\n");
@@ -476,7 +474,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 let result = test_extracted_cert(chain, dns_name.unwrap());
                                                 println!("Result of the cert validation is {}", result);
                                                 if !result {
-                                                    println!("Certificate validation failed, both {:?} and {:?}'s connection need to be reset'", flow, rev_flow);
+                                                    println!("\nCertificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
                                                     unsafe_connection.insert(*flow);
                                                     unsafe_connection.insert(rev_flow);
                                                 }
@@ -494,12 +492,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             }
 
                             match payload_cache.entry(*flow) {
-                                Entry::Occupied(e) =>println!("We had a problem"),
-                                Entry::Vacant(_) => println!("Ok"),
+                                Entry::Occupied(_e) =>eprintln!("We had a problem"),
+                                Entry::Vacant(_) => eprintln!("Ok"),
                             }
                             match payload_cache.entry(rev_flow) {
-                                Entry::Occupied(e) => println!("We had another problem"),
-                                Entry::Vacant(_) => println!("Ok"),
+                                Entry::Occupied(_e) => eprintln!("We had another problem"),
+                                Entry::Vacant(_) => eprintln!("Ok"),
                             }
                         } else {
                             println!("Passing because is not Client Key Exchange", );
@@ -549,7 +547,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 }
             } else {
-                println!("{:?} is marked as unsafe connection so we have to reset", flow );
+                println!("\nPkt #{} belong to a unsafe flow!\n", seq);
+                println!("{:?} is marked as unsafe connection so we have to reset\n", flow);
                 let _ = unsafe_connection.take(flow);
                 let tcph = p.get_mut_header();
                 tcph.set_rst_flag();

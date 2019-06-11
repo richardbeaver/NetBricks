@@ -12,6 +12,7 @@ extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
 
+use self::nf::lib::validator;
 use self::nf::*;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
