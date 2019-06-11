@@ -16,9 +16,10 @@ use rustls::internal::msgs::{
 };
 use rustls::{Certificate, ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::BuildHasherDefault;
-use std::time::{Duration, Instant};
+use std::mem;
+//use std::time::{Duration, Instant};
 use webpki;
 use webpki_roots;
 
@@ -67,10 +68,10 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     }
 }
 
+// TODO: move to failure crate!!!
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
 // implementation, or do something in between.
-// TODO: move to failure crate!!!
 #[derive(Debug, Clone)]
 struct CertificateNotExtractedError;
 
@@ -102,32 +103,6 @@ fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSNam
             false
         }
     }
-}
-
-/// Read payload into the payload cache.
-fn empty_and_read_payload(
-    rb: &mut ReorderedBuffer,
-    to_read: usize,
-    flow: Flow,
-    payload_cache: &mut HashMap<Flow, Vec<u8>>,
-) {
-    println!("We first empty the value of  {:?}", flow);
-    let _ = payload_cache.remove_entry(&flow);
-    println!(
-        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
-        to_read, flow,
-    );
-    let mut read_buf = [0; READ_SIZE];
-    let mut so_far = 0;
-    while to_read > so_far {
-        let payload = payload_cache.entry(flow).or_insert(Vec::new());
-        let n = rb.read_data(&mut read_buf);
-        so_far += n;
-        payload.extend(&read_buf[..n]);
-        //println!("\n{:?}\n", flow);
-        //println!("\nAnd the entries of that flow are: {:?}\n", payload);
-    }
-    println!("size of the entry is: {}", so_far);
 }
 
 /// Read payload into the payload cache.
@@ -345,8 +320,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 ) -> CompositionBatch {
     let mut rb_map = HashMap::<Flow, ReorderedBuffer, FnvHash>::with_hasher(Default::default());
 
-    // Create the payload cache
+    // Payload cache
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
+    // List of TLS connection with invalid certs.
+    let mut unsafe_connection: HashSet<Flow> = HashSet::new();
 
     // Unfortunately we have to store the previous flow as a state here, and initialize it with a
     // bogus flow.
@@ -389,32 +366,57 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             eprintln!("\n\nTCP Headers: {}", tcph);
             //let mut seg_len = p.get_header().seg_len();
             //println!("seg length is {}", seg_len);
-            match rb_map.entry(*flow) {
-                // occupied means that there already exists an entry for the flow
-                Entry::Occupied(mut e) => {
-                    // get entry
-                    let b = e.get_mut();
+            if !unsafe_connection.contains(flow) {
+                match rb_map.entry(*flow) {
+                    // occupied means that there already exists an entry for the flow
+                    Entry::Occupied(mut e) => {
+                        // get entry
+                        let b = e.get_mut();
 
-                    // TODO: rm later
-                    println!("\nPkt #{} is Occupied!", seq);
-                    println!("And the flow is: {:?}", flow);
-                    //println!("Previous one is: {:?}", prev_flow);
-                    //println!("Reverse of the current one is: {:?}\n", rev_flow);
+                        // TODO: rm later
+                        println!("\nPkt #{} is Occupied!", seq);
+                        println!("And the flow is: {:?}", flow);
+                        //println!("Previous one is: {:?}", prev_flow);
+                        //println!("Reverse of the current one is: {:?}\n", rev_flow);
 
-                    let tls_result = TLSMessage::read_bytes(&p.get_payload());
-                    let result = b.add_data(seq, p.get_payload());
-                    //println!("Raw payload bytes are: {:x?}\n", p.get_payload());
+                        let tls_result = TLSMessage::read_bytes(&p.get_payload());
+                        let result = b.add_data(seq, p.get_payload());
+                        //println!("Raw payload bytes are: {:x?}\n", p.get_payload());
 
-                    match tls_result {
-                        Some(packet) => {
-                            //println!("Now the packet length is {:?}", packet.length());
-                            if packet.typ == ContentType::Handshake {
-                                println!("\nWe have hit a flow but the current packet match handshake!");
-                                println!("Suppect to be starting a new TLS handshake, we should remove the hash value and start again");
-                                //println!("{:x?}", packet);
+                        match tls_result {
+                            Some(packet) => {
+                                //println!("Now the packet length is {:?}", packet.length());
+                                if packet.typ == ContentType::Handshake {
+                                    println!("\nWe have hit a flow but the current packet match handshake!");
+                                    println!("Suppect to be starting a new TLS handshake, we should remove the hash value and start again");
+                                    //println!("{:x?}", packet);
+                                    match result {
+                                        InsertionResult::Inserted { available, .. } => {
+                                            println!("Try to insert {}", available);
+                                            if available > 0 {
+                                                println!("\nInserted");
+                                                read_payload(b, available, *flow, &mut payload_cache);
+                                            }
+                                        }
+                                        InsertionResult::OutOfMemory { written, .. } => {
+                                            if written == 0 {
+                                                println!("Resetting since receiving data that is too far ahead");
+                                                b.reset();
+                                                b.seq(seq, p.get_payload());
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    println!("Packet type is not matched!")
+                                }
+                            }
+                            // NOTE: #679 and #103 are matched and inserted here
+                            None => {
+                                // The rest of the TLS server hello handshake should be captured here.
+                                println!("\nThere is nothing, that is why we should insert the packet!!!\n");
                                 match result {
                                     InsertionResult::Inserted { available, .. } => {
-                                        println!("Try to insert {}", available);
+                                        println!("Quack: try to insert {}", available);
                                         if available > 0 {
                                             println!("\nInserted");
                                             read_payload(b, available, *flow, &mut payload_cache);
@@ -428,145 +430,132 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                         }
                                     }
                                 }
-                            } else {
-                                println!("Packet type is not matched!")
                             }
                         }
-                        // NOTE: #679 and #103 are matched and inserted here
-                        None => {
-                            // The rest of the TLS server hello handshake should be captured here.
-                            println!("\nThere is nothing, that is why we should insert the packet!!!\n");
-                            match result {
-                                InsertionResult::Inserted { available, .. } => {
-                                    println!("Quack: try to insert {}", available);
-                                    if available > 0 {
-                                        println!("\nInserted");
-                                        read_payload(b, available, *flow, &mut payload_cache);
+
+                        // The only case that we remove the flow is because we have a ChangeClientSpec
+                        // packet.
+                        if is_client_key_exchange(&p.get_payload()) {
+                            // We need to retrieve the DNS name from the entry of the current flow, and
+                            // also parse the entry for the reverse flow.
+                            println!("\nimportant: Pkt {} is a client key exchange\n", seq);
+
+                            println!("Try to get the dns name from the entry of the {:?}", flow);
+                            let dns_name = match payload_cache.entry(*flow) {
+                                Entry::Occupied(e) => {
+                                    let (_, payload) = e.remove_entry();
+                                    //println!("And the payload is {:x?}", payload);
+                                    get_server_name(&payload)
+                                }
+                                Entry::Vacant(_) => {
+                                    println!("We had a problem: there is not entry of the ClientHello", );
+                                    None
+                                }
+                            };
+                            println!("ServerName is: {:?}", dns_name);
+
+                            println!("Try to parse the huge payload of {:?}", rev_flow);
+                            match payload_cache.entry(rev_flow) {
+                                Entry::Occupied(e) => {
+                                    let (_, payload) = e.remove_entry();
+                                    //eprintln!("\nDEBUG: entering parsing the huge payload {:x?}\n", payload);
+                                    println!("\nDEBUG: entering and then parsing the huge payload \n");
+                                    let certs  = parse_tls_frame(&payload);
+                                    //println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
+                                    println!("\nDEBUG: We now retrieve the certs from the tcp payload\n");
+
+                                    match certs {
+                                        Ok(chain) => {
+                                            println!("\nTesting our cert\n");
+                                            //println!("chain: {:?}", chain);
+                                            // FIXME: it is just a fix, and we definitely need to fix
+                                            // the ServerName parsing problem in linux01-all.pcap.
+                                            if dns_name.is_none() {
+                                                println!("DNS name not found, droping" );
+                                            } else {
+                                                let result = test_extracted_cert(chain, dns_name.unwrap());
+                                                println!("Result of the cert validation is {}", result);
+                                                if !result {
+                                                    println!("Certificate validation failed, both {:?} and {:?}'s connection need to be reset'", flow, rev_flow);
+                                                    unsafe_connection.insert(*flow);
+                                                    unsafe_connection.insert(rev_flow);
+                                                }
+                                            }
+                                        }
+                                        Err(e) => {
+                                            println!("error: {:?}", e)
+                                        }
+
                                     }
                                 }
-                                InsertionResult::OutOfMemory { written, .. } => {
-                                    if written == 0 {
-                                        println!("Resetting since receiving data that is too far ahead");
-                                        b.reset();
-                                        b.seq(seq, p.get_payload());
-                                    }
+                                Entry::Vacant(_) => {
+                                    println!("We had a problem: the entry of {:?} doesn't exist",rev_flow )
                                 }
                             }
+
+                            match payload_cache.entry(*flow) {
+                                Entry::Occupied(e) =>println!("We had a problem"),
+                                Entry::Vacant(_) => println!("Ok"),
+                            }
+                            match payload_cache.entry(rev_flow) {
+                                Entry::Occupied(e) => println!("We had another problem"),
+                                Entry::Vacant(_) => println!("Ok"),
+                            }
+                        } else {
+                            println!("Passing because is not Client Key Exchange", );
                         }
                     }
+                    // Vacant means that the entry for doesn't exist yet--we need to create one first
+                    Entry::Vacant(e) => {
+                        println!("\nPkt #{} is Vacant", seq);
+                        println!("\nAnd the flow is: {:?}", flow);
+                        //println!("Previous one is: {:?}", prev_flow);
 
-                    // The only case that we remove the flow is because we have a ChangeClientSpec
-                    // packet.
-                    if is_client_key_exchange(&p.get_payload()) {
-                        // We need to retrieve the DNS name from the entry of the current flow, and
-                        // also parse the entry for the reverse flow.
-                        println!("\nimportant: Pkt {} is a client key exchange\n", seq);
-
-                        println!("Try to get the dns name from the entry of the {:?}", flow);
-                        let dns_name = match payload_cache.entry(*flow) {
-                            Entry::Occupied(e) => {
-                                let (_, payload) = e.remove_entry();
-                                //println!("And the payload is {:x?}", payload);
-                                get_server_name(&payload)
-                            }
-                            Entry::Vacant(_) => {
-                                println!("We had a problem: there is not entry of the ClientHello", );
-                                None
-                            }
-                        };
-                        println!("ServerName is: {:?}", dns_name);
-
-                        println!("Try to parse the huge payload of {:?}", rev_flow);
-                        match payload_cache.entry(rev_flow) {
-                            Entry::Occupied(e) => {
-                                let (_, payload) = e.remove_entry();
-                                //eprintln!("\nDEBUG: entering parsing the huge payload {:x?}\n", payload);
-                                println!("\nDEBUG: entering and then parsing the huge payload \n");
-                                let certs  = parse_tls_frame(&payload);
-                                //println!("\nDEBUG: We now retrieve the certs from the tcp payload\n{:?}\n", certs);
-                                println!("\nDEBUG: We now retrieve the certs from the tcp payload\n");
-
-                                match certs {
-                                    Ok(chain) => {
-                                        println!("\nTesting our cert\n");
-                                        //println!("chain: {:?}", chain);
-                                        // FIXME: it is just a fix, and we definitely need to fix
-                                        // the ServerName parsing problem in linux01-all.pcap.
-                                        if dns_name.is_none() {
-                                            println!("DNS name not found, droping" );
-                                        } else {
-                                            let result = test_extracted_cert(chain, dns_name.unwrap());
-                                            println!("Result of the cert validation is {}", result);
+                        if is_client_hello(&p.get_payload())  {
+                            get_server_name(&p.get_payload());
+                        }
+                        // We only create new buffers if the current flow matches client hello or
+                        // server hello.
+                        //println!("\nis server hello?: {}", is_server_hello(&p.get_payload()));
+                        //println!("is client hello?: {}\n", is_client_hello(&p.get_payload()));
+                        if is_client_hello(&p.get_payload()) || is_server_hello(&p.get_payload()) {
+                            match ReorderedBuffer::new(BUFFER_SIZE) {
+                                Ok(mut b) => {
+                                    println!("  1: Has allocated a new buffer:");
+                                    if p.get_header().syn_flag() {
+                                        println!("    2: packet has a syn flag");
+                                        seq += 1;
+                                    } else {
+                                        println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
+                                    }
+                                    let result = b.seq(seq, p.get_payload());
+                                    match result {
+                                        InsertionResult::Inserted { available, .. } => {
+                                            read_payload(&mut b, available, *flow, &mut payload_cache);
+                                            println!("      4: This packet is inserted, quack");
+                                        }
+                                        InsertionResult::OutOfMemory { .. } => {
+                                            println!("      4: Too big a packet?");
                                         }
                                     }
-                                    Err(e) => {
-                                        println!("error: {:?}", e)
-                                    }
-
+                                    e.insert(b);
                                 }
-                            }
-                            Entry::Vacant(_) => {
-                                println!("We had a problem: the entry of {:?} doesn't exist",rev_flow )
-                            }
-                        }
-
-                        match payload_cache.entry(*flow) {
-                            Entry::Occupied(e) =>println!("We had a problem"),
-                            Entry::Vacant(_) => println!("Ok"),
-                        }
-                        match payload_cache.entry(rev_flow) {
-                            Entry::Occupied(e) => println!("We had another problem"),
-                            Entry::Vacant(_) => println!("Ok"),
-                        }
-                    } else {
-                        println!("Passing because is not Client Key Exchange", );
-                    }
-                }
-                // Vacant means that the entry for doesn't exist yet--we need to create one first
-                Entry::Vacant(e) => {
-                    println!("\nPkt #{} is Vacant", seq);
-                    println!("\nAnd the flow is: {:?}", flow);
-                    //println!("Previous one is: {:?}", prev_flow);
-
-                    if is_client_hello(&p.get_payload())  {
-                        get_server_name(&p.get_payload());
-                    }
-                    // We only create new buffers if the current flow matches client hello or
-                    // server hello.
-                    //println!("\nis server hello?: {}", is_server_hello(&p.get_payload()));
-                    //println!("is client hello?: {}\n", is_client_hello(&p.get_payload()));
-                    if is_client_hello(&p.get_payload()) || is_server_hello(&p.get_payload()) {
-                        match ReorderedBuffer::new(BUFFER_SIZE) {
-                            Ok(mut b) => {
-                                println!("  1: Has allocated a new buffer:");
-                                if p.get_header().syn_flag() {
-                                    println!("    2: packet has a syn flag");
-                                    seq += 1;
-                                } else {
-                                    println!("    2: packet recv for untracked flow did not have a syn flag, skipped");
+                                Err(_) => {
+                                    println!("\npkt #{} Failed to allocate a buffer for the new flow!", seq);
+                                    ()
                                 }
-                                let result = b.seq(seq, p.get_payload());
-                                match result {
-                                    InsertionResult::Inserted { available, .. } => {
-                                        read_payload(&mut b, available, *flow, &mut payload_cache);
-                                        println!("      4: This packet is inserted, quack");
-                                    }
-                                    InsertionResult::OutOfMemory { .. } => {
-                                        println!("      4: Too big a packet?");
-                                    }
-                                }
-                                e.insert(b);
-                            }
-                            Err(_) => {
-                                println!("\npkt #{} Failed to allocate a buffer for the new flow!", seq);
-                                ()
                             }
                         }
                     }
                 }
+            } else {
+                println!("{:?} is marked as unsafe connection so we have to reset", flow );
+                let _ = unsafe_connection.take(flow);
+                let tcph = p.get_mut_header();
+                tcph.set_rst_flag();
             }
-            //prev_flow = *flow;
         })
+    .reset()
     .compose();
     merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
 }
