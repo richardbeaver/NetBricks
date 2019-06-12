@@ -22,22 +22,22 @@ use webpki;
 use webpki_roots;
 
 fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
-    eprintln!("Matching server name");
+    println!("Matching server name");
 
     if on_frame(&buf).is_none() {
-        eprintln!("On frame read none bytes",);
+        println!("On frame read none bytes",);
         return None;
     } else {
         let (handshake, _) = on_frame(&buf).unwrap();
 
         match handshake.payload {
             ClientHello(x) => {
-                eprintln!("\nis client hello: {:?}\n", x.extensions);
+                println!("\nis client hello: {:?}\n", x.extensions);
                 let mut _iterator = x.extensions.iter();
                 let mut result = None;
                 while let Some(val) = _iterator.next() {
                     if ClientExtension::get_type(val) == ExtensionType::ServerName {
-                        eprintln!("Getting a ServerName type {:?}\n", val);
+                        println!("Getting a ServerName type {:?}\n", val);
                         let server_name = match val {
                             ClientExtension::ServerName(x) => x,
                             _ => return None,
@@ -46,7 +46,7 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 
                         match x.clone() {
                             ServerNamePayload::HostName(dns_name) => {
-                                eprintln!("DNS name is : {:?}", dns_name);
+                                println!("DNS name is : {:?}", dns_name);
                                 result = Some(dns_name);
                             }
                             _ => (),
@@ -55,7 +55,7 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
                         continue;
                     }
                 }
-                eprintln!("Result is {:?}", result);
+                println!("Result is {:?}", result);
                 result
             }
             _ => {
@@ -510,6 +510,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         //println!("Previous one is: {:?}", prev_flow);
 
                         if is_client_hello(&p.get_payload())  {
+                            println!("DEBUG: ClientHello", );
                             get_server_name(&p.get_payload());
                         }
                         // We only create new buffers if the current flow matches client hello or
