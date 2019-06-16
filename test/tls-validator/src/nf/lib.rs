@@ -32,12 +32,12 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 
         match handshake.payload {
             ClientHello(x) => {
-                println!("\nis client hello: {:?}\n", x.extensions);
+                eprintln!("\nis client hello: {:?}\n", x.extensions);
                 let mut _iterator = x.extensions.iter();
                 let mut result = None;
                 while let Some(val) = _iterator.next() {
                     if ClientExtension::get_type(val) == ExtensionType::ServerName {
-                        println!("Getting a ServerName type {:?}\n", val);
+                        eprintln!("Getting a ServerName type {:?}\n", val);
                         let server_name = match val {
                             ClientExtension::ServerName(x) => x,
                             _ => return None,
@@ -46,7 +46,7 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 
                         match x.clone() {
                             ServerNamePayload::HostName(dns_name) => {
-                                println!("DNS name is : {:?}", dns_name);
+                                eprintln!("DNS name is : {:?}", dns_name);
                                 result = Some(dns_name);
                             }
                             _ => (),
@@ -77,11 +77,14 @@ type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048; // 2048
 const READ_SIZE: usize = 256; // 256
 
-fn fixed_time() -> Result<webpki::Time, TLSError> {
-    Ok(webpki::Time::from_seconds_since_unix_epoch(1500000000))
+fn current_time() -> Result<webpki::Time, TLSError> {
+    match webpki::Time::try_from(std::time::SystemTime::now()) {
+        Ok(current_time) => Ok(current_time),
+        _ => Err(TLSError::FailedToGetCurrentTime),
+    }
 }
 
-static V: &'static WebPKIVerifier = &WebPKIVerifier { time: fixed_time };
+static V: &'static WebPKIVerifier = &WebPKIVerifier { time: current_time };
 
 fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
     println!("DEBUG: validate certs",);
@@ -231,7 +234,7 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
             eprintln!("{:x?}", payload);
         }
         ServerHello(payload) => {
-            eprintln!("ServerHello",);
+            println!("ServerHello",);
             eprintln!("{:x?}", payload);
         }
         _ => println!("None"),
@@ -239,7 +242,7 @@ fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNo
 
     let (_, rest) = buf.split_at(offset1 + tls_hdr_len);
     println!("\nAnd the magic number is {}\n", offset1 + tls_hdr_len);
-    //println!("DEBUG: The SECOND TLS frame starts with: {:x?}", rest);
+    eprintln!("DEBUG: The SECOND TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -405,7 +408,29 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                         }
                                     }
                                 } else {
-                                    println!("Packet type is not matched!")
+                                    // FIXME: we want to insert this packet anyway
+                                    println!("Packet type doesn't match a handshake, however we still need to insert this packet?");
+                                    println!("\nWe have hit a flow but the current packet match handshake!");
+                                    println!("Suppect to be starting a new TLS handshake, we should remove the hash value and start again");
+                                    //println!("{:x?}", packet);
+                                    match result {
+                                        InsertionResult::Inserted { available, .. } => {
+                                            println!("Try to insert {}", available);
+                                            if available > 0 {
+                                                println!("Inserted");
+                                                read_payload(b, available, *flow, &mut payload_cache);
+                                            }
+                                        }
+                                        InsertionResult::OutOfMemory { written, .. } => {
+                                            if written == 0 {
+                                                println!("Resetting since receiving data that is too far ahead");
+                                                b.reset();
+                                                b.seq(seq, p.get_payload());
+                                            }
+                                        }
+                                    }
+
+
                                 }
                             }
                             // NOTE: #679 and #103 are matched and inserted here
@@ -487,7 +512,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     }
                                 }
                                 Entry::Vacant(_) => {
-                                    println!("We had a problem: the entry of {:?} doesn't exist",rev_flow )
+                                    println!("We had a problem: the entry of {:?} doesn't exist", rev_flow)
                                 }
                             }
 
@@ -510,7 +535,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         //println!("Previous one is: {:?}", prev_flow);
 
                         if is_client_hello(&p.get_payload())  {
-                            println!("DEBUG: ClientHello", );
+                            println!("DEBUG: ClientHello");
                             get_server_name(&p.get_payload());
                         }
                         // We only create new buffers if the current flow matches client hello or
