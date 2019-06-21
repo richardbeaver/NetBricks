@@ -416,6 +416,23 @@ case $TASK in
         sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
             $executable "$@"
         ;;
+    profile)
+        shift
+        if [ $# -le 0 ]; then
+            print_examples
+        fi
+        cmd=$1
+        shift
+        executable=${BASE_DIR}/target/release/$cmd
+        if [ ! -e ${executable} ]; then
+            echo "${executable} not found, building"
+            ${BASE_DIR}/${BUILD_SCRIPT} build
+        fi
+        export PATH="${BIN_DIR}:${PATH}"
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
+            perf record --call-graph dwarf $executable "$@"
+        ;;
     run-trace)
         shift
         if [ $# -le 0 ]; then

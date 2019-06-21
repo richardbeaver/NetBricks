@@ -13,6 +13,7 @@ twox-hash = "*"
 rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.15.2", features = ["dangerous_configuration"] }
 webpki = "0.19"
 webpki-roots = "*"
+log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
 
 [features]
 default = []
