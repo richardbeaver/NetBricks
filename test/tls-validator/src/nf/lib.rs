@@ -21,6 +21,17 @@ use std::hash::BuildHasherDefault;
 use webpki;
 use webpki_roots;
 
+// TODO: move to failure crate!!!
+// Define our error types. These may be customized for our error handling cases.
+// Now we will be able to write our own errors, defer to an underlying error
+// implementation, or do something in between.
+#[derive(Debug, Clone)]
+struct CertificateNotExtractedError;
+
+type FnvHash = BuildHasherDefault<FnvHasher>;
+const BUFFER_SIZE: usize = 16384; // 2048
+const READ_SIZE: usize = 512; // 256
+
 fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     info!("Matching server name");
 
@@ -65,17 +76,6 @@ fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
         }
     }
 }
-
-// TODO: move to failure crate!!!
-// Define our error types. These may be customized for our error handling cases.
-// Now we will be able to write our own errors, defer to an underlying error
-// implementation, or do something in between.
-#[derive(Debug, Clone)]
-struct CertificateNotExtractedError;
-
-type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 2048; // 2048
-const READ_SIZE: usize = 256; // 256
 
 fn current_time() -> Result<webpki::Time, TLSError> {
     match webpki::Time::try_from(std::time::SystemTime::now()) {
@@ -336,6 +336,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     //     proto: 0,
     // };
 
+    // Cert count
+    let mut cert_count = 0;
+
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
         .parse::<MacHeader>()
@@ -364,7 +367,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let rev_flow = flow.reverse_flow();
             let mut seq = p.get_header().seq_num();
             let tcph = p.get_header();
-            info!("\n\nTCP Headers: {}", tcph);
+            println!("\n\nTCP Headers: {}", tcph);
             //let mut seg_len = p.get_header().seg_len();
             //info!("seg length is {}", seg_len);
             if !unsafe_connection.contains(flow) {
@@ -497,6 +500,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 info!("DNS name not found, droping" );
                                             } else {
                                                 let result = test_extracted_cert(chain, dns_name.unwrap());
+                                                cert_count =  cert_count+1;
+                                                println!("{}", cert_count);
                                                 info!("Result of the cert validation is {}", result);
                                                 if !result {
                                                     info!("\nCertificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
