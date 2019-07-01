@@ -16,7 +16,7 @@ extern crate webpki_roots;
 extern crate log;
 
 use self::nf::lib::validator;
-use self::nf::*;
+//use self::nf::*;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
