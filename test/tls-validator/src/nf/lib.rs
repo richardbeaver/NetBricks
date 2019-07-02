@@ -327,16 +327,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // List of TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
 
-    // Unfortunately we have to store the previous flow as a state here, and initialize it with a
-    // bogus flow.
-    // let mut prev_flow = Flow {
-    //     src_ip: 0,
-    //     dst_ip: 0,
-    //     src_port: 0,
-    //     dst_port: 0,
-    //     proto: 0,
-    // };
-
     // Cert count
     let mut cert_count = 0;
     // pkt count
@@ -346,7 +336,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut groups = parent
         .parse::<MacHeader>()
         .transform(box move |p| {
-            // FIXME: what is this>
+            // FIXME: what is this
             p.get_mut_header().swap_addresses();
         })
         .parse::<IpHeader>()
@@ -364,7 +354,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.get_header().flow().unwrap();
             flow
         })
-    .parse::<TcpHeader>()
+        .parse::<TcpHeader>()
         .transform(box move |p| {
             let flow = p.read_metadata();
             let rev_flow = flow.reverse_flow();
@@ -385,8 +375,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         // TODO: rm later
                         info!("\nPkt #{} is Occupied!", seq);
                         info!("And the flow is: {:?}", flow);
-                        //info!("Previous one is: {:?}", prev_flow);
-                        //info!("Reverse of the current one is: {:?}\n", rev_flow);
 
                         let tls_result = TLSMessage::read_bytes(&p.get_payload());
                         let result = b.add_data(seq, p.get_payload());
@@ -545,10 +533,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         info!("\nAnd the flow is: {:?}", flow);
                         //info!("Previous one is: {:?}", prev_flow);
 
+                        // TODO: get the server name and store it
                         if is_client_hello(&p.get_payload())  {
                             info!("ClientHello");
                             get_server_name(&p.get_payload());
                         }
+
+                        // TODO: we should only create new buffers if it is a server hello.
                         // We only create new buffers if the current flow matches client hello or
                         // server hello.
                         //info!("\nis server hello?: {}", is_server_hello(&p.get_payload()));
