@@ -15,8 +15,9 @@ extern crate webpki_roots;
 #[macro_use]
 extern crate log;
 
-use self::nf::lib::validator;
+use self::nf::validator;
 //use self::nf::*;
+//use self::utils::*;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
@@ -28,6 +29,7 @@ use std::thread;
 use std::time::Duration;
 
 mod nf;
+mod utils;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
