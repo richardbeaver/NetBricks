@@ -24,6 +24,7 @@ export examples=(
         test/packet_test
         # PVN examples
         test/tls-validator
+        test/pktgen-test
         test/adv-acl
 )
 

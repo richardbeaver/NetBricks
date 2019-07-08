@@ -1,0 +1,21 @@
+[package]
+name = "pktgen-test"
+version = "0.1.0"
+authors = ["Jethro Shuwen Sun <jethrosun@ccs.neu.edu"]
+
+[dependencies]
+e2d2 = { path = "../../framework", features = ["performance"] }
+time = ">=0.1.0"
+getopts = "*"
+rand = "0.6.0"
+fnv = "*"
+twox-hash = "*"
+rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.15.2", features = ["dangerous_configuration"] }
+webpki = "0.19"
+webpki-roots = "*"
+# disable trace level logs in debug builds and disable trace, debug, and info level logs in release builds
+log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
+
+[features]
+default = []
+print = []

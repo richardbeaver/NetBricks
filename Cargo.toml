@@ -23,6 +23,7 @@ members=["framework",
         "test/acl-fw",
         # PVN examples
         "test/tls-validator",
+        "test/pktgen-test",
         "test/adv-acl"]
 
 [profile.release]
