@@ -21,7 +21,7 @@ export examples=(
         test/tcp-reconstruction
         test/maglev
         test/chain-test
-        test/packet-test
+        test/packet_test
         # PVN examples
         test/tls-validator
         test/adv-acl

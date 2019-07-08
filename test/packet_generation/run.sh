@@ -3,7 +3,7 @@
 #set -x
 set -euo pipefail
 
-NF_NAME=packet-test
+NF_NAME=packet_test
 M_CORE=0
 
 #PORT_OPTIONS="dpdk:eth_pcap0,rx_pcap=data/http_lemmy.pcap,tx_pcap=/tmp/out.pcap"
