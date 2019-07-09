@@ -13,7 +13,7 @@ use std::hash::BuildHasherDefault;
 use utils;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 4096; // 2048
+const BUFFER_SIZE: usize = 8192; // 2048, 4096
 
 /// 2. group the same handshake messages into flows
 /// 3. defragment the packets into certificate(s)
@@ -87,7 +87,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         match tls_result {
 
                             Some(packet) => {
-                                // FIXME: I doubt this part is really necessary. 
+                                // FIXME: I doubt this part is really necessary.
                                 info!("Reached handshake packet", );
                                 //
                                 // if packet.typ == ContentType::Handshake {
@@ -292,6 +292,20 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let _ = unsafe_connection.take(flow);
                 let tcph = p.get_mut_header();
                 tcph.set_rst_flag();
+            }
+
+            if pkt_count % 500 == 0 {
+                // check
+                println!("\n{}\n", pkt_count % 500);
+                println!("rb map len is {}", rb_map.len());
+                println!("name cache len is {}", name_cache.len());
+                println!("payload cache len is {}", payload_cache.len());
+
+                println!("Cleared rb map");
+                rb_map.clear();
+                payload_cache.clear();
+                name_cache.clear();
+                unsafe_connection.clear();
             }
         })
     .reset()
