@@ -416,7 +416,7 @@ case $TASK in
         sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
             $executable "$@"
         ;;
-    profile)
+    flame)
         shift
         if [ $# -le 0 ]; then
             print_examples
@@ -467,7 +467,7 @@ case $TASK in
         sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
             RUST_BACKTRACE=full $executable "$@"
         ;;
-    debug)
+    gdb_debug)
         shift
         if [ $# -le 0 ]; then
             print_examples
@@ -484,6 +484,41 @@ case $TASK in
         sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
             rust-gdb --args $executable "$@"
         ;;
+    lldb_debug)
+        shift
+        if [ $# -le 0 ]; then
+            print_examples
+        fi
+        cmd=$1
+        shift
+        executable=${BASE_DIR}/target/release/$cmd
+        if [ ! -e ${executable} ]; then
+            echo "${executable} not found, building"
+            ${BASE_DIR}/${BUILD_SCRIPT} build
+        fi
+        export PATH="${BIN_DIR}:${PATH}"
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
+            rust-lldb $executable "$@"
+        ;;
+    profile)
+        shift
+        if [ $# -le 0 ]; then
+            print_examples
+        fi
+        cmd=$1
+        shift
+        executable=${BASE_DIR}/target/release/$cmd
+        if [ ! -e ${executable} ]; then
+            echo "${executable} not found, building"
+            ${BASE_DIR}/${BUILD_SCRIPT} build
+        fi
+        export PATH="${BIN_DIR}:${PATH}"
+        export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
+        sudo env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" LD_PRELOAD="$LD_PRELOAD" \
+            heaptrack $executable "$@"
+        ;;
+
     update_rust)
         _BUILD_UPDATE_=1
         rust

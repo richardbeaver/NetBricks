@@ -13,7 +13,7 @@ use std::hash::BuildHasherDefault;
 use utils;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 8192; // 2048, 4096
+const BUFFER_SIZE: usize = 4096; // 2048, 4096
 
 /// 2. group the same handshake messages into flows
 /// 3. defragment the packets into certificate(s)
@@ -252,7 +252,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 // the ServerName parsing problem in linux01-all.pcap.
                                                 let result = test_extracted_cert(chain, dns_name.unwrap());
                                                 cert_count =  cert_count+1;
-                                                println!("DEBUG: cert count is {}", cert_count);
+                                                //println!("DEBUG: cert count is {}", cert_count);
                                                 info!("DEBUG: Result of the cert validation is {}", result);
                                                 if !result {
                                                     info!("DEBUG: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
@@ -294,14 +294,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 tcph.set_rst_flag();
             }
 
-            if pkt_count % 500 == 0 {
+            if pkt_count % 100 == 0 {
                 // check
-                println!("\n{}\n", pkt_count % 500);
-                println!("rb map len is {}", rb_map.len());
-                println!("name cache len is {}", name_cache.len());
-                println!("payload cache len is {}", payload_cache.len());
-
-                println!("Cleared rb map");
+                // println!("\n{}\n", pkt_count % 500);
+                // println!("rb map len is {}", rb_map.len());
+                // println!("name cache len is {}", name_cache.len());
+                // println!("payload cache len is {}", payload_cache.len());
+                // println!("Cleared rb map");
                 rb_map.clear();
                 payload_cache.clear();
                 name_cache.clear();
