@@ -1,15 +1,14 @@
 sudo: required
 language: rust
 rust:
-    - nightly
+    - nightly-2019-05-28
 dist: bionic
 notifications:
   email: false
 matrix:
   include:
-    - rust: nightly
+    - rust: nightly-2019-05-28
 env:
-    - RUSTFLAGS=-D warnings
     - SYSTEM_CARGO=1
 before_install:
   - sudo apt-get update -qq
