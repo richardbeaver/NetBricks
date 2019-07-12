@@ -17,48 +17,50 @@ use webpki_roots;
 
 const READ_SIZE: usize = 256; // 256, 512, 1024
 
+// FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     info!("Matching server name");
 
-    if on_frame(&buf).is_none() {
-        info!("On frame read none bytes",);
-        return None;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
+    match on_frame(&buf) {
+        Some((handshake, _)) => {
+            match handshake.payload {
+                ClientHello(x) => {
+                    //info!("\nis client hello: {:?}\n", x.extensions);
+                    let mut _iterator = x.extensions.iter();
+                    let mut result = None;
+                    while let Some(val) = _iterator.next() {
+                        if ClientExtension::get_type(val) == ExtensionType::ServerName {
+                            //info!("Getting a ServerName type {:?}\n", val);
+                            let server_name = match val {
+                                ClientExtension::ServerName(x) => x,
+                                _ => return None,
+                            };
+                            let ServerName { typ: _, payload: x } = &server_name[0];
 
-        match handshake.payload {
-            ClientHello(x) => {
-                //info!("\nis client hello: {:?}\n", x.extensions);
-                let mut _iterator = x.extensions.iter();
-                let mut result = None;
-                while let Some(val) = _iterator.next() {
-                    if ClientExtension::get_type(val) == ExtensionType::ServerName {
-                        //info!("Getting a ServerName type {:?}\n", val);
-                        let server_name = match val {
-                            ClientExtension::ServerName(x) => x,
-                            _ => return None,
-                        };
-                        let ServerName { typ: _, payload: x } = &server_name[0];
-
-                        match x.clone() {
-                            ServerNamePayload::HostName(dns_name) => {
-                                info!("DNS name is : {:?}", dns_name);
-                                result = Some(dns_name);
+                            match x.clone() {
+                                ServerNamePayload::HostName(dns_name) => {
+                                    info!("DNS name is : {:?}", dns_name);
+                                    result = Some(dns_name);
+                                }
+                                _ => (),
                             }
-                            _ => (),
+                        } else {
+                            continue;
                         }
-                    } else {
-                        continue;
                     }
+                    info!("DEBUG: Result is {:?}", result);
+                    info!("DEBUG:",);
+                    result
                 }
-                info!("DEBUG: Result is {:?}", result);
-                info!("DEBUG:",);
-                result
+                _ => {
+                    info!("not client hello",);
+                    None
+                }
             }
-            _ => {
-                info!("not client hello",);
-                None
-            }
+        }
+        None => {
+            info!("On frame read none bytes",);
+            return None;
         }
     }
 }
