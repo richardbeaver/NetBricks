@@ -252,8 +252,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 // the ServerName parsing problem in linux01-all.pcap.
                                                 let result = test_extracted_cert(chain, dns_name.unwrap());
                                                 cert_count =  cert_count+1;
-                                                println!("DEBUG: cert count is {}", cert_count);
-                                                println!("DEBUG: Result of the cert validation is {}", result);
+                                                //println!("DEBUG: cert count is {}", cert_count);
+                                                //println!("DEBUG: Result of the cert validation is {}", result);
                                                 if !result {
                                                     info!("DEBUG: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
                                                     unsafe_connection.insert(*flow);
