@@ -1,12 +1,14 @@
-Going to start with configuration Configuration: name:  =========== Running ZCSI Maglev ============   mempool size: 2047 core cache: 32 primary core: 1
+Going to start with configuration Configuration: name:  =========== Running ZCSI Maglev ============   mempool size: 2047 core cache: 32 primary core: 0
  Ports:
-	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 2 ] TXQ_Count: 1 TX_Queues: 2 RXD: 128 TXD: 128 Loopback false
-	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 3 ] TXQ_Count: 1 TX_Queues: 3 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 4 ] TXQ_Count: 1 TX_Queues: 4 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 5 ] TXQ_Count: 1 TX_Queues: 5 RXD: 128 TXD: 128 Loopback false
 Cores:
-	2
-	3
 	4
 	5
+	6
+	7
+	8
+	9
 
 EAL: Probing VFIO support...
 Running on node 0
@@ -23,24 +25,31 @@ Going to try and use port 1
 Running on node 0
 Running on node 0
 Running on node 0
-Receiving started
-Generating permutations
 Running on node 0
 Receiving started
 Running 0 pipelines
 Receiving started
+Receiving started
 Running 0 pipelines
+Generating permutations
+Running on node 0
 Receiving started
 Generating permutations
+Receiving started
+Running 0 pipelines
+Running on node 0
+Receiving started
+Starting scheduler on 6
+Running 0 pipelines
 Generating LUT
 Generating LUT
 Done Generating LUT
 Running 1 pipelines
-Done Generating LUT
-Running 1 pipelines
-Starting scheduler on 3
 Starting scheduler on 4
+Starting scheduler on 8
+Done Generating LUT
+Running 1 pipelines
 Starting scheduler on 5
-Starting scheduler on 2
+Starting scheduler on 9
+Starting scheduler on 7
 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
-60.01 OVERALL RX 12588892.49 TX 12219099.36

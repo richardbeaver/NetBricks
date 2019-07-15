@@ -3,7 +3,7 @@
 #set -x
 set -euo pipefail
 
-NF_NAME=pvn-tls
+NF_NAME=zcsi-maglev
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"

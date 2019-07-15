@@ -13,5 +13,5 @@ PORT_TWO="0000:01:00.1"
 
 #../../build.sh run $NF_NAME -n "LPM testing" -m $M_CORE -c $CORES -p $PORT_OPTIONS
 ../../build.sh run $NF_NAME -n "LPM testing" -m $M_CORE \
-    -c 2  \
+    -c 2 -c 3 -c 4 \
     -p $PORT_ONE -p $PORT_TWO

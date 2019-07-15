@@ -1,0 +1,583 @@
+jethros@tuco ~/dev/net/tes/maglev:dev> ./trace.sh
+Going to start with configuration Configuration: name:  =========== Running TLS Validator ============   mempool size: 2047 core cache: 32 primary core: 1
+ Ports:
+        Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 2 ] TXQ_Count: 1 TX_Queues: 2 RXD: 128 TXD: 128 Loopback false
+        Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 3 ] TXQ_Count: 1 TX_Queues: 3 RXD: 128 TXD: 128 Loopback false
+Cores:
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        10
+        11
+
+Failed to detect # of NUMA nodes from: /sys/devices/system/node/possible. Assuming a single-node system...
+EAL: Detected 12 lcore(s)
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Running on node 0
+Running on node 0
+Running on node 0
+Running on node 0
+Running on node 0
+Running on node 0
+Receiving started
+Receiving started
+Running on node 0
+Running 0 pipelines
+Running 0 pipelines
+Running on node 0
+Receiving started
+Generating permutations
+Running on node 0
+Receiving started
+Receiving started
+Receiving started
+Receiving started
+thread 'sched-5Running 0 pipelines
+Receiving started
+Running 0 pipelines
+' panicked at 'Starting scheduler on 5
+Generating permutations
+Starting scheduler on 9
+index out of bounds: the len is 0 but the index is 0', thread '/rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rsReceiving started
+Running 0 pipelines
+Running 0 pipelines
+Running 0 pipelines
+sched-9:' panicked at '2687index out of bounds: the len is 0 but the index is 0:', 14/rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs
+:stack backtrace:
+2687:14
+Receiving started
+Running 0 pipelines
+Generating LUT
+Generating LUT
+Done Generating LUT
+Running 1 pipelines
+Starting scheduler on 3
+Starting scheduler on 7
+thread 'sched-7' panicked at 'index out of bounds: the len is 0 but the index is 0', /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687:14
+Done Generating LUT
+Running 1 pipelines
+Starting scheduler on 2
+Starting scheduler on 11
+Starting scheduler on 6
+thread 'sched-11Starting scheduler on 8
+' panicked at 'thread 'thread 'Starting scheduler on 4
+Starting scheduler on 10
+index out of bounds: the len is 0 but the index is 0sched-8thread 'sched-4', /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
+' panicked at 'sched-10' panicked at ':index out of bounds: the len is 0 but the index is 0' panicked at 'index out of bounds: the len is 0 but the index is 02687', ', index out of bounds: the len is 0 but the index is 0:/rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs/rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs', 14::/rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs
+:268726872687::14:14
+
+14
+thread 'sched-6' panicked at 'index out of bounds: the len is 0 but the index is 0', /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687:14
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+stack backtrace:
+   0:     0x55555564e246 - backtrace::backtrace::libunwind::trace::h8ed5d9ae1d8037d0
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/libunwind.rs:88
+   1:     0x55555564e246 - backtrace::backtrace::trace_unsynchronized::h2c3e43c5cb83cbee
+                               at /cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.29/src/backtrace/mod.rs:66
+   2:     0x55555564e246 - std::sys_common::backtrace::_print::h621b9f6822ef2d33
+                               at src/libstd/sys_common/backtrace.rs:47
+   3:     0x55555564e246 - std::sys_common::backtrace::print::h6edc8d6ecd0550e9
+                               at src/libstd/sys_common/backtrace.rs:36
+   4:     0x55555564e246 - std::panicking::default_hook::{{closure}}::hac736251a65c7a5c
+                               at src/libstd/panicking.rs:198
+   5:     0x55555564d9c7 - std::panicking::default_hook::he803cdbf34b9db7d
+                               at src/libstd/panicking.rs:212
+   6:     0x55555564d9c7 - std::panicking::rust_panic_with_hook::h335228e51d0b7420
+                               at src/libstd/panicking.rs:475
+   7:     0x55555564d4ef - std::panicking::continue_panic_fmt::hcdc07195324b4d3a
+                               at src/libstd/panicking.rs:382
+   8:     0x555555657036 - rust_begin_unwind
+                               at src/libstd/panicking.rs:309
+   9:     0x5555556601fc - core::panicking::panic_fmt::h15cf883752a828ed
+                               at src/libcore/panicking.rs:85
+  10:     0x55555565fce4 - core::panicking::panic_bounds_check::hd777625aa9720b4f
+                               at src/libcore/panicking.rs:61
+  11:     0x5555556740d6 - <usize as core::slice::SliceIndex<[T]>>::index_mut::ha3c591f1cbd7f756
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2687
+  12:     0x5555556740d6 - core::slice::<impl core::ops::index::IndexMut<I> for [T]>::index_mut::h6ec689d17db58155
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/slice/mod.rs:2548
+  13:     0x5555556740d6 - <alloc::vec::Vec<T> as core::ops::index::IndexMut<I>>::index_mut::h2fa943b2cf0da55b
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/vec.rs:1768
+  14:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::operators::act::Act>::act::hf1f4818901e4f946
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:49
+  15:     0x5555556740d6 - <e2d2::operators::merge_batch::MergeBatch<T> as e2d2::scheduler::Executable>::execute::h684aac6596c3ebf6
+                               at /home/jethros/dev/netbricks/framework/src/operators/merge_batch.rs:105
+  16:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_internal::h1e5ff7f73be2a110
+                               at framework/src/scheduler/standalone_scheduler.rs:130
+  17:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::execute_loop::h42f8e75faa57b36d
+                               at framework/src/scheduler/standalone_scheduler.rs:155
+  18:     0x55555558acf4 - e2d2::scheduler::standalone_scheduler::StandaloneScheduler::handle_request::h17fad408b3b4a388
+                               at framework/src/scheduler/standalone_scheduler.rs:96
+  19:     0x55555559854c - e2d2::scheduler::context::NetBricksContext::start_scheduler::{{closure}}::hde69d59798455bf8
+                               at framework/src/scheduler/standalone_scheduler.rs:118
+  20:     0x55555559854c - std::sys_common::backtrace::__rust_begin_short_backtrace::heed81ec47cf0495f
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/sys_common/backtrace.rs:77
+  21:     0x55555558ec6a - std::panicking::try::h7dd6d849fc778550
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:470
+  22:     0x55555558ec6a - std::panic::catch_unwind::h3c864a2196f562ac
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/panic.rs:388
+  23:     0x55555558ec6a - std::thread::Builder::spawn_unchecked::{{closure}}::h5302f3b03c2f4eda
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libstd/thread/mod.rs:469
+  24:     0x55555558ec6a - core::ops::function::FnOnce::call_once{{vtable.shim}}::h99c9a731bd6224d8
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/libcore/ops/function.rs:231
+  25:     0x555555656c4f - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::h70b9bc372dbba5b3
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  26:     0x55555565784c - <alloc::boxed::Box<F> as core::ops::function::FnOnce<A>>::call_once::hf896d6672d764b74
+                               at /rustc/8ebd67e4ee394cad9441a801f2022724ae7e07db/src/liballoc/boxed.rs:746
+  27:     0x55555565784c - std::sys_common::thread::start_thread::h8ca08fc3dab6780a
+                               at src/libstd/sys_common/thread.rs:13
+  28:     0x55555565784c - std::sys::unix::thread::Thread::new::thread_start::hb3d1bbb3a877e408
+                               at src/libstd/sys/unix/thread.rs:79
+  29:     0x7ffff6bde6db - start_thread
+  30:     0x7ffff66ef88f - __clone
+  31:                0x0 - <unknown>
+60.01 OVERALL RX 777606.03 TX 777606.03
