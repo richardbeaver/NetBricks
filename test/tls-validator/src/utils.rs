@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use webpki;
 use webpki_roots;
 
-const READ_SIZE: usize = 256; // 256, 512, 1024
+const READ_SIZE: usize = 8192; // 256, 512, 1024
 
 // FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
