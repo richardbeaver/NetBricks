@@ -17,7 +17,7 @@ use webpki_roots;
 
 use rand::Rng;
 
-const READ_SIZE: usize = 1024; // 256, 512, 1024
+const READ_SIZE: usize = 16384; // 256, 512, 1024, 2048, 4096, 8192, 16384
 
 // FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
