@@ -45,5 +45,5 @@ fn main() {
     println!("BEGIN TEST OUTPUT");
     config.execute();
 
-    sleep(Duration::from_secs(10));
+    //sleep(Duration::from_secs(10));
 }

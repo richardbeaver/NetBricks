@@ -12,6 +12,8 @@ extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
 
+use rand::{thread_rng, Rng};
+
 #[macro_use]
 extern crate log;
 
@@ -85,6 +87,7 @@ fn main() {
     let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
     let sleep_time = Duration::from_millis(sleep_delay);
     println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
+
     loop {
         thread::sleep(sleep_time); // Sleep for a bit
         let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;

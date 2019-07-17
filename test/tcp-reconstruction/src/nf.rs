@@ -12,7 +12,7 @@ use std::hash::BuildHasherDefault;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 2048;
-const READ_SIZE: usize = 256;
+const READ_SIZE: usize = 2048;
 
 fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
     let mut read_buf = [0; READ_SIZE];
@@ -76,7 +76,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                         match payload_cache.entry(*flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
-                                println!("{}", String::from_utf8_lossy(&payload));
+                                //println!("{}", String::from_utf8_lossy(&payload));
                             }
                             Entry::Vacant(_) => {
                                 println!("dumped an empty payload for Flow={:?}", flow);

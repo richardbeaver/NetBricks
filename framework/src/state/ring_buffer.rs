@@ -85,7 +85,7 @@ impl RingBuffer {
         let available = self.mask.wrapping_add(self.head).wrapping_sub(self.tail);
         let write = min(data.len(), available);
         if write != data.len() {
-            println!("Not writing all, available {}\n", available);
+            //println!("Not writing all, available {}\n", available);
         }
         let offset = self.tail & self.mask;
         self.seek_tail(write);

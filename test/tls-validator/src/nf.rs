@@ -13,7 +13,7 @@ use std::hash::BuildHasherDefault;
 use utils;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
-const BUFFER_SIZE: usize = 8192; // 2048, 4096, 8192,
+const BUFFER_SIZE: usize = 1024; // 2048, 4096, 8192, 16384
 
 /// 2. group the same handshake messages into flows
 /// 3. defragment the packets into certificate(s)

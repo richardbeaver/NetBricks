@@ -78,7 +78,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                         match payload_cache.entry(*flow) {
                             Entry::Occupied(e) => {
                                 let (_, payload) = e.remove_entry();
-                                println!("{}", String::from_utf8_lossy(&payload));
+                                //println!("{}", String::from_utf8_lossy(&payload));
                             }
                             Entry::Vacant(_) => {
                                 println!("dumped an empty payload for Flow={:?}", flow);

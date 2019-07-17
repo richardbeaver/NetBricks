@@ -4,7 +4,7 @@
 #set -x
 set -euo pipefail
 
-NF_NAME=zcsi-tcprecon
+NF_NAME=tcp_payload
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"

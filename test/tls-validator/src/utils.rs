@@ -15,7 +15,9 @@ use std::collections::HashMap;
 use webpki;
 use webpki_roots;
 
-const READ_SIZE: usize = 8192; // 256, 512, 1024
+use rand::Rng;
+
+const READ_SIZE: usize = 1024; // 256, 512, 1024
 
 // FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
@@ -122,6 +124,9 @@ pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payloa
 
 /// Parse a slice of bytes into a TLS frame and the size of payload.
 pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
+    let mut rng = rand::thread_rng();
+    let num: u32 = rng.gen_range(0, 100);
+
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
             // info!("\n\nParsing this TLS frame is \n{:x?}", packet);
