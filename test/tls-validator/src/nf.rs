@@ -5,7 +5,7 @@ use e2d2::scheduler::Scheduler;
 use e2d2::state::{InsertionResult, ReorderedBuffer};
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
-use rustls::internal::msgs::{codec::Codec, enums::ContentType, message::Message as TLSMessage};
+use rustls::internal::msgs::{codec::Codec, message::Message as TLSMessage};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::hash::BuildHasherDefault;
@@ -63,7 +63,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.read_metadata();
             let rev_flow = flow.reverse_flow();
             let mut seq = p.get_header().seq_num();
-            let tcph = p.get_header();
+            let _tcph = p.get_header();
             //info!("\nTCP Headers: {}", tcph);
             pkt_count = pkt_count + 1;
             //println!("Total {}", pkt_count);
@@ -86,7 +86,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                         match tls_result {
 
-                            Some(packet) => {
+                            Some(_packet) => {
                                 // FIXME: I doubt this part is really necessary.
                                 info!("Reached handshake packet", );
                                 //
@@ -252,6 +252,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 // the ServerName parsing problem in linux01-all.pcap.
                                                 let result = test_extracted_cert(chain, dns_name.unwrap());
                                                 cert_count =  cert_count+1;
+                                                if cert_count % 100 == 0{
+                                                    println!("DEBUG: cert count is {}", cert_count);
+                                                }
                                                 //println!("DEBUG: cert count is {}", cert_count);
                                                 //println!("DEBUG: Result of the cert validation is {}", result);
                                                 if !result {
@@ -294,7 +297,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 tcph.set_rst_flag();
             }
 
-            if pkt_count % 100 == 0 {
+            if pkt_count % 5 == 0 {
                 // // check
                 // info!("\n{}\n", pkt_count % 500);
                 // info!("rb map len is {}", rb_map.len());
@@ -302,10 +305,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // info!("payload cache len is {}", payload_cache.len());
                 // info!("Cleared rb map");
                 rb_map.clear();
-                payload_cache.clear();
                 name_cache.clear();
                 unsafe_connection.clear();
             }
+            if pkt_count % 5 == 0{
+                payload_cache.clear();
+            }
+            
         })
     .reset()
     .compose();

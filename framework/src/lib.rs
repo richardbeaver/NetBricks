@@ -59,18 +59,20 @@ pub mod control;
 pub mod headers;
 #[doc(hidden)]
 pub mod interface;
+
 #[allow(dead_code)]
 mod native;
 mod native_include;
-#[doc(hidden)]
+
 pub mod operators;
+#[doc(hidden)]
+pub mod state;
+
 #[doc(hidden)]
 pub mod queues;
 #[doc(hidden)]
 pub mod scheduler;
 #[doc(hidden)]
 pub mod shared_state;
-#[doc(hidden)]
-pub mod state;
 #[doc(hidden)]
 pub mod utils;

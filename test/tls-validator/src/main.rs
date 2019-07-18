@@ -6,13 +6,10 @@
 extern crate e2d2;
 extern crate fnv;
 extern crate getopts;
-extern crate rand;
 extern crate rustls;
 extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
-
-use rand::{thread_rng, Rng};
 
 #[macro_use]
 extern crate log;

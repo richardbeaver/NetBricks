@@ -15,8 +15,6 @@ use std::collections::HashMap;
 use webpki;
 use webpki_roots;
 
-use rand::Rng;
-
 const READ_SIZE: usize = 16384; // 256, 512, 1024, 2048, 4096, 8192, 16384
 
 // FIXME: Allocating too much memory???
@@ -124,9 +122,6 @@ pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payloa
 
 /// Parse a slice of bytes into a TLS frame and the size of payload.
 pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
-    let mut rng = rand::thread_rng();
-    let num: u32 = rng.gen_range(0, 100);
-
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
             // info!("\n\nParsing this TLS frame is \n{:x?}", packet);
@@ -237,7 +232,7 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     //     _ => info!("None"),
     // }
     let offset1 = match on_frame(&buf) {
-        Some((handshake1, offset1)) => offset1,
+        Some((_handshake1, offset1)) => offset1,
         None => return Err(CertificateNotExtractedError),
     };
 
