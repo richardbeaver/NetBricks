@@ -6,8 +6,10 @@ use common::*;
 use headers::EndOffset;
 use interface::*;
 
-/// Deparsed batch.
-// TODO:doc
+/// Deparsed Batch.
+///
+/// DeparsedBatch pops the bottom most header from the packet's header stack and returns it to the
+/// payload.
 pub struct DeparsedBatch<V>
 where
     V: Batch + BatchIterator + Act,

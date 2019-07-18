@@ -8,7 +8,10 @@ use interface::*;
 use std::marker::PhantomData;
 
 /// Parsed Batch.
-// TODO:doc
+///
+/// ParsedBatch Takes as input a header type and a packet structure (as described above). The
+/// abstraction parses the payload using the header type and pushes the resulting header onto the
+/// header stack and removes bytes representing the header from the payload.
 pub struct ParsedBatch<T, V>
 where
     T: EndOffset<PreviousHeader = V::Header>,

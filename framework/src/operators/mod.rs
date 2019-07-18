@@ -1,3 +1,5 @@
+/// Operators are the set of operators provided by NetBricks for implementing users' own network
+/// functions.
 use self::act::Act;
 pub use self::add_metadata::AddMetadataBatch;
 use self::add_metadata::MetadataFn;

@@ -11,7 +11,11 @@ use std::marker::PhantomData;
 pub type TransformFn<T, M> = Box<FnMut(&mut Packet<T, M>) + Send>;
 
 /// Transform batch.
-// TODO:doc
+///
+/// TransformBatch allows the header and/or payload to be modified as specified by a UDF. The UDF
+/// can make arbitrary changes to the packet header and pay- load, change packet size (adding or
+/// removing bytes from the payload) and can change the metadata or associate new metadata with the
+/// packet.
 pub struct TransformBatch<T, V>
 where
     T: EndOffset,

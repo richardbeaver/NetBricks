@@ -8,7 +8,9 @@ use scheduler::Executable;
 use std::cmp;
 
 /// Merge batch.
-// TODO:doc
+///
+/// MergeBatch provides a node where separate processing branches can be merged together. All
+/// packets entering a merge node exit as a single group.
 pub struct MergeBatch<T: Batch> {
     parents: Vec<T>,
     which: usize,

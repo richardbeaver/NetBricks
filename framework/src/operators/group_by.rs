@@ -15,7 +15,12 @@ use std::marker::PhantomData;
 pub type GroupFn<T, M> = Box<FnMut(&Packet<T, M>) -> usize + Send>;
 
 /// Group by.
-// TODO:doc
+///
+/// Group By is used either to explicitly branch control flow within an NF or express branches in
+/// how multiple NFs are chained together. The group by abstraction takes as input the number of
+/// groups into which packets are split and a packet-based UDF which given a packet returns the ID
+/// of the group to which it belongs. NetBricks also provides a set of predefined grouping
+/// functions that group traffic using commonly-used criterion (e.g., TCP flow).
 pub struct GroupBy<T, V>
 where
     T: EndOffset + 'static,

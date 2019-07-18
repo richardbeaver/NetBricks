@@ -11,8 +11,11 @@ use interface::PacketTx;
 // TODO:doc
 pub type FilterFn<T, M> = Box<FnMut(&Packet<T, M>) -> bool + Send>;
 
-/// Filer batch.
-// TODO:doc
+/// Filter batch.
+///
+/// FilterBatch allows packet's meeting some criterion to be dropped. UDFs supplied to the filter
+/// abstraction return true or false. Filter nodes drops all packets for which the UDF returns
+/// false.
 pub struct FilterBatch<T, V>
 where
     T: EndOffset,
