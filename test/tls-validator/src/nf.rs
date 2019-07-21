@@ -311,7 +311,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count % 5 == 0{
                 payload_cache.clear();
             }
-            
         })
     .reset()
     .compose();
