@@ -25,9 +25,6 @@ toml = "*"
 # Hack for SHM
 uuid= { version = "*", features=["v4"] }
 error-chain = "*"
-# NOTE(jethros): we don't need tokio-core
-# tokio-core=">=0.1.8"
-# futures=">=0.1.14"
 clippy = { version = "*", optional = true }
 
 [features]

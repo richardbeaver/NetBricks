@@ -11,6 +11,7 @@ use rustls::internal::msgs::{
     message::{Message as TLSMessage, MessagePayload},
 };
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use webpki;
 use webpki_roots;
@@ -22,13 +23,59 @@ const READ_SIZE: usize = 16384; // 256, 512, 1024, 2048, 4096, 8192, 16384
 pub struct CertificateNotExtractedError;
 
 /// Start a TLS flow entry by inserting a TLS frame.
-pub fn tlsf_insert() {}
+pub fn tlsf_insert(
+    flow: Flow,
+    payload_cache: &mut HashMap<Flow, Vec<u8>>,
+    seqnum_map: &mut HashMap<Flow, u32>,
+    payload: &[u8],
+    expected_seq: u32,
+) {
+    payload_cache.insert(flow, payload.to_vec());
+    seqnum_map.insert(flow, expected_seq);
+}
 
 /// Update a TLS flow entry by updating the entry with continuing TLS frame.
-pub fn tlsf_update() {}
+pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
+    e.and_modify(|e| {
+        //println!("Before writing more bytes {:?}", e.len());
+        e.extend(payload);
+        //println!("After writing the bytes {:?}", e.len());
+        ()
+    });
+}
 
 /// Remove a TLS flow entry.
-pub fn tlsf_remove() {}
+pub fn tlsf_remove(e: Entry<Flow, Vec<u8>>) {
+    // let buf = match e {
+    //     Entry::Vacant(_) => println!("?"),
+    //     Entry::Occupied(b) => {
+    //         println!("?");
+    //         b
+    //     }
+    // };
+    // parse_tls_frame(&buf);
+    unimplemented!();
+}
+
+pub fn tlsf_tmp_store(
+    flow: Flow,
+    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
+    tmp_seqnum_map: &HashMap<Flow, u32>,
+    payload: &[u8],
+) {
+    //unimplemented!();
+}
+
+/// Remove a TLS flow entry.
+pub fn tlsf_combine_remove(
+    flow: Flow,
+    payload_cache: &HashMap<Flow, Vec<u8>>,
+    seqnum_map: &HashMap<Flow, u32>,
+    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
+    tmp_seqnum_map: &HashMap<Flow, u32>,
+) {
+    unimplemented!();
+}
 
 /// Read payload into the payload cache.
 pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {

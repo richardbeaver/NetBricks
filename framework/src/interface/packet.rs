@@ -263,7 +263,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
 
     /// Return the payload size, e.g., data_len - offset - payload_offset.
     #[inline]
-    fn payload_size(&self) -> usize {
+    pub fn payload_size(&self) -> usize {
         self.data_len() - self.offset() - self.payload_offset()
     }
 
