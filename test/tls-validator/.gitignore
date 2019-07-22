@@ -6,3 +6,4 @@ out.profile
 *.pl
 heaptrack*
 callgrind*
+*.log
