@@ -79,7 +79,7 @@ pub fn tlsf_combine_remove(
 
 /// Read payload into the payload cache.
 pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
-    debug!(
+    info!(
         "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
         to_read, flow,
     );
@@ -90,26 +90,26 @@ pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payloa
         let n = rb.read_data(&mut read_buf);
         so_far += n;
         payload.extend(&read_buf[..n]);
-        //debug!("{:?}\n", flow);
-        //debug!("And the entries of that flow are: {:?}\n", payload);
+        //info!("{:?}\n", flow);
+        //info!("And the entries of that flow are: {:?}\n", payload);
     }
-    debug!("size of the entry is: {}", so_far);
+    info!("size of the entry is: {}", so_far);
 }
 
 // FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
-    debug!("Matching server name");
+    info!("Matching server name");
 
     match on_frame(&buf) {
         Some((handshake, _)) => {
             match handshake.payload {
                 ClientHello(x) => {
-                    //debug!("is client hello: {:?}\n", x.extensions);
+                    //info!("is client hello: {:?}\n", x.extensions);
                     let mut _iterator = x.extensions.iter();
                     let mut result = None;
                     while let Some(val) = _iterator.next() {
                         if ClientExtension::get_type(val) == ExtensionType::ServerName {
-                            //debug!("Getting a ServerName type {:?}\n", val);
+                            //info!("Getting a ServerName type {:?}\n", val);
                             let server_name = match val {
                                 ClientExtension::ServerName(x) => x,
                                 _ => return None,
@@ -118,7 +118,7 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 
                             match x.clone() {
                                 ServerNamePayload::HostName(dns_name) => {
-                                    debug!("DNS name is : {:?}", dns_name);
+                                    info!("DNS name is : {:?}", dns_name);
                                     result = Some(dns_name);
                                 }
                                 _ => (),
@@ -127,18 +127,18 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
                             continue;
                         }
                     }
-                    debug!("DEBUG: Result is {:?}", result);
-                    debug!("DEBUG:",);
+                    info!("info: Result is {:?}", result);
+                    info!("info:",);
                     result
                 }
                 _ => {
-                    debug!("not client hello",);
+                    info!("not client hello",);
                     None
                 }
             }
         }
         None => {
-            debug!("On frame read none bytes",);
+            info!("On frame read none bytes",);
             return None;
         }
     }
@@ -154,20 +154,20 @@ pub fn current_time() -> Result<webpki::Time, TLSError> {
 static V: &'static WebPKIVerifier = &WebPKIVerifier { time: current_time };
 
 pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
-    debug!("DEBUG: validate certs",);
-    debug!("dns name is {:?}\n", dns_name);
-    //debug!("certs are {:?}\n", certs);
+    info!("info: validate certs",);
+    info!("dns name is {:?}\n", dns_name);
+    //info!("certs are {:?}\n", certs);
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     //let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
     let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
     match result {
         Ok(_) => {
-            debug!("DEBUG: \nIt worked!!!");
+            info!("info: \nIt worked!!!");
             return true;
         }
         Err(e) => {
-            debug!("DEBUG: \nOops, error: {}", e);
+            info!("info: \nOops, error: {}", e);
             false
         }
     }
@@ -177,24 +177,24 @@ pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DN
 pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
-            // debug!("\nParsing this TLS frame is \n{:x?}", packet);
-            // debug!("length of the packet payload is {}\n", packet.payload.length());
+            // info!("\nParsing this TLS frame is \n{:x?}", packet);
+            // info!("length of the packet payload is {}\n", packet.payload.length());
 
             let frame_len = packet.payload.length();
             if packet.typ == ContentType::Handshake && packet.decode_payload() {
                 if let MessagePayload::Handshake(x) = packet.payload {
                     Some((x, frame_len))
                 } else {
-                    debug!("Message is not handshake",);
+                    info!("Message is not handshake",);
                     None
                 }
             } else {
-                debug!("Packet type doesn't match or we can't decode payload",);
+                info!("Packet type doesn't match or we can't decode payload",);
                 None
             }
         }
         None => {
-            //debug!("ON FRAME: Read bytes but got None {:x?}", rest);
+            //info!("ON FRAME: Read bytes but got None {:x?}", rest);
             debug!("ON FRAME: Read bytes but got None");
             None
         }
@@ -210,11 +210,11 @@ pub fn is_server_hello(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ServerHello(_) => {
-                debug!("is server hello",);
+                info!("is server hello",);
                 true
             }
             _ => {
-                debug!("not server hello",);
+                info!("not server hello",);
                 false
             }
         }
@@ -230,11 +230,11 @@ pub fn is_client_hello(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ClientHello(_) => {
-                debug!("is client hello",);
+                info!("is client hello",);
                 true
             }
             _ => {
-                debug!("not client hello",);
+                info!("not client hello",);
                 false
             }
         }
@@ -243,7 +243,7 @@ pub fn is_client_hello(buf: &[u8]) -> bool {
 
 /// Test if the current TLS frame is ClientKeyExchange.
 pub fn is_client_key_exchange(buf: &[u8]) -> bool {
-    debug!("Testing client key exchange",);
+    info!("Testing client key exchange",);
     if on_frame(&buf).is_none() {
         return false;
     } else {
@@ -251,11 +251,11 @@ pub fn is_client_key_exchange(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ClientKeyExchange(_) => {
-                debug!("is Client Key Exchange",);
+                info!("is Client Key Exchange",);
                 true
             }
             _ => {
-                debug!("not Client Key Exchange",);
+                info!("not Client Key Exchange",);
                 false
             }
         }
@@ -276,13 +276,13 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
 
     // match handshake1.payload {
     //     ClientHello(payload) => {
-    //         debug!("ClientHello",);
-    //         debug!("{:x?}", payload);
+    //         info!("ClientHello",);
+    //         info!("{:x?}", payload);
     //     }
     //     ServerHello(payload) => {
-    //         debug!("{:x?}", payload);
+    //         info!("{:x?}", payload);
     //     }
-    //     _ => debug!("None"),
+    //     _ => info!("None"),
     // }
     let offset1 = match on_frame(&buf) {
         Some((_handshake1, offset1)) => offset1,
@@ -290,8 +290,8 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     };
 
     let (_, rest) = buf.split_at(offset1 + tls_hdr_len);
-    debug!("And the magic number is {}\n", offset1 + tls_hdr_len);
-    //debug!("DEBUG: The SECOND TLS frame starts with: {:x?}", rest);
+    info!("And the magic number is {}\n", offset1 + tls_hdr_len);
+    //info!("info: The SECOND TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -300,24 +300,27 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     /////////////////////////////////////////////
 
     // if on_frame(&rest).is_none() {
-    //     debug!("DEBUG: Get None, abort",);
+    //     info!("info: Get None, abort",);
     //     return Err(CertificateNotExtractedError);
     // }
     // let (handshake2, _offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
     let (handshake2, _offset2) = match on_frame(&rest) {
         Some((handshake2, _offset2)) => (handshake2, _offset2),
-        None => return Err(CertificateNotExtractedError),
+        None => {
+            debug!("Getting the certificate failed, got none");
+            return Err(CertificateNotExtractedError);
+        }
     };
 
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
-            //debug!("Certificate payload is\n{:x?}", payload);
-            debug!("Parsing the certificate payload..",);
+            //info!("Certificate payload is\n{:x?}", payload);
+            info!("Parsing the certificate payload..",);
 
             Ok(payload)
         }
         _ => {
-            debug!("None");
+            info!("None");
             Err(CertificateNotExtractedError)
         }
     };
@@ -326,8 +329,8 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     return certs;
 
     let (_, rest) = rest.split_at(_offset2 + tls_hdr_len);
-    debug!("And the magic number is {}\n", _offset2 + tls_hdr_len);
-    debug!("The THIRD TLS frame starts with: {:x?}", rest);
+    info!("And the magic number is {}\n", _offset2 + tls_hdr_len);
+    info!("The THIRD TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -338,13 +341,13 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     let (handshake3, offset3) = on_frame(&rest).expect("oh no! parsing the ServerKeyExchange failed!!");
 
     match handshake3.payload {
-        ServerKeyExchange(payload) => debug!("Server Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
-        _ => debug!("None"),
+        ServerKeyExchange(payload) => info!("Server Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
+        _ => info!("None"),
     }
 
     let (_, rest) = rest.split_at(offset3 + tls_hdr_len);
-    debug!("And the magic number is {}\n", offset3 + tls_hdr_len);
-    debug!("The FOURTH TLS frame starts with: {:x?}", rest);
+    info!("And the magic number is {}\n", offset3 + tls_hdr_len);
+    info!("The FOURTH TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -354,10 +357,10 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
 
     let (handshake4, offset4) = on_frame(&rest).expect("oh no! parsing the ServerHelloDone failed!!");
     match handshake4.payload {
-        ServerHelloDone => debug!("Hooray! Server Hello Done!!!"),
-        _ => debug!("None"),
+        ServerHelloDone => info!("Hooray! Server Hello Done!!!"),
+        _ => info!("None"),
     }
-    debug!("And the magic number is {}\n", offset4 + tls_hdr_len);
+    info!("And the magic number is {}\n", offset4 + tls_hdr_len);
 
     certs
 }

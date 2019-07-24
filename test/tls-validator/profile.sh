@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script generates perf results that we can use to get a flamegraph.
+
 #set -x
 set -euo pipefail
 

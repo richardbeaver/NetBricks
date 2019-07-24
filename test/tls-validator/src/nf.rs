@@ -80,16 +80,16 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let _tcph = p.get_header();
             // FIXME: figure out the correct metric
             let _payload_size = p.payload_size();
-            debug!("TCP Headers: {}", _tcph);
+            info!("TCP Headers: {}", _tcph);
             pkt_count = pkt_count + 1;
-            debug!("Total {}", pkt_count);
+            info!("Total {}", pkt_count);
 
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
                 // check if the flow is recognized
                 if payload_cache.contains_key(flow) {
-                    debug!("Pkt #{} is Occupied!", _seq);
-                    debug!("And the flow is: {:?}", flow);
+                    info!("Pkt #{} is Occupied!", _seq);
+                    info!("And the flow is: {:?}", flow);
 
                     let tls_result = TLSMessage::read_bytes(&p.get_payload());
 
@@ -97,11 +97,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         Some(_packet) => {
                             // FIXME: I doubt this part is really necessary. We don't need other
                             // TLS frames, right?
-                            debug!("Reached handshake packet",);
+                            info!("Reached handshake packet",);
                         }
                         None => {
                             // The rest of the TLS server hello handshake should be captured here.
-                            debug!("There is nothing, that is why we should insert the packet!!!\n");
+                            info!("There is nothing, that is why we should insert the packet!!!\n");
 
                             // Check if this packet is not expected, ie, is a out of order segment.
                             if _seq == *seqnum_map.get(flow).unwrap() {
@@ -121,8 +121,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 // the entry for doesn't exist yet--we need to create one first
                 } else {
-                    debug!("Pkt #{} is Vacant", _seq);
-                    debug!("And the flow is: {:?}", flow);
+                    info!("Pkt #{} is Vacant", _seq);
+                    info!("And the flow is: {:?}", flow);
 
                     if is_client_hello(&p.get_payload()) {
                         name_cache.insert(rev_flow, get_server_name(&p.get_payload()).unwrap());
@@ -154,14 +154,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         // also parse the entry for the reverse flow.
                         debug!("important: Pkt {} is a client key exchange\n", _seq);
 
-                        debug!("Try to get the dns name from the entry of the {:?}", flow);
+                        info!("Try to get the dns name from the entry of the {:?}", flow);
                         let dns_name = name_cache.remove(&rev_flow);
                         debug!("Getting the dns name {:?}", dns_name);
 
-                        debug!("Try to parse the huge payload of {:?}", rev_flow);
+                        info!("Try to parse the huge payload of {:?}", rev_flow);
                         if !dns_name.is_none() {
                             if tmp_payload_cache.contains_key(&rev_flow) {
-                                info!("We inserted something in the tmp part");
+                                debug!("Got out of order segment for this connection");
                                 // We have out-of-order segment for this TLS connection.
                                 tlsf_combine_remove(
                                     rev_flow,
@@ -171,7 +171,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     &tmp_seqnum_map,
                                 );
                             } else {
-                                info!("We inserted something in the tmp part");
+                                info!("No out of order segment for this connection");
                                 // Retrieve the payload cache and extract the cert.
                                 //tlsf_remove(payload_cache.entry(rev_flow));
                                 if payload_cache.contains_key(&rev_flow) {
@@ -181,9 +181,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     let _ = seqnum_map.remove_entry(&rev_flow);
                                     info!("3");
                                     let certs = parse_tls_frame(&e);
-                                    debug!("DEBUG: We now retrieve the certs from the tcp payload\n");
+                                    info!("info: We now retrieve the certs from the tcp payload\n");
 
-                                    debug!("DEBUG: flow is {:?}", flow);
+                                    info!("info: flow is {:?}", flow);
                                     match certs {
                                         Ok(chain) => {
                                             debug!("Testing our cert\n");
@@ -192,19 +192,20 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             // the ServerName parsing problem in linux01-all.pcap.
                                             let result = test_extracted_cert(chain, dns_name.unwrap());
                                             cert_count =  cert_count+1;
-                                            if cert_count % 100 == 0{
-                                                println!("DEBUG: cert count is {}", cert_count);
+                                            if cert_count % 10000 == 0{
+                                                println!("info: cert count is {}", cert_count);
                                             }
-                                            //println!("DEBUG: cert count is {}", cert_count);
-                                            //println!("DEBUG: Result of the cert validation is {}", result);
+                                            //println!("info: cert count is {}", cert_count);
+                                            //println!("info: Result of the cert validation is {}", result);
                                             if !result {
-                                                debug!("DEBUG: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
+                                                debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
                                                 unsafe_connection.insert(*flow);
                                                 unsafe_connection.insert(rev_flow);
                                             }
                                         }
                                         Err(e) => {
-                                            debug!("DEBUG: error: {:?}", e)
+                                            debug!("match cert incurs error: {:?}", e);
+                                            //debug!("match cert incurs error");
                                         }
                                     }
                                 }
@@ -213,12 +214,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             error!("We have matched payload cache but we are missing the ClientHello msg!");
                         }
                     } else {
-                        debug!("Passing because is not Client Key Exchange",);
+                        info!("Passing because is not Client Key Exchange",);
                     }
                 }
             } else {
-                debug!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                debug!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
                 let _ = unsafe_connection.take(flow);
                 let tcph = p.get_mut_header();
                 tcph.set_rst_flag();
@@ -234,7 +235,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             //     println!("name cache len is {}", name_cache.len());
             //     println!("unsafe connection len is {}", unsafe_connection.len());
             // }
-            if pkt_count % 1000 == 0 {
+            if pkt_count % 100000 == 0 {
                 payload_cache.clear();
                 tmp_payload_cache.clear();
                 seqnum_map.clear();
