@@ -2,7 +2,7 @@
 ///
 /// Using _Unique types_ in the implementation of data structure for packets thus we don't need to
 /// worry about packet isolation.
-use std::alloc::{self, Alloc, Global, Layout};
+use std::alloc::{self, Alloc, Layout};
 use std::fmt;
 use std::mem::size_of;
 use std::ops::{Deref, DerefMut};

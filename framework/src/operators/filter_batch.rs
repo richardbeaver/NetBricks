@@ -9,7 +9,7 @@ use interface::PacketTx;
 
 /// Filter function.
 // TODO:doc
-pub type FilterFn<T, M> = Box<FnMut(&Packet<T, M>) -> bool + Send>;
+pub type FilterFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> bool + Send>;
 
 /// Filter batch.
 ///
@@ -77,7 +77,7 @@ where
     }
 
     #[inline]
-    fn send_q(&mut self, port: &PacketTx) -> Result<u32> {
+    fn send_q(&mut self, port: &dyn PacketTx) -> Result<u32> {
         self.parent.send_q(port)
     }
 

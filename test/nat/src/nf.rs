@@ -20,7 +20,7 @@ struct FlowUsed {
 type FnvHash = BuildHasherDefault<FnvHasher>;
 pub fn nat<T: 'static + Batch<Header = NullHeader>>(
     parent: T,
-    _s: &mut Scheduler,
+    _s: &mut dyn Scheduler,
     nat_ip: &Ipv4Addr,
 ) -> CompositionBatch {
     let ip = u32::from(*nat_ip);

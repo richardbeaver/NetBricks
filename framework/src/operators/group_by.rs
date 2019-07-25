@@ -12,7 +12,7 @@ use std::marker::PhantomData;
 
 /// Group function.
 // TODO:doc
-pub type GroupFn<T, M> = Box<FnMut(&Packet<T, M>) -> usize + Send>;
+pub type GroupFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> usize + Send>;
 
 /// Group by.
 ///

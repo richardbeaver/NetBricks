@@ -10,7 +10,7 @@ use std::marker::PhantomData;
 
 /// Map function.
 // TODO:doc
-pub type MapFn<T, M> = Box<FnMut(&Packet<T, M>) + Send>;
+pub type MapFn<T, M> = Box<dyn FnMut(&Packet<T, M>) + Send>;
 
 /// Map batch.
 // TODO:doc
@@ -75,7 +75,7 @@ where
     }
 
     #[inline]
-    fn send_q(&mut self, port: &PacketTx) -> Result<u32> {
+    fn send_q(&mut self, port: &dyn PacketTx) -> Result<u32> {
         self.parent.send_q(port)
     }
 

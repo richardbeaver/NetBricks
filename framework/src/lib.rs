@@ -6,7 +6,6 @@
 #![feature(box_syntax)]
 #![feature(specialization)]
 #![feature(slice_concat_ext)]
-#![feature(alloc)]
 #![feature(const_fn)]
 // FIXME: Figure out if this is really the right thing here.
 #![feature(ptr_internals)]

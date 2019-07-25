@@ -8,7 +8,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type TransformFn<T, M> = Box<FnMut(&mut Packet<T, M>) + Send>;
+pub type TransformFn<T, M> = Box<dyn FnMut(&mut Packet<T, M>) + Send>;
 
 /// Transform batch.
 ///
@@ -95,7 +95,7 @@ where
     }
 
     #[inline]
-    fn send_q(&mut self, port: &PacketTx) -> Result<u32> {
+    fn send_q(&mut self, port: &dyn PacketTx) -> Result<u32> {
         self.parent.send_q(port)
     }
 

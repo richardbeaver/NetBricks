@@ -16,8 +16,6 @@ use std::collections::HashMap;
 use webpki;
 use webpki_roots;
 
-const READ_SIZE: usize = 16384; // 256, 512, 1024, 2048, 4096, 8192, 16384
-
 // TODO: move to failure crate!
 #[derive(Debug, Clone)]
 pub struct CertificateNotExtractedError;
@@ -75,25 +73,6 @@ pub fn tlsf_combine_remove(
     tmp_seqnum_map: &HashMap<Flow, u32>,
 ) {
     unimplemented!();
-}
-
-/// Read payload into the payload cache.
-pub fn read_payload(rb: &mut ReorderedBuffer, to_read: usize, flow: Flow, payload_cache: &mut HashMap<Flow, Vec<u8>>) {
-    info!(
-        "reading size of {} payload into the flow entry \n{:?} \ninto the payload cache (hashmap)\n",
-        to_read, flow,
-    );
-    let mut read_buf = [0; READ_SIZE];
-    let mut so_far = 0;
-    while to_read > so_far {
-        let payload = payload_cache.entry(flow).or_insert(Vec::new());
-        let n = rb.read_data(&mut read_buf);
-        so_far += n;
-        payload.extend(&read_buf[..n]);
-        //info!("{:?}\n", flow);
-        //info!("And the entries of that flow are: {:?}\n", payload);
-    }
-    info!("size of the entry is: {}", so_far);
 }
 
 // FIXME: Allocating too much memory???
