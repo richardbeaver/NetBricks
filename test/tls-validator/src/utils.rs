@@ -155,7 +155,7 @@ static V: &'static WebPKIVerifier = &WebPKIVerifier { time: current_time };
 
 pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
     info!("info: validate certs",);
-    info!("dns name is {:?}\n", dns_name);
+    debug!("dns name is {:?}\n", dns_name);
     //info!("certs are {:?}\n", certs);
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
@@ -163,11 +163,11 @@ pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DN
     let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
     match result {
         Ok(_) => {
-            info!("info: \nIt worked!!!");
+            debug!("info: It worked!!!\n");
             return true;
         }
         Err(e) => {
-            info!("info: \nOops, error: {}", e);
+            debug!("info: Oops, error: {}\n", e);
             false
         }
     }
@@ -195,7 +195,7 @@ pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Hands
         }
         None => {
             //info!("ON FRAME: Read bytes but got None {:x?}", rest);
-            debug!("ON FRAME: Read bytes but got None");
+            //debug!("ON FRAME: Read bytes but got None");
             None
         }
     }
@@ -304,6 +304,10 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     //     return Err(CertificateNotExtractedError);
     // }
     // let (handshake2, _offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
+
+    info!("Working on the second frame...");
+
+    info!("Trying to read the frame using on_frame...");
     let (handshake2, _offset2) = match on_frame(&rest) {
         Some((handshake2, _offset2)) => (handshake2, _offset2),
         None => {

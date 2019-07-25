@@ -80,9 +80,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let _tcph = p.get_header();
             // FIXME: figure out the correct metric
             let _payload_size = p.payload_size();
+            info!("");
             info!("TCP Headers: {}", _tcph);
             pkt_count = pkt_count + 1;
-            info!("Total {}", pkt_count);
+            //info!("Total {}", pkt_count);
 
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
@@ -181,12 +182,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     let _ = seqnum_map.remove_entry(&rev_flow);
                                     info!("3");
                                     let certs = parse_tls_frame(&e);
-                                    info!("info: We now retrieve the certs from the tcp payload\n");
+                                    info!("info: We now retrieve the certs from the tcp payload");
 
                                     info!("info: flow is {:?}", flow);
                                     match certs {
                                         Ok(chain) => {
-                                            debug!("Testing our cert\n");
+                                            debug!("Testing our cert");
                                             //info!("chain: {:?}", chain);
                                             // FIXME: it is just a fix, and we definitely need to fix
                                             // the ServerName parsing problem in linux01-all.pcap.
@@ -204,8 +205,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             }
                                         }
                                         Err(e) => {
-                                            debug!("match cert incurs error: {:?}", e);
-                                            //debug!("match cert incurs error");
+                                            debug!("match cert incurs error: {:?}\n", e);
                                         }
                                     }
                                 }
