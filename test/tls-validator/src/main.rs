@@ -64,29 +64,29 @@ fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sch
 
 /// default main
 fn main() {
-    //if ENABLE_LOGGING {
-    // logging will incur severe perf overhead.
-    let log_path = "tlsv.log";
-    let file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(log_path)
-        .unwrap();
+    if ENABLE_LOGGING {
+        // logging will incur severe perf overhead.
+        let log_path = "tlsv.log";
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(log_path)
+            .unwrap();
 
-    // create logger
-    let decorator = slog_term::PlainSyncDecorator::new(file);
-    let drain = slog_term::FullFormat::new(decorator).build().fuse();
-    let logger = slog::Logger::root(drain, o!());
+        // create logger
+        let decorator = slog_term::PlainSyncDecorator::new(file);
+        let drain = slog_term::FullFormat::new(decorator).build().fuse();
+        let logger = slog::Logger::root(drain, o!());
 
-    // slog_stdlog uses the logger from slog_scope, so set a logger there
-    let _guard = slog_scope::set_global_logger(logger);
+        // slog_stdlog uses the logger from slog_scope, so set a logger there
+        let _guard = slog_scope::set_global_logger(logger);
 
-    // register slog_stdlog as the log handler with the log crate
-    slog_stdlog::init().unwrap();
+        // register slog_stdlog as the log handler with the log crate
+        slog_stdlog::init().unwrap();
 
-    info!("Starting PVN TLS validator network function");
-    //}
+        info!("Starting PVN TLS validator network function");
+    }
 
     // setup default parameters
     let opts = basic_opts();

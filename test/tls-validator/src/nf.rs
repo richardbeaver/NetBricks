@@ -1,13 +1,13 @@
-use self::utils::*;
+use self::utils::{
+    get_server_name, is_client_hello, is_client_key_exchange, is_server_hello, parse_tls_frame, test_extracted_cert,
+    tlsf_combine_remove, tlsf_tmp_store, tlsf_update,
+};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use std::io::prelude::*;
-//use e2d2::state::{InsertionResult, ReorderedBuffer};
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
 use rustls::internal::msgs::{codec::Codec, message::Message as TLSMessage};
-use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::hash::BuildHasherDefault;
 
@@ -16,32 +16,28 @@ use utils;
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const BUFFER_SIZE: usize = 16384; // 2048, 4096, 8192, 16384
 
-/// 2. group the same handshake messages into flows
-/// 3. defragment the packets into certificate(s)
-/// 4. verify that the certificate is valid.
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    /// New payload cache.
-    ///
-    /// Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
-    /// naive implementation of TCP out-of-order segments, for a more comprehensive version you
-    /// should visit something like [assembler in
-    /// smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
-    /// buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
+    // New payload cache.
+    //
+    // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
+    // naive implementation of TCP out-of-order segments, for a more comprehensive version you
+    // should visit something like [assembler in
+    // smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
+    // buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
-    /// Temporary payload cache.
+
+    // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
-
-    /// New map to keep track of the expected seq #
+    // New map to keep track of the expected seq #
     let mut seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
-    /// Temporary map to keep track of the expected seq #
+    // Temporary map to keep track of the expected seq #
     let mut tmp_seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
-
-    /// TLS connection with invalid certs.
+    // TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
-    /// DNS name cache.
+    // DNS name cache.
     let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
 
     // Cert count
@@ -53,7 +49,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut groups = parent
         .parse::<MacHeader>()
         .transform(box move |p| {
-            // FIXME: what is this
+            // FIXME: what is this?!
             // p.get_mut_header().swap_addresses();
             p.get_mut_header();
         })
@@ -78,12 +74,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let rev_flow = flow.reverse_flow();
             let _seq = p.get_header().seq_num();
             let _tcph = p.get_header();
-            // FIXME: figure out the correct metric
+            // FIXME: figure out the correct metric and verify that the metric is correct
             let _payload_size = p.payload_size();
             info!("");
             info!("TCP Headers: {}", _tcph);
             pkt_count = pkt_count + 1;
-            //info!("Total {}", pkt_count);
+            info!("This is the #{} packet", pkt_count);
 
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
@@ -92,33 +88,26 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     info!("Pkt #{} is Occupied!", _seq);
                     info!("And the flow is: {:?}", flow);
 
-                    let tls_result = TLSMessage::read_bytes(&p.get_payload());
+                    // The rest of the TLS server hello handshake should be captured here.
+                    info!("There is nothing, that is why we should insert the packet!!!");
 
-                    match tls_result {
-                        Some(_packet) => {
-                            // FIXME: I doubt this part is really necessary. We don't need other
-                            // TLS frames, right?
-                            info!("Reached handshake packet",);
+                    debug!("Pkt seq # is {}, the expected seq # is {} ", _seq,  seqnum_map.get(flow).unwrap());
+                    // Check if this packet is not expected, ie, is a out of order segment.
+                    if _seq == *seqnum_map.get(flow).unwrap() {
+                        // We received an expected packet
+                        {
+                            debug!("Pkt match expected seq #, update the flow entry...");
+                            //debug!("{:?}", p.get_payload());
+                            tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
+                            seqnum_map.entry(*flow).and_modify(|e| {
+                                *e = *e + _payload_size as u32;
+                                ()
+                            });
                         }
-                        None => {
-                            // The rest of the TLS server hello handshake should be captured here.
-                            info!("There is nothing, that is why we should insert the packet!!!\n");
-
-                            // Check if this packet is not expected, ie, is a out of order segment.
-                            if _seq == *seqnum_map.get(flow).unwrap() {
-                                // We received an expected packet
-                                {
-                                    tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
-                                    seqnum_map.entry(*flow).and_modify(|e| {
-                                        *e = *e + _payload_size as u32;
-                                        ()
-                                    });
-                                }
-                            } else {
-                                // We received a out-of-order TLS segment
-                                tlsf_tmp_store(*flow, &tmp_payload_cache, &tmp_seqnum_map, &p.get_payload());
-                            }
-                        }
+                    } else {
+                        // We received a out-of-order TLS segment
+                        tlsf_tmp_store(*flow, &tmp_payload_cache, &tmp_seqnum_map, &p.get_payload());
+                        debug!("important: ops, this is a OOO segment???\n");
                     }
                 // the entry for doesn't exist yet--we need to create one first
                 } else {
@@ -134,16 +123,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         let mut buf = [0u8; BUFFER_SIZE];
                         // capture the sequence number
                         {
-                            seqnum_map.insert(*flow, _seq);
+                            debug!("Got ServerHello, insert the flow entry");
+                            seqnum_map.insert(*flow, _seq + _payload_size as u32);
                             payload_cache.insert(*flow, p.get_payload().to_vec());
+                            //debug!("{:?}", p.get_payload().to_vec());
                         }
-                        // tlsf_insert(
-                        //     *flow,
-                        //     &mut payload_cache,
-                        //     &mut seqnum_map,
-                        //     &p.get_payload(),
-                        //     _seq + _datal,
-                        // );
                     }
 
                     // The only case that we remove the flow is because we have a ClientKeyExchange
@@ -183,8 +167,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     info!("3");
                                     let certs = parse_tls_frame(&e);
                                     info!("info: We now retrieve the certs from the tcp payload");
-
                                     info!("info: flow is {:?}", flow);
+                                    //debug!("Cert {:?}", certs);
+
                                     match certs {
                                         Ok(chain) => {
                                             debug!("Testing our cert");
@@ -193,7 +178,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             // the ServerName parsing problem in linux01-all.pcap.
                                             let result = test_extracted_cert(chain, dns_name.unwrap());
                                             cert_count =  cert_count+1;
-                                            if cert_count % 10000 == 0{
+                                            if cert_count % 100000000 == 0{
                                                 println!("info: cert count is {}", cert_count);
                                             }
                                             //println!("info: cert count is {}", cert_count);
@@ -218,11 +203,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 }
             } else {
-                info!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
-                let _ = unsafe_connection.take(flow);
-                let tcph = p.get_mut_header();
-                tcph.set_rst_flag();
+                // Disabled for now, we can enable it when we are finished.
+                //
+                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                // let _ = unsafe_connection.take(flow);
+                // let tcph = p.get_mut_header();
+                // tcph.set_rst_flag();
             }
 
             // if pkt_count % 100 == 0 {
@@ -235,7 +222,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             //     println!("name cache len is {}", name_cache.len());
             //     println!("unsafe connection len is {}", unsafe_connection.len());
             // }
-            if pkt_count % 100000 == 0 {
+            if pkt_count % 1000000 == 0 {
                 payload_cache.clear();
                 tmp_payload_cache.clear();
                 seqnum_map.clear();

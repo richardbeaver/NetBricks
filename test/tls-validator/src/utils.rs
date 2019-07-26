@@ -1,4 +1,3 @@
-use e2d2::state::ReorderedBuffer;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::{
     codec::Codec,
@@ -35,9 +34,9 @@ pub fn tlsf_insert(
 /// Update a TLS flow entry by updating the entry with continuing TLS frame.
 pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
     e.and_modify(|e| {
-        //println!("Before writing more bytes {:?}", e.len());
+        debug!("Before writing more bytes {:?}", e.len());
         e.extend(payload);
-        //println!("After writing the bytes {:?}", e.len());
+        debug!("After writing the bytes {:?}", e.len());
         ()
     });
 }
