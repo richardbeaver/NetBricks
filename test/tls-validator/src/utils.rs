@@ -20,6 +20,7 @@ use webpki_roots;
 pub struct CertificateNotExtractedError;
 
 /// Start a TLS flow entry by inserting a TLS frame.
+#[allow(dead_code)]
 pub fn tlsf_insert(
     flow: Flow,
     payload_cache: &mut HashMap<Flow, Vec<u8>>,
@@ -42,6 +43,7 @@ pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
 }
 
 /// Remove a TLS flow entry.
+#[allow(dead_code)]
 pub fn tlsf_remove(e: Entry<Flow, Vec<u8>>) {
     // let buf = match e {
     //     Entry::Vacant(_) => println!("?"),
@@ -54,6 +56,7 @@ pub fn tlsf_remove(e: Entry<Flow, Vec<u8>>) {
     unimplemented!();
 }
 
+#[allow(dead_code)]
 pub fn tlsf_tmp_store(
     flow: Flow,
     tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
@@ -64,12 +67,13 @@ pub fn tlsf_tmp_store(
 }
 
 /// Remove a TLS flow entry.
+#[allow(dead_code)]
 pub fn tlsf_combine_remove(
     flow: Flow,
     payload_cache: &HashMap<Flow, Vec<u8>>,
     seqnum_map: &HashMap<Flow, u32>,
     tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
-    tmp_seqnum_map: &HashMap<Flow, u32>,
+    tmp_seqnum_map: &HashMap<Flow, (u32, u32)>,
 ) {
     unimplemented!();
 }
@@ -141,11 +145,11 @@ pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DN
     let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
     match result {
         Ok(_) => {
-            debug!("info: It worked!!!\n");
+            debug!("tlsv result: Valid cert!\n");
             return true;
         }
         Err(e) => {
-            debug!("info: Oops, error: {}\n", e);
+            debug!("tlsv result: Non valid cert with {}\n", e);
             false
         }
     }

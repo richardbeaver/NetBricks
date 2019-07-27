@@ -8,6 +8,7 @@ use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use fnv::FnvHasher;
 use rustls::internal::msgs::{codec::Codec, message::Message as TLSMessage};
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::hash::BuildHasherDefault;
 
@@ -34,7 +35,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // New map to keep track of the expected seq #
     let mut seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
     // Temporary map to keep track of the expected seq #
-    let mut tmp_seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
+    let mut tmp_seqnum_map = HashMap::<Flow, (u32, u32)>::with_hasher(Default::default());
     // TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
     // DNS name cache.
@@ -74,12 +75,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let rev_flow = flow.reverse_flow();
             let _seq = p.get_header().seq_num();
             let _tcph = p.get_header();
-            // FIXME: figure out the correct metric and verify that the metric is correct
             let _payload_size = p.payload_size();
             info!("");
             info!("TCP Headers: {}", _tcph);
-            pkt_count = pkt_count + 1;
-            info!("This is the #{} packet", pkt_count);
 
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
@@ -90,75 +88,138 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                     // The rest of the TLS server hello handshake should be captured here.
                     info!("There is nothing, that is why we should insert the packet!!!");
-
-                    debug!("Pkt seq # is {}, the expected seq # is {} ", _seq,  seqnum_map.get(flow).unwrap());
+                    debug!(
+                        "Pkt seq # is {}, the expected seq # is {} ",
+                        _seq,
+                        seqnum_map.get(flow).unwrap()
+                    );
                     // Check if this packet is not expected, ie, is a out of order segment.
                     if _seq == *seqnum_map.get(flow).unwrap() {
                         // We received an expected packet
-                        {
-                            debug!("Pkt match expected seq #, update the flow entry...");
-                            //debug!("{:?}", p.get_payload());
-                            tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
-                            seqnum_map.entry(*flow).and_modify(|e| {
-                                *e = *e + _payload_size as u32;
-                                ()
-                            });
+                        debug!("Pkt match expected seq #, update the flow entry...");
+                        //debug!("{:?}", p.get_payload());
+                        tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
+                        seqnum_map.entry(*flow).and_modify(|e| {
+                            *e = *e + _payload_size as u32;
+                            ()
+                        });
+                    } else if _seq > *seqnum_map.get(flow).unwrap() {
+                        // We received a out-of-order TLS segment
+                        debug!("OOO: pkt seq # is larger then expected seq #\n");
+                        // We need to check if we should update the entry in the tmp payload cache
+                        if tmp_payload_cache.contains_key(flow) {
+                            debug!("OOO: we already have entry in the tmp payload cache");
+                            // Check if we should update the entry in the tmp payload cache
+                            let (entry_pkt_seqno, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
+                            if _seq == entry_expected_seqno {
+                                debug!("OOO: seq # of current pkt matches the expected seq # of the entry in tpc");
+                                tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
+                                tmp_seqnum_map
+                                    .entry(*flow)
+                                    .and_modify(|(entry_pkt_seqno, entry_expected_seqno)| {
+                                        *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
+                                        ()
+                                    });
+                            } else {
+                                info!("Oops: passing because it should be a unrelated packet");
+                            }
+                        } else {
+                            debug!("OOO: We are adding an entry in the tpc!");
+                            tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
+                            tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                         }
                     } else {
-                        // We received a out-of-order TLS segment
-                        tlsf_tmp_store(*flow, &tmp_payload_cache, &tmp_seqnum_map, &p.get_payload());
-                        debug!("important: ops, this is a OOO segment???\n");
+                        debug!("Oops: pkt seq # is even smaller then the expected #");
                     }
-                // the entry for doesn't exist yet--we need to create one first
                 } else {
                     info!("Pkt #{} is Vacant", _seq);
                     info!("And the flow is: {:?}", flow);
 
+                    // FIXME: all three checks should be merged into one and return a Option?
                     if is_client_hello(&p.get_payload()) {
-                        name_cache.insert(rev_flow, get_server_name(&p.get_payload()).unwrap());
+                        name_cache.entry(rev_flow).
+                            and_modify(|e| { *e  = get_server_name(&p.get_payload()).unwrap() })
+                            .or_insert(get_server_name(&p.get_payload()).unwrap());
                     }
 
                     if is_server_hello(&p.get_payload()) {
                         // NOTE: Matched ServerHello, start inserting packets
-                        let mut buf = [0u8; BUFFER_SIZE];
+                        let buf = [0u8; BUFFER_SIZE];
                         // capture the sequence number
-                        {
-                            debug!("Got ServerHello, insert the flow entry");
-                            seqnum_map.insert(*flow, _seq + _payload_size as u32);
-                            payload_cache.insert(*flow, p.get_payload().to_vec());
-                            //debug!("{:?}", p.get_payload().to_vec());
-                        }
+                        debug!("Got ServerHello, insert the flow entry");
+                        seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                        payload_cache.insert(*flow, p.get_payload().to_vec());
+                        //debug!("{:?}", p.get_payload().to_vec());
                     }
 
                     // The only case that we remove the flow is because we have a ClientKeyExchange
                     // packet.
                     // FIXME: we probably also want to check that the flow is in the payload
-                    // chace
+                    // cache.
                     if is_client_key_exchange(&p.get_payload()) {
                         // We need to retrieve the DNS name from the entry of the current flow, and
                         // also parse the entry for the reverse flow.
                         debug!("important: Pkt {} is a client key exchange\n", _seq);
-
                         info!("Try to get the dns name from the entry of the {:?}", flow);
+
                         let dns_name = name_cache.remove(&rev_flow);
                         debug!("Getting the dns name {:?}", dns_name);
 
                         info!("Try to parse the huge payload of {:?}", rev_flow);
                         if !dns_name.is_none() {
                             if tmp_payload_cache.contains_key(&rev_flow) {
-                                debug!("Got out of order segment for this connection");
+                                debug!("OOO: We have OOO segment for this connection");
                                 // We have out-of-order segment for this TLS connection.
-                                tlsf_combine_remove(
-                                    rev_flow,
-                                    &payload_cache,
-                                    &seqnum_map,
-                                    &tmp_payload_cache,
-                                    &tmp_seqnum_map,
-                                );
+                                let (tmp_entry_seqnum, _) = tmp_seqnum_map.get(&rev_flow).unwrap();
+                                if seqnum_map.get(&rev_flow).unwrap() == tmp_entry_seqnum {
+                                    debug!("OOO: We are ready to merge entries in two payload caches together!!!");
+                                    if payload_cache.contains_key(&rev_flow)
+                                        && tmp_payload_cache.contains_key(&rev_flow)
+                                    {
+                                        info!("1");
+                                        let (_, tmp_entry) = tmp_payload_cache.remove_entry(&rev_flow).unwrap();
+                                        info!("size of the tmp entry is {:?}", tmp_entry.len());
+                                        info!("2");
+                                        let _ = tmp_seqnum_map.remove_entry(&rev_flow);
+                                        let _ = seqnum_map.remove_entry(&rev_flow);
+                                        info!("3");
+                                        let (_, mut e) = payload_cache.remove_entry(&rev_flow).unwrap();
+                                        info!("size of the entry is {:?}", e.len());
+                                        info!("4");
+                                        e.extend(tmp_entry);
+                                        info!("size of the merged entry is {:?}", e.len());
+                                        info!("5");
+                                        let certs = parse_tls_frame(&e);
+                                        info!("info: We now retrieve the certs from the tcp payload");
+                                        info!("info: flow is {:?}", flow);
+
+                                        match certs {
+                                            Ok(chain) => {
+                                                debug!("Testing our cert");
+                                                let result = test_extracted_cert(chain, dns_name.unwrap());
+                                                cert_count = cert_count + 1;
+                                                if cert_count % 100000 == 0 {
+                                                    println!("cert count is {}", cert_count);
+                                                }
+                                                if !result {
+                                                    debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
+                                                    unsafe_connection.insert(*flow);
+                                                    unsafe_connection.insert(rev_flow);
+                                                }
+                                            }
+                                            Err(e) => {
+                                                debug!("match cert incurs error: {:?}\n", e);
+                                            }
+                                        }
+                                    } else {
+                                        debug!("Oops, the payload cache doesn't have the entry for this flow");
+                                    }
+                                } else {
+                                    debug!("OOO: Oops the expected seq# from our PLC entry doesn't match the seq# from the TPC entry");
+                                }
                             } else {
                                 info!("No out of order segment for this connection");
                                 // Retrieve the payload cache and extract the cert.
-                                //tlsf_remove(payload_cache.entry(rev_flow));
                                 if payload_cache.contains_key(&rev_flow) {
                                     info!("1");
                                     let (_, e) = payload_cache.remove_entry(&rev_flow).unwrap();
@@ -168,21 +229,16 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     let certs = parse_tls_frame(&e);
                                     info!("info: We now retrieve the certs from the tcp payload");
                                     info!("info: flow is {:?}", flow);
-                                    //debug!("Cert {:?}", certs);
 
                                     match certs {
                                         Ok(chain) => {
                                             debug!("Testing our cert");
-                                            //info!("chain: {:?}", chain);
-                                            // FIXME: it is just a fix, and we definitely need to fix
-                                            // the ServerName parsing problem in linux01-all.pcap.
                                             let result = test_extracted_cert(chain, dns_name.unwrap());
-                                            cert_count =  cert_count+1;
-                                            if cert_count % 100000000 == 0{
-                                                println!("info: cert count is {}", cert_count);
+
+                                            cert_count = cert_count + 1;
+                                            if cert_count % 100000 == 0 {
+                                                println!("cert count is {}", cert_count);
                                             }
-                                            //println!("info: cert count is {}", cert_count);
-                                            //println!("info: Result of the cert validation is {}", result);
                                             if !result {
                                                 debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
                                                 unsafe_connection.insert(*flow);
@@ -193,10 +249,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             debug!("match cert incurs error: {:?}\n", e);
                                         }
                                     }
+                                } else {
+                                    debug!("Oops, the payload cache doesn't have the entry for this flow");
                                 }
                             }
                         } else {
-                            error!("We have matched payload cache but we are missing the ClientHello msg!");
+                            debug!("Oops, we have matched payload cache but we are missing the ClientHello msg!");
                         }
                     } else {
                         info!("Passing because is not Client Key Exchange",);
@@ -223,12 +281,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             //     println!("unsafe connection len is {}", unsafe_connection.len());
             // }
             if pkt_count % 1000000 == 0 {
-                payload_cache.clear();
-                tmp_payload_cache.clear();
-                seqnum_map.clear();
-                tmp_seqnum_map.clear();
-                name_cache.clear();
-                unsafe_connection.clear();
+                // payload_cache.clear();
+                // tmp_payload_cache.clear();
+                // seqnum_map.clear();
+                // tmp_seqnum_map.clear();
+                // name_cache.clear();
+                // unsafe_connection.clear();
             }
         })
         .reset()
