@@ -65,7 +65,7 @@ fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sch
 /// default main
 fn main() {
     if ENABLE_LOGGING {
-        // logging will incur severe perf overhead.
+        //logging will incur severe perf overhead.
         let log_path = "tlsv.log";
         let file = OpenOptions::new()
             .create(true)

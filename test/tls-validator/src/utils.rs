@@ -177,7 +177,7 @@ pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Hands
         }
         None => {
             //info!("ON FRAME: Read bytes but got None {:x?}", rest);
-            //debug!("ON FRAME: Read bytes but got None");
+            debug!("ON FRAME: Read bytes but got None");
             None
         }
     }
@@ -185,7 +185,9 @@ pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Hands
 
 /// Test if the current TLS frame is a ServerHello.
 pub fn is_server_hello(buf: &[u8]) -> bool {
+    info!("Testing for server hello",);
     if on_frame(&buf).is_none() {
+        info!("On frame is none");
         return false;
     } else {
         let (handshake, _) = on_frame(&buf).unwrap();

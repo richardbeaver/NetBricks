@@ -208,14 +208,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                 }
                                             }
                                             Err(e) => {
-                                                debug!("match cert incurs error: {:?}\n", e);
+                                                debug!("ISSUE: match cert incurs error: {:?}\n", e);
                                             }
                                         }
                                     } else {
-                                        debug!("Oops, the payload cache doesn't have the entry for this flow");
+                                        debug!("ISSUE: Oops, the payload cache doesn't have the entry for this flow");
                                     }
                                 } else {
-                                    debug!("OOO: Oops the expected seq# from our PLC entry doesn't match the seq# from the TPC entry");
+                                    debug!("ISSUE: Oops the expected seq# from our PLC entry doesn't match the seq# from the TPC entry");
                                 }
                             } else {
                                 info!("No out of order segment for this connection");
@@ -246,15 +246,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             }
                                         }
                                         Err(e) => {
-                                            debug!("match cert incurs error: {:?}\n", e);
+                                            debug!("ISSUE: match cert incurs error: {:?}\n", e);
                                         }
                                     }
                                 } else {
-                                    debug!("Oops, the payload cache doesn't have the entry for this flow");
+                                    debug!("ISSUE: Oops, the payload cache doesn't have the entry for this flow");
                                 }
                             }
                         } else {
-                            debug!("Oops, we have matched payload cache but we are missing the ClientHello msg!");
+                            debug!("ISSUE: Oops, we have matched payload cache but we are missing the ClientHello msg!");
                         }
                     } else {
                         info!("Passing because is not Client Key Exchange",);
@@ -262,12 +262,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 }
             } else {
                 // Disabled for now, we can enable it when we are finished.
-                //
-                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
-                // let _ = unsafe_connection.take(flow);
-                // let tcph = p.get_mut_header();
-                // tcph.set_rst_flag();
+
+                info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                let _ = unsafe_connection.take(flow);
+                let tcph = p.get_mut_header();
+                tcph.set_rst_flag();
             }
 
             // if pkt_count % 100 == 0 {

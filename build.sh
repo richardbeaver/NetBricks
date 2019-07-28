@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Authors:
+#       Autojit Panda
+#       Jethro Shuwen Sun
+
 # Stop on any errors
 set -e
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
@@ -16,6 +21,7 @@ if [ ! -e ${TOOLS_BASE} ]; then
     mkdir -p ${TOOLS_BASE}
 fi
 
+# setup the DPDK version
 DPDK_VER=17.08
 DPDK_HOME="${BASE_DIR}/3rdparty/dpdk"
 DPDK_LD_PATH="${DPDK_HOME}/build/lib"
@@ -131,7 +137,6 @@ native () {
     make -C $BASE_DIR/native install
 }
 
-
 print_examples () {
     echo "The following examples are available:"
     for eg in ${examples[@]}; do
@@ -158,7 +163,7 @@ clean () {
         popd
     done
     make clean -C ${BASE_DIR}/native
-    rm -rf ${BASE_DIR}/target 
+    rm -rf ${BASE_DIR}/target
 }
 
 UNWIND_BUILD="${TOOLS_BASE}"/libunwind
@@ -623,24 +628,32 @@ case $TASK in
       Where command is one of
           deps: Build dependencies
           sctp: Check if sctp library is present.
-          build: Build the project (this includes framework and all tests).
           build_fmwk: Just build framework.
           build_test: Build a particular test.
-          create_container: Build the NetBricks container.
+          build: Build the project (this includes framework and all tests).
+          ovs_create: Build the Open vSwitch.
+          ctr_update: Update and push container used for build.
+          ctr_build: Build NetBricks within a container.
           ctr_dpdk: Copy DPDK from container
-          build_container: Build NetBricks within a container.
+          create_container: Build the NetBricks container (DEPRECATED).
           test: Run unit tests.
           test-cov: Run cov tests.
           run: Run one of the examples (Must specify example name and arguments).
-          debug: Debug one of the examples (Must specify example name and examples).
-          doc: Run rustdoc and produce documentation
+          profile: Run the network function with linux perf event for flamegraph.
+          trace: Run one of the network function with full trace.
+          gdb_debug: Debug one of the examples with GDB (Must specify example name and examples).
+          lldb_debug: Debug one of the examples with LLDB (Must specify example name and examples).
+          heaptrack: Run the network function with heaptrack for tracking memory usage.
+          valgrind: Run the network function with valgrind for tracking memory usage (broken).
           update_rust: Pull and update Cargo.
-          update_container: Update and push container used for build.
           fmt: Run rustfmt to format code.
           fmt_travis: Run rustfmt to detect code formatting violations.
+          check_manifest: Check manifest.
+          check_examples: Check examples.
+          doc: Run rustdoc and produce documentation (DEPRECATED, it is handled in travis now).
           lint: Run clippy to lint the project
-          clean: Remove all built files
           dist_clean: Remove all support files
+          clean: Remove all built files
           env: Environment variables, run as eval \`./build.sh env\`.
 endhelp
         ;;
