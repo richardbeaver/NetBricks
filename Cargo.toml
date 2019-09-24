@@ -23,6 +23,8 @@ members=["framework",
         "test/acl-fw",
         # PVN examples
         "test/tls-validator",
+        "test/compression-proxy",
+        "test/rdr-proxy",
         "test/pktgen-test",
         "test/adv-acl"]
 
