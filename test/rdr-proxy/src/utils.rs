@@ -15,6 +15,22 @@ use std::collections::HashMap;
 use webpki;
 use webpki_roots;
 
+use failure::Fallible;
+use headless_chrome::browser::tab::RequestInterceptionDecision;
+use headless_chrome::protocol::network::methods::RequestPattern;
+use headless_chrome::protocol::network::Cookie;
+use headless_chrome::protocol::runtime::methods::{RemoteObjectSubtype, RemoteObjectType};
+use headless_chrome::protocol::RemoteError;
+use headless_chrome::LaunchOptionsBuilder;
+use headless_chrome::{
+    protocol::browser::{Bounds, WindowState},
+    protocol::page::ScreenshotFormat,
+    Browser, Tab,
+};
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
+use std::time::Duration;
+
 // TODO: move to failure crate!
 #[derive(Debug, Clone)]
 pub struct CertificateNotExtractedError;
@@ -351,4 +367,170 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     info!("And the magic number is {}\n", offset4 + tls_hdr_len);
 
     certs
+}
+
+pub fn tab_create() -> Fallible<()> {
+    // Create a headless browser, navigate to wikipedia.org, wait for the page
+    // to render completely, take a screenshot of the entire page
+    // in JPEG-format using 75% quality.
+    println!("RDR entry point",);
+    let options = LaunchOptionsBuilder::default()
+        .build()
+        .expect("Couldn't find appropriate Chrome binary.");
+
+    let browser = Browser::new(options)?;
+    println!("RDR browser",);
+    let tab = browser.wait_for_initial_tab()?;
+    println!("RDR tab",);
+
+    let patterns = vec![
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("HeadersReceived"),
+        },
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("Request"),
+        },
+    ];
+
+    tab.enable_request_interception(
+        &patterns,
+        Box::new(|transport, session_id, intercepted| {
+            println!("\nDEBUG: url content: {:?}", intercepted.request.url);
+            println!("\nDEBUG: {:?}", intercepted.request);
+            if intercepted.request.url.ends_with(".js") {
+                println!("DEBUG: jackpot! We have JS code",);
+                let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
+                let js_response = tiny_http::Response::new(
+                    200.into(),
+                    vec![tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/javascript"[..]).unwrap()],
+                    js_body.as_bytes(),
+                    Some(js_body.len()),
+                    None,
+                );
+
+                let mut wrapped_writer = Vec::new();
+                js_response
+                    .raw_print(&mut wrapped_writer, (1, 2).into(), &[], false, None)
+                    .unwrap();
+
+                let base64_response = base64::encode(&wrapped_writer);
+
+                RequestInterceptionDecision::Response(base64_response)
+            } else {
+                RequestInterceptionDecision::Continue
+            }
+        }),
+    )?;
+
+    println!("RDR tab enable request",);
+
+    let responses = Arc::new(Mutex::new(Vec::new()));
+
+    tab.enable_response_handling(Box::new(move |response, fetch_body| {
+        // NOTE: you can only fetch the body after it's been downloaded, which might be some time
+        // after the initial 'response' (with status code, headers, etc.) has come back. hence this
+        // sleep:
+        println!("\nDEBUG: Response {:?}", response);
+        sleep(Duration::from_millis(100));
+        let body = fetch_body().unwrap();
+        println!("\nDEBUG: Response body: {:?}", body);
+        responses.lock().unwrap().push((response, body));
+    }))?;
+
+    println!("RDR tab enable response",);
+
+    println!("\nLobste.rs\n",);
+    let jpeg_data = tab.navigate_to("http://lobste.rs")?.wait_until_navigated()?;
+
+    println!("Screenshots successfully created.");
+    Ok(())
+}
+
+pub fn tab_create_unwrap() {
+    // Create a headless browser, navigate to wikipedia.org, wait for the page
+    // to render completely, take a screenshot of the entire page
+    // in JPEG-format using 75% quality.
+    println!("RDR entry point",);
+    let options = LaunchOptionsBuilder::default()
+        .build()
+        .expect("Couldn't find appropriate Chrome binary.");
+    println!("RDR options",);
+    let browser = Browser::new(options).unwrap();
+    println!("RDR browser",);
+    let tab = browser.wait_for_initial_tab().unwrap();
+    println!("RDR tab",);
+
+    let patterns = vec![
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("HeadersReceived"),
+        },
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("Request"),
+        },
+    ];
+
+    tab.enable_request_interception(
+        &patterns,
+        Box::new(|transport, session_id, intercepted| {
+            println!("\nDEBUG: url content: {:?}", intercepted.request.url);
+            println!("\nDEBUG: {:?}", intercepted.request);
+            if intercepted.request.url.ends_with(".js") {
+                println!("DEBUG: jackpot! We have JS code",);
+                let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
+                let js_response = tiny_http::Response::new(
+                    200.into(),
+                    vec![tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/javascript"[..]).unwrap()],
+                    js_body.as_bytes(),
+                    Some(js_body.len()),
+                    None,
+                );
+
+                let mut wrapped_writer = Vec::new();
+                js_response
+                    .raw_print(&mut wrapped_writer, (1, 2).into(), &[], false, None)
+                    .unwrap();
+
+                let base64_response = base64::encode(&wrapped_writer);
+
+                RequestInterceptionDecision::Response(base64_response)
+            } else {
+                RequestInterceptionDecision::Continue
+            }
+        }),
+    )
+    .unwrap();
+    println!("RDR tab enable request",);
+
+    let responses = Arc::new(Mutex::new(Vec::new()));
+
+    tab.enable_response_handling(Box::new(move |response, fetch_body| {
+        // NOTE: you can only fetch the body after it's been downloaded, which might be some time
+        // after the initial 'response' (with status code, headers, etc.) has come back. hence this
+        // sleep:
+        println!("\nDEBUG: Response {:?}", response);
+        sleep(Duration::from_millis(100));
+        let body = fetch_body().unwrap();
+        println!("\nDEBUG: Response body: {:?}", body);
+        responses.lock().unwrap().push((response, body));
+    }))
+    .unwrap();
+
+    println!("RDR tab enable response",);
+
+    println!("\nLobste.rs\n",);
+    let jpeg_data = tab
+        .navigate_to("http://lobste.rs")
+        .unwrap()
+        .wait_until_navigated()
+        .unwrap();
+
+    println!("Screenshots successfully created.");
 }

@@ -15,19 +15,22 @@ use std::hash::BuildHasherDefault;
 use utils;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
+/// The buffer size needs to be chosen wisely.
+///
+/// The buffer size needs to larger than the largest assembled TLS ServerHello message.
 const BUFFER_SIZE: usize = 16384; // 2048, 4096, 8192, 16384
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // New payload cache.
-    //
-    // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
-    // naive implementation of TCP out-of-order segments, for a more comprehensive version you
-    // should visit something like [assembler in
-    // smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
-    // buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
+    /// New payload cache.
+    ///
+    /// Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
+    /// naive implementation of TCP out-of-order segments, for a more comprehensive version you
+    /// should visit something like [assembler in
+    /// smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
+    /// buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
     // Temporary payload cache.

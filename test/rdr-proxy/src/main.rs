@@ -17,6 +17,11 @@ extern crate slog_stdlog;
 extern crate slog_term;
 #[macro_use]
 extern crate log;
+extern crate base64;
+extern crate failure;
+
+extern crate headless_chrome;
+extern crate tiny_http;
 
 use self::nf::rdr_proxy;
 use e2d2::allocators::CacheAligned;
@@ -66,7 +71,7 @@ fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sch
 fn main() {
     if ENABLE_LOGGING {
         //logging will incur severe perf overhead.
-        let log_path = "tlsv.log";
+        let log_path = "rdr.log";
         let file = OpenOptions::new()
             .create(true)
             .write(true)
@@ -85,7 +90,7 @@ fn main() {
         // register slog_stdlog as the log handler with the log crate
         slog_stdlog::init().unwrap();
 
-        info!("Starting PVN TLS validator network function");
+        info!("Starting PVN RDR proxy network function");
     }
 
     // setup default parameters

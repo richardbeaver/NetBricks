@@ -1,16 +1,33 @@
 use self::utils::{
-    get_server_name, is_client_hello, is_client_key_exchange, is_server_hello, parse_tls_frame, test_extracted_cert,
-    tlsf_combine_remove, tlsf_tmp_store, tlsf_update,
+    get_server_name, is_client_hello, is_client_key_exchange, is_server_hello, parse_tls_frame, tab_create,
+    tab_create_unwrap, test_extracted_cert, tlsf_combine_remove, tlsf_tmp_store, tlsf_update,
 };
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
+use failure::Fallible;
 use fnv::FnvHasher;
-use rustls::internal::msgs::{codec::Codec, message::Message as TLSMessage};
-use std::collections::hash_map::Entry;
+// use rustls::internal::msgs::{codec::Codec, message::Message as TLSMessage};
+// use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
+// use std::fs;
 use std::hash::BuildHasherDefault;
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
+use std::time::Duration;
+
+use headless_chrome::browser::tab::RequestInterceptionDecision;
+use headless_chrome::protocol::network::methods::RequestPattern;
+// use headless_chrome::protocol::network::Cookie;
+// use headless_chrome::protocol::runtime::methods::{RemoteObjectSubtype, RemoteObjectType};
+// use headless_chrome::protocol::RemoteError;
+use headless_chrome::LaunchOptionsBuilder;
+use headless_chrome::{
+    protocol::browser::{Bounds, WindowState},
+    protocol::page::ScreenshotFormat,
+    Browser, Tab,
+};
 
 use utils;
 
@@ -69,8 +86,11 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let flow = p.get_header().flow().unwrap();
             flow
         })
-        .parse::<TcpHeader>()
+    .parse::<TcpHeader>()
         .transform(box move |p| {
+            println!("RDR");
+            let tab = tab_create();
+
             let flow = p.read_metadata();
             let rev_flow = flow.reverse_flow();
             let _seq = p.get_header().seq_num();
@@ -289,7 +309,7 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // unsafe_connection.clear();
             }
         })
-        .reset()
+    .reset()
         .compose();
     merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
 }
