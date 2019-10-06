@@ -264,7 +264,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
     /// Return the payload size, e.g., data_len - offset - payload_offset.
     #[inline]
     pub fn payload_size(&self) -> usize {
-        self.data_len() - self.offset() - self.payload_offset()
+        self.data_len() - self.offset() - self.payload_offset() + 1
     }
 
     /// Return the header.
@@ -475,6 +475,15 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
 
     #[inline]
     pub fn get_payload(&self) -> &[u8] {
+        unsafe {
+            let len = self.payload_size();
+            slice::from_raw_parts(self.payload(), len)
+        }
+    }
+
+    /// Fixed the bug that the first byte of the payload is missing.
+    #[inline]
+    pub fn get_payload_fixed(&self) -> &[u8] {
         unsafe {
             let len = self.payload_size();
             slice::from_raw_parts(self.payload(), len)

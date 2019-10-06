@@ -1,4 +1,18 @@
-use e2d2::utils::Flow;
+// use e2d2::utils::Flow;
+use failure::Fallible;
+use headless_chrome::browser::tab::RequestInterceptionDecision;
+use headless_chrome::protocol::network::methods::RequestPattern;
+// use headless_chrome::protocol::network::Cookie;
+// use headless_chrome::protocol::runtime::methods::{RemoteObjectSubtype, RemoteObjectType};
+// use headless_chrome::protocol::RemoteError;
+use headless_chrome::LaunchOptionsBuilder;
+use headless_chrome::{
+    //    protocol::browser::{Bounds, WindowState},
+    //    protocol::page::ScreenshotFormat,
+    Browser,
+    Tab,
+};
+use rshttp::{HttpHeader, HttpHeaderName, HttpRequest};
 use rustls::internal::msgs::{
     codec::Codec,
     enums::{ContentType, ExtensionType},
@@ -10,91 +24,53 @@ use rustls::internal::msgs::{
     message::{Message as TLSMessage, MessagePayload},
 };
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-use webpki;
-use webpki_roots;
-
-use failure::Fallible;
-use headless_chrome::browser::tab::RequestInterceptionDecision;
-use headless_chrome::protocol::network::methods::RequestPattern;
-use headless_chrome::protocol::network::Cookie;
-use headless_chrome::protocol::runtime::methods::{RemoteObjectSubtype, RemoteObjectType};
-use headless_chrome::protocol::RemoteError;
-use headless_chrome::LaunchOptionsBuilder;
-use headless_chrome::{
-    protocol::browser::{Bounds, WindowState},
-    protocol::page::ScreenshotFormat,
-    Browser, Tab,
-};
+// use std::collections::hash_map::Entry;
+// use std::collections::HashMap;
+// use std::convert::TryFrom;
+// use std::fs;
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
 
 // TODO: move to failure crate!
 #[derive(Debug, Clone)]
+pub struct HttpRequestNotExtractedError;
+
+/// Parse a slice of bytes into a HTTP frame and the size of payload.
+#[allow(dead_code)]
+pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
+    match TLSMessage::read_bytes(&rest) {
+        Some(mut packet) => {
+            // info!("\nParsing this TLS frame is \n{:x?}", packet);
+            // info!("length of the packet payload is {}\n", packet.payload.length());
+
+            let frame_len = packet.payload.length();
+            if packet.typ == ContentType::Handshake && packet.decode_payload() {
+                if let MessagePayload::Handshake(x) = packet.payload {
+                    Some((x, frame_len))
+                } else {
+                    info!("Message is not handshake",);
+                    None
+                }
+            } else {
+                info!("Packet type doesn't match or we can't decode payload",);
+                None
+            }
+        }
+        None => {
+            //info!("ON FRAME: Read bytes but got None {:x?}", rest);
+            debug!("ON FRAME: Read bytes but got None");
+            None
+        }
+    }
+}
+
+// TODO: move to failure crate!
+#[derive(Debug, Clone)]
 pub struct CertificateNotExtractedError;
 
-/// Start a TLS flow entry by inserting a TLS frame.
-#[allow(dead_code)]
-pub fn tlsf_insert(
-    flow: Flow,
-    payload_cache: &mut HashMap<Flow, Vec<u8>>,
-    seqnum_map: &mut HashMap<Flow, u32>,
-    payload: &[u8],
-    expected_seq: u32,
-) {
-    payload_cache.insert(flow, payload.to_vec());
-    seqnum_map.insert(flow, expected_seq);
-}
-
-/// Update a TLS flow entry by updating the entry with continuing TLS frame.
-pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
-    e.and_modify(|e| {
-        debug!("Before writing more bytes {:?}", e.len());
-        e.extend(payload);
-        debug!("After writing the bytes {:?}", e.len());
-        ()
-    });
-}
-
-/// Remove a TLS flow entry.
-#[allow(dead_code)]
-pub fn tlsf_remove(e: Entry<Flow, Vec<u8>>) {
-    // let buf = match e {
-    //     Entry::Vacant(_) => println!("?"),
-    //     Entry::Occupied(b) => {
-    //         println!("?");
-    //         b
-    //     }
-    // };
-    // parse_tls_frame(&buf);
-    unimplemented!();
-}
-
-#[allow(dead_code)]
-pub fn tlsf_tmp_store(
-    flow: Flow,
-    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
-    tmp_seqnum_map: &HashMap<Flow, u32>,
-    payload: &[u8],
-) {
-    //unimplemented!();
-}
-
-/// Remove a TLS flow entry.
-#[allow(dead_code)]
-pub fn tlsf_combine_remove(
-    flow: Flow,
-    payload_cache: &HashMap<Flow, Vec<u8>>,
-    seqnum_map: &HashMap<Flow, u32>,
-    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
-    tmp_seqnum_map: &HashMap<Flow, (u32, u32)>,
-) {
-    unimplemented!();
-}
-
 // FIXME: Allocating too much memory???
+#[allow(dead_code)]
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     info!("Matching server name");
 
@@ -142,64 +118,8 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     }
 }
 
-pub fn current_time() -> Result<webpki::Time, TLSError> {
-    match webpki::Time::try_from(std::time::SystemTime::now()) {
-        Ok(current_time) => Ok(current_time),
-        _ => Err(TLSError::FailedToGetCurrentTime),
-    }
-}
-
-static V: &'static WebPKIVerifier = &WebPKIVerifier { time: current_time };
-
-pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
-    info!("info: validate certs",);
-    debug!("dns name is {:?}\n", dns_name);
-    //info!("certs are {:?}\n", certs);
-    let mut anchors = RootCertStore::empty();
-    anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
-    //let dns_name = webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-    let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
-    match result {
-        Ok(_) => {
-            debug!("tlsv result: Valid cert!\n");
-            return true;
-        }
-        Err(e) => {
-            debug!("tlsv result: Non valid cert with {}\n", e);
-            false
-        }
-    }
-}
-
-/// Parse a slice of bytes into a TLS frame and the size of payload.
-pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
-    match TLSMessage::read_bytes(&rest) {
-        Some(mut packet) => {
-            // info!("\nParsing this TLS frame is \n{:x?}", packet);
-            // info!("length of the packet payload is {}\n", packet.payload.length());
-
-            let frame_len = packet.payload.length();
-            if packet.typ == ContentType::Handshake && packet.decode_payload() {
-                if let MessagePayload::Handshake(x) = packet.payload {
-                    Some((x, frame_len))
-                } else {
-                    info!("Message is not handshake",);
-                    None
-                }
-            } else {
-                info!("Packet type doesn't match or we can't decode payload",);
-                None
-            }
-        }
-        None => {
-            //info!("ON FRAME: Read bytes but got None {:x?}", rest);
-            debug!("ON FRAME: Read bytes but got None");
-            None
-        }
-    }
-}
-
 /// Test if the current TLS frame is a ServerHello.
+#[allow(dead_code)]
 pub fn is_server_hello(buf: &[u8]) -> bool {
     info!("Testing for server hello",);
     if on_frame(&buf).is_none() {
@@ -222,6 +142,7 @@ pub fn is_server_hello(buf: &[u8]) -> bool {
 }
 
 /// Test if the current TLS frame is a ClientHello.
+#[allow(dead_code)]
 pub fn is_client_hello(buf: &[u8]) -> bool {
     if on_frame(&buf).is_none() {
         return false;
@@ -242,6 +163,7 @@ pub fn is_client_hello(buf: &[u8]) -> bool {
 }
 
 /// Test if the current TLS frame is ClientKeyExchange.
+#[allow(dead_code)]
 pub fn is_client_key_exchange(buf: &[u8]) -> bool {
     info!("Testing client key exchange",);
     if on_frame(&buf).is_none() {
@@ -263,6 +185,7 @@ pub fn is_client_key_exchange(buf: &[u8]) -> bool {
 }
 
 /// Parse the bytes into tls frames.
+#[allow(dead_code)]
 pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNotExtractedError> {
     // TLS Header length is 5.
     let tls_hdr_len = 5;
@@ -274,16 +197,6 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     //
     /////////////////////////////////////////////
 
-    // match handshake1.payload {
-    //     ClientHello(payload) => {
-    //         info!("ClientHello",);
-    //         info!("{:x?}", payload);
-    //     }
-    //     ServerHello(payload) => {
-    //         info!("{:x?}", payload);
-    //     }
-    //     _ => info!("None"),
-    // }
     let offset1 = match on_frame(&buf) {
         Some((_handshake1, offset1)) => offset1,
         None => return Err(CertificateNotExtractedError),
@@ -298,12 +211,6 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     //  TLS FRAME Two: Certificate
     //
     /////////////////////////////////////////////
-
-    // if on_frame(&rest).is_none() {
-    //     info!("info: Get None, abort",);
-    //     return Err(CertificateNotExtractedError);
-    // }
-    // let (handshake2, _offset2) = on_frame(&rest).expect("oh no! parsing the Certificate failed!!");
 
     info!("Working on the second frame...");
 
@@ -369,7 +276,8 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     certs
 }
 
-pub fn tab_create() -> Fallible<()> {
+#[allow(dead_code)]
+pub fn tab_create(hostname: String) -> Fallible<()> {
     // Create a headless browser, navigate to wikipedia.org, wait for the page
     // to render completely, take a screenshot of the entire page
     // in JPEG-format using 75% quality.
@@ -443,14 +351,17 @@ pub fn tab_create() -> Fallible<()> {
 
     println!("RDR tab enable response",);
 
-    println!("\nLobste.rs\n",);
-    let jpeg_data = tab.navigate_to("http://lobste.rs")?.wait_until_navigated()?;
+    println!("\nhostname is: {:?}\n", hostname);
+    // let jpeg_data = tab.navigate_to(&hostname)?.wait_until_navigated()?;
 
-    println!("Screenshots successfully created.");
+    let http_hostname = "http://".to_string() + &hostname;
+    let jpeg_data = tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
+
     Ok(())
 }
 
-pub fn tab_create_unwrap() {
+#[allow(dead_code)]
+pub fn tab_create_unwrap(hostname: String) {
     // Create a headless browser, navigate to wikipedia.org, wait for the page
     // to render completely, take a screenshot of the entire page
     // in JPEG-format using 75% quality.
@@ -525,12 +436,47 @@ pub fn tab_create_unwrap() {
 
     println!("RDR tab enable response",);
 
-    println!("\nLobste.rs\n",);
-    let jpeg_data = tab
-        .navigate_to("http://lobste.rs")
-        .unwrap()
-        .wait_until_navigated()
-        .unwrap();
+    // hostname is String,
+    println!("\nHostname: {:?}\n", hostname);
+    let http_hostname = "http://".to_string() + &hostname;
+    let jpeg_data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
+}
 
-    println!("Screenshots successfully created.");
+pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtractedError> {
+    // if the first three bytes are "GET" or "POS", there's a chance the packet is HTTP
+    // if the first three bytes are 0x16, 0x30, 0x00-0x03, there's a chance the packet is TLS
+
+    let get: &[u8] = &[71, 69, 84]; // GET
+    let post: &[u8] = &[80, 79, 83]; // POS
+    let http: &[u8] = &[72, 84, 84]; // HTT
+    let tls0: &[u8] = &[22, 3, 0];
+    let tls1: &[u8] = &[22, 3, 1];
+    let tls2: &[u8] = &[22, 3, 2];
+    let tls3: &[u8] = &[22, 3, 3];
+
+    let (head, _) = payload.split_at(3);
+
+    if head == get {
+        let payload_str = match std::str::from_utf8(payload) {
+            Ok(s) => s.to_string(),
+            Err(_) => return Err(HttpRequestNotExtractedError),
+        };
+
+        let get_request = HttpRequest::new(&payload_str).unwrap();
+        let headers = get_request.headers;
+
+        let mut _iterator = headers.iter();
+
+        while let Some(h) = _iterator.next() {
+            if h.name == HttpHeaderName::Host {
+                // println!("{:?}", h.value);
+                return Ok(h.value.clone());
+            } else {
+                continue;
+            }
+        }
+        return Err(HttpRequestNotExtractedError);
+    } else {
+        Err(HttpRequestNotExtractedError)
+    }
 }

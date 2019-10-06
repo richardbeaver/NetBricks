@@ -21,6 +21,7 @@ extern crate base64;
 extern crate failure;
 
 extern crate headless_chrome;
+extern crate rshttp;
 extern crate tiny_http;
 
 use self::nf::rdr_proxy;

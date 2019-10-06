@@ -82,6 +82,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             info!("");
             info!("TCP Headers: {}", _tcph);
 
+            println!("\nseq # is {:?}\n", _seq);
+
+            println!("\npayload is {:x?}\n", p.get_payload());
+
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
                 // check if the flow is recognized

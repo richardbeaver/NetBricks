@@ -22,8 +22,8 @@ failure = "*"
 tiny_http = "0.6"
 base64 = "0.10"
 # headless_chrome = "0.9"
-# headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "dev" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn" }
+rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
 
 [features]
 default = []
