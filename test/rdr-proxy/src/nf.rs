@@ -58,7 +58,6 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             let _tcph = p.get_header();
 
-            tab_create_unwrap("lobste.rs".to_string());
             let _payload_size = p.payload_size();
             //println!("The packet header is {:?}", _tcph);
 
@@ -71,9 +70,6 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     Ok(h) => {
                         println!("hostname: {:?}", h);
                         tab_create(h);
-                        tab_create("lobste.rs".to_string());
-                        tab_create("www.usatoday.com".to_string());
-                        // tab_create_unwrap(h);
                     }
                     Err(_) => {}
                 }

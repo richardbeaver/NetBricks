@@ -276,7 +276,6 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     certs
 }
 
-#[allow(dead_code)]
 pub fn tab_create(hostname: String) -> Fallible<()> {
     // Create a headless browser, navigate to wikipedia.org, wait for the page
     // to render completely, take a screenshot of the entire page
@@ -469,7 +468,7 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
 
         while let Some(h) = _iterator.next() {
             if h.name == HttpHeaderName::Host {
-                // println!("{:?}", h.value);
+                println!("Important: issuing a HTTP request for {:?}", h.value);
                 return Ok(h.value.clone());
             } else {
                 continue;
