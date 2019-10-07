@@ -468,7 +468,7 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
 
         while let Some(h) = _iterator.next() {
             if h.name == HttpHeaderName::Host {
-                println!("Important: issuing a HTTP request for {:?}", h.value);
+                println!("\nImportant: issuing a HTTP request for {:?}", h.value);
                 return Ok(h.value.clone());
             } else {
                 continue;
