@@ -69,7 +69,11 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 match host {
                     Ok(h) => {
                         println!("hostname: {:?}", h);
-                        tab_create(h);
+                        // tab_create(h);
+                        // tab_create_unwrap(h);
+
+                        tab_create_unwrap("lobste.rs".to_string());
+                        tab_create_unwrap("lobste.rs".to_string());
                     }
                     Err(_) => {}
                 }
@@ -85,6 +89,105 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             // println!("Parse request {:?}", req.parse(buf));
             //println!("is partial {:?}", req.parse(buf)?.is_partial());
 
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            // tab_create("lobste.rs".to_string());
+            //
             //
         })
         .reset()
