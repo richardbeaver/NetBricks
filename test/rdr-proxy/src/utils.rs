@@ -41,24 +41,24 @@ pub struct HttpRequestNotExtractedError;
 pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
-            // info!("\nParsing this TLS frame is \n{:x?}", packet);
-            // info!("length of the packet payload is {}\n", packet.payload.length());
+            // println!("\nParsing this TLS frame is \n{:x?}", packet);
+            // println!("length of the packet payload is {}\n", packet.payload.length());
 
             let frame_len = packet.payload.length();
             if packet.typ == ContentType::Handshake && packet.decode_payload() {
                 if let MessagePayload::Handshake(x) = packet.payload {
                     Some((x, frame_len))
                 } else {
-                    info!("Message is not handshake",);
+                    println!("Message is not handshake",);
                     None
                 }
             } else {
-                info!("Packet type doesn't match or we can't decode payload",);
+                println!("Packet type doesn't match or we can't decode payload",);
                 None
             }
         }
         None => {
-            //info!("ON FRAME: Read bytes but got None {:x?}", rest);
+            //println!("ON FRAME: Read bytes but got None {:x?}", rest);
             debug!("ON FRAME: Read bytes but got None");
             None
         }
@@ -72,18 +72,18 @@ pub struct CertificateNotExtractedError;
 // FIXME: Allocating too much memory???
 #[allow(dead_code)]
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
-    info!("Matching server name");
+    println!("Matching server name");
 
     match on_frame(&buf) {
         Some((handshake, _)) => {
             match handshake.payload {
                 ClientHello(x) => {
-                    //info!("is client hello: {:?}\n", x.extensions);
+                    //println!("is client hello: {:?}\n", x.extensions);
                     let mut _iterator = x.extensions.iter();
                     let mut result = None;
                     while let Some(val) = _iterator.next() {
                         if ClientExtension::get_type(val) == ExtensionType::ServerName {
-                            //info!("Getting a ServerName type {:?}\n", val);
+                            //println!("Getting a ServerName type {:?}\n", val);
                             let server_name = match val {
                                 ClientExtension::ServerName(x) => x,
                                 _ => return None,
@@ -92,7 +92,7 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 
                             match x.clone() {
                                 ServerNamePayload::HostName(dns_name) => {
-                                    info!("DNS name is : {:?}", dns_name);
+                                    println!("DNS name is : {:?}", dns_name);
                                     result = Some(dns_name);
                                 }
                                 _ => (),
@@ -101,18 +101,18 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
                             continue;
                         }
                     }
-                    info!("info: Result is {:?}", result);
-                    info!("info:",);
+                    println!("println: Result is {:?}", result);
+                    println!("println:",);
                     result
                 }
                 _ => {
-                    info!("not client hello",);
+                    println!("not client hello",);
                     None
                 }
             }
         }
         None => {
-            info!("On frame read none bytes",);
+            println!("On frame read none bytes",);
             return None;
         }
     }
@@ -121,20 +121,20 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 /// Test if the current TLS frame is a ServerHello.
 #[allow(dead_code)]
 pub fn is_server_hello(buf: &[u8]) -> bool {
-    info!("Testing for server hello",);
+    println!("Testing for server hello",);
     if on_frame(&buf).is_none() {
-        info!("On frame is none");
+        println!("On frame is none");
         return false;
     } else {
         let (handshake, _) = on_frame(&buf).unwrap();
 
         match handshake.payload {
             ServerHello(_) => {
-                info!("is server hello",);
+                println!("is server hello",);
                 true
             }
             _ => {
-                info!("not server hello",);
+                println!("not server hello",);
                 false
             }
         }
@@ -151,11 +151,11 @@ pub fn is_client_hello(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ClientHello(_) => {
-                info!("is client hello",);
+                println!("is client hello",);
                 true
             }
             _ => {
-                info!("not client hello",);
+                println!("not client hello",);
                 false
             }
         }
@@ -165,7 +165,7 @@ pub fn is_client_hello(buf: &[u8]) -> bool {
 /// Test if the current TLS frame is ClientKeyExchange.
 #[allow(dead_code)]
 pub fn is_client_key_exchange(buf: &[u8]) -> bool {
-    info!("Testing client key exchange",);
+    println!("Testing client key exchange",);
     if on_frame(&buf).is_none() {
         return false;
     } else {
@@ -173,11 +173,11 @@ pub fn is_client_key_exchange(buf: &[u8]) -> bool {
 
         match handshake.payload {
             ClientKeyExchange(_) => {
-                info!("is Client Key Exchange",);
+                println!("is Client Key Exchange",);
                 true
             }
             _ => {
-                info!("not Client Key Exchange",);
+                println!("not Client Key Exchange",);
                 false
             }
         }
@@ -203,8 +203,8 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     };
 
     let (_, rest) = buf.split_at(offset1 + tls_hdr_len);
-    info!("And the magic number is {}\n", offset1 + tls_hdr_len);
-    //info!("info: The SECOND TLS frame starts with: {:x?}", rest);
+    println!("And the magic number is {}\n", offset1 + tls_hdr_len);
+    //println!("println: The SECOND TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -212,9 +212,9 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     //
     /////////////////////////////////////////////
 
-    info!("Working on the second frame...");
+    println!("Working on the second frame...");
 
-    info!("Trying to read the frame using on_frame...");
+    println!("Trying to read the frame using on_frame...");
     let (handshake2, _offset2) = match on_frame(&rest) {
         Some((handshake2, _offset2)) => (handshake2, _offset2),
         None => {
@@ -225,13 +225,13 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
 
     let certs = match handshake2.payload {
         CertificatePayload(payload) => {
-            //info!("Certificate payload is\n{:x?}", payload);
-            info!("Parsing the certificate payload..",);
+            //println!("Certificate payload is\n{:x?}", payload);
+            println!("Parsing the certificate payload..",);
 
             Ok(payload)
         }
         _ => {
-            info!("None");
+            println!("None");
             Err(CertificateNotExtractedError)
         }
     };
@@ -240,8 +240,8 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     return certs;
 
     let (_, rest) = rest.split_at(_offset2 + tls_hdr_len);
-    info!("And the magic number is {}\n", _offset2 + tls_hdr_len);
-    info!("The THIRD TLS frame starts with: {:x?}", rest);
+    println!("And the magic number is {}\n", _offset2 + tls_hdr_len);
+    println!("The THIRD TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -252,13 +252,13 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
     let (handshake3, offset3) = on_frame(&rest).expect("oh no! parsing the ServerKeyExchange failed!!");
 
     match handshake3.payload {
-        ServerKeyExchange(payload) => info!("Server Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
-        _ => info!("None"),
+        ServerKeyExchange(payload) => println!("Server Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
+        _ => println!("None"),
     }
 
     let (_, rest) = rest.split_at(offset3 + tls_hdr_len);
-    info!("And the magic number is {}\n", offset3 + tls_hdr_len);
-    info!("The FOURTH TLS frame starts with: {:x?}", rest);
+    println!("And the magic number is {}\n", offset3 + tls_hdr_len);
+    println!("The FOURTH TLS frame starts with: {:x?}", rest);
 
     /////////////////////////////////////////////
     //
@@ -268,37 +268,37 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
 
     let (handshake4, offset4) = on_frame(&rest).expect("oh no! parsing the ServerHelloDone failed!!");
     match handshake4.payload {
-        ServerHelloDone => info!("Hooray! Server Hello Done!!!"),
-        _ => info!("None"),
+        ServerHelloDone => println!("Hooray! Server Hello Done!!!"),
+        _ => println!("None"),
     }
-    info!("And the magic number is {}\n", offset4 + tls_hdr_len);
+    println!("And the magic number is {}\n", offset4 + tls_hdr_len);
 
     certs
 }
 
-pub fn tab_create(hostname: String) -> Fallible<()> {
+pub fn prev_tab_create(hostname: String) -> Fallible<()> {
     // Create a headless browser, navigate to wikipedia.org, wait for the page
     // to render completely, take a screenshot of the entire page
     // in JPEG-format using 75% quality.
-    info!("RDR entry point",);
+    println!("RDR entry point",);
     let options = LaunchOptionsBuilder::default()
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
 
     let browser = Browser::new(options)?;
-    info!("RDR browser",);
+    println!("RDR browser",);
     let tab = browser.wait_for_initial_tab()?;
-    info!("RDR tab",);
+    println!("RDR tab",);
 
-    info!("RDR entry point",);
+    println!("RDR entry point",);
     let options2 = LaunchOptionsBuilder::default()
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
 
     let browser2 = Browser::new(options2)?;
-    info!("RDR browser",);
+    println!("RDR browser",);
     let tab2 = browser2.wait_for_initial_tab()?;
-    info!("RDR tab",);
+    println!("RDR tab",);
 
     let patterns = vec![
         RequestPattern {
@@ -316,10 +316,10 @@ pub fn tab_create(hostname: String) -> Fallible<()> {
     tab.enable_request_interception(
         &patterns,
         Box::new(|transport, session_id, intercepted| {
-            info!("\nDEBUG: url content: {:?}", intercepted.request.url);
-            info!("\nDEBUG: {:?}", intercepted.request);
+            trace!("\nDEBUG: url content: {:?}", intercepted.request.url);
+            trace!("\nDEBUG: {:?}", intercepted.request);
             if intercepted.request.url.ends_with(".js") {
-                info!("DEBUG: jackpot! We have JS code",);
+                trace!("DEBUG: jackpot! We have JS code",);
                 let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
                 let js_response = tiny_http::Response::new(
                     200.into(),
@@ -343,7 +343,7 @@ pub fn tab_create(hostname: String) -> Fallible<()> {
         }),
     )?;
 
-    info!("RDR tab enable request",);
+    println!("RDR tab enable request",);
 
     let responses = Arc::new(Mutex::new(Vec::new()));
 
@@ -351,16 +351,16 @@ pub fn tab_create(hostname: String) -> Fallible<()> {
         // NOTE: you can only fetch the body after it's been downloaded, which might be some time
         // after the initial 'response' (with status code, headers, etc.) has come back. hence this
         // sleep:
-        info!("\nDEBUG: Response {:?}", response);
+        println!("\nDEBUG: Response {:?}", response);
         sleep(Duration::from_millis(100));
         let body = fetch_body().unwrap();
-        info!("\nDEBUG: Response body: {:?}", body);
+        println!("\nDEBUG: Response body: {:?}", body);
         responses.lock().unwrap().push((response, body));
     }))?;
 
-    info!("RDR tab enable response",);
+    println!("RDR tab enable response",);
 
-    info!("\nhostname is: {:?}\n", hostname);
+    println!("\nhostname is: {:?}\n", hostname);
     // let jpeg_data = tab.navigate_to(&hostname)?.wait_until_navigated()?;
 
     let http_hostname = "http://".to_string() + &hostname;
@@ -372,7 +372,7 @@ pub fn tab_create(hostname: String) -> Fallible<()> {
 }
 
 #[allow(dead_code)]
-pub fn tab_create_unwrap(hostname: String) {
+pub fn prev_tab_create_unwrap(hostname: String) {
     // Create a headless browser, navigate to wikipedia.org, wait for the page
     // to render completely, take a screenshot of the entire page
     // in JPEG-format using 75% quality.
@@ -380,7 +380,7 @@ pub fn tab_create_unwrap(hostname: String) {
     let options = LaunchOptionsBuilder::default()
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
-    info!("RDR options",);
+    println!("RDR options",);
     let browser = Browser::new(options).unwrap();
     println!("RDR browser",);
     let tab = browser.wait_for_initial_tab().unwrap();
@@ -402,10 +402,10 @@ pub fn tab_create_unwrap(hostname: String) {
     tab.enable_request_interception(
         &patterns,
         Box::new(|transport, session_id, intercepted| {
-            info!("\nDEBUG: url content: {:?}", intercepted.request.url);
-            info!("\nDEBUG: {:?}", intercepted.request);
+            println!("\nDEBUG: url content: {:?}", intercepted.request.url);
+            println!("\nDEBUG: {:?}", intercepted.request);
             if intercepted.request.url.ends_with(".js") {
-                info!("DEBUG: jackpot! We have JS code",);
+                println!("DEBUG: jackpot! We have JS code",);
                 let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
                 let js_response = tiny_http::Response::new(
                     200.into(),
@@ -429,7 +429,7 @@ pub fn tab_create_unwrap(hostname: String) {
         }),
     )
     .unwrap();
-    info!("RDR tab enable request",);
+    println!("RDR tab enable request",);
 
     let responses = Arc::new(Mutex::new(Vec::new()));
 
@@ -437,18 +437,18 @@ pub fn tab_create_unwrap(hostname: String) {
         // NOTE: you can only fetch the body after it's been downloaded, which might be some time
         // after the initial 'response' (with status code, headers, etc.) has come back. hence this
         // sleep:
-        info!("\nDEBUG: Response {:?}", response);
+        println!("\nDEBUG: Response {:?}", response);
         sleep(Duration::from_millis(100));
         let body = fetch_body().unwrap();
-        info!("\nDEBUG: Response body: {:?}", body);
+        println!("\nDEBUG: Response body: {:?}", body);
         responses.lock().unwrap().push((response, body));
     }))
     .unwrap();
 
-    info!("RDR tab enable response",);
+    println!("RDR tab enable response",);
 
     // hostname is String,
-    info!("\nHostname: {:?}\n", hostname);
+    println!("\nHostname: {:?}\n", hostname);
     let http_hostname = "http://".to_string() + &hostname;
     let jpeg_data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
 }
@@ -480,7 +480,7 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
 
         while let Some(h) = _iterator.next() {
             if h.name == HttpHeaderName::Host {
-                info!("\nImportant: issuing a HTTP request for {:?}", h.value);
+                println!("\nImportant: issuing a HTTP request for {:?}", h.value);
                 return Ok(h.value.clone());
             } else {
                 continue;
@@ -490,4 +490,129 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
     } else {
         Err(HttpRequestNotExtractedError)
     }
+}
+
+pub fn browser_create() -> Fallible<Browser> {
+    let options = LaunchOptionsBuilder::default()
+        .build()
+        .expect("Couldn't find appropriate Chrome binary.");
+
+    let browser = Browser::new(options)?;
+    let tab = browser.wait_for_initial_tab()?;
+
+    // ONLY TEST
+    // let http_hostname = "http://lobste.rs".to_string();
+    // let data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
+
+    Ok(browser)
+}
+
+pub fn tab_create() -> Fallible<Arc<Tab>> {
+    let options = LaunchOptionsBuilder::default()
+        .build()
+        .expect("Couldn't find appropriate Chrome binary.");
+
+    let browser = Browser::new(options)?;
+    let tab = browser.new_tab()?;
+
+    // ONLY TEST
+    let http_hostname = "http://lobste.rs".to_string();
+    let data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
+
+    Ok(tab)
+}
+
+pub fn retrieve_bulk_pairs(
+    hostname: String,
+    current_browser: Browser,
+    payload_cache: HashMap<Flow, Vec<u8>>,
+) -> Fallible<Browser> {
+    // Doesn't use incognito mode
+    //
+    // let current_tab = current_browser.new_tab()?;
+
+    // Incogeneto mode
+    //
+    let incognito_cxt = current_browser.new_context()?;
+    let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
+
+    println!("bulk1",);
+
+    let patterns = vec![
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("HeadersReceived"),
+        },
+        RequestPattern {
+            url_pattern: None,
+            resource_type: None,
+            interception_stage: Some("Request"),
+        },
+    ];
+
+    current_tab.enable_request_interception(
+        &patterns,
+        Box::new(|transport, session_id, intercepted| {
+            if intercepted.request.url.ends_with(".js") {
+                let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
+                let js_response = tiny_http::Response::new(
+                    200.into(),
+                    vec![tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/javascript"[..]).unwrap()],
+                    js_body.as_bytes(),
+                    Some(js_body.len()),
+                    None,
+                );
+
+                let mut wrapped_writer = Vec::new();
+                js_response
+                    .raw_print(&mut wrapped_writer, (1, 2).into(), &[], false, None)
+                    .unwrap();
+
+                let base64_response = base64::encode(&wrapped_writer);
+
+                RequestInterceptionDecision::Response(base64_response)
+            } else {
+                RequestInterceptionDecision::Continue
+            }
+        }),
+    )?;
+
+    println!("bulk1",);
+    let responses = Arc::new(Mutex::new(Vec::new()));
+
+    current_tab.enable_response_handling(Box::new(move |response, fetch_body| {
+        // NOTE: you can only fetch the body after it's been downloaded, which might be some time
+        // after the initial 'response' (with status code, headers, etc.) has come back. hence this
+        // sleep:
+        sleep(Duration::from_millis(100));
+        let body = fetch_body().unwrap();
+        responses.lock().unwrap().push((response, body));
+    }))?;
+
+    println!("RDR tab enable response",);
+
+    // This is a hack
+    if hostname == "wikia.com" {
+        let hostname = "lobste.rs";
+        println!("Changed wikia to lobsters",);
+
+        println!("\nDEBUG: Hostname: {:?}", hostname);
+        let http_hostname = "http://".to_string() + &hostname;
+        println!("Break",);
+
+        let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
+
+        println!("OK",);
+        return Ok(current_browser);
+    }
+
+    println!("\nDEBUG: Hostname: {:?}", hostname);
+    let http_hostname = "http://".to_string() + &hostname;
+    println!("Break",);
+
+    let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
+
+    println!("OK",);
+    Ok(current_browser)
 }
