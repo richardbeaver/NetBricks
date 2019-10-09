@@ -20,6 +20,11 @@ extern crate log;
 extern crate base64;
 extern crate failure;
 
+extern crate bincode;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+
 extern crate headless_chrome;
 extern crate rshttp;
 extern crate tiny_http;
