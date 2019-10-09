@@ -62,6 +62,7 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
 }
 
 pub fn browser_create() -> Fallible<Browser> {
+    // println!("try to create a browser",);
     let options = LaunchOptionsBuilder::default()
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
@@ -69,10 +70,7 @@ pub fn browser_create() -> Fallible<Browser> {
     let browser = Browser::new(options)?;
     let tab = browser.wait_for_initial_tab()?;
 
-    // ONLY TEST
-    // let http_hostname = "http://lobste.rs".to_string();
-    // let data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
-
+    // println!("Browser created",);
     Ok(browser)
 }
 
@@ -105,14 +103,14 @@ pub fn retrieve_bulk_pairs(
 )> {
     // Doesn't use incognito mode
     //
-    // let current_tab = current_browser.new_tab()?;
+    let current_tab = current_browser.new_tab()?;
 
     // Incogeneto mode
     //
-    let incognito_cxt = current_browser.new_context()?;
-    let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
+    // let incognito_cxt = current_browser.new_context()?;
+    // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
 
-    // println!("bulk1",);
+    // println!("try to retrieve bulk",);
 
     let patterns = vec![
         RequestPattern {
@@ -133,33 +131,8 @@ pub fn retrieve_bulk_pairs(
     current_tab.enable_request_interception(
         &patterns,
         Box::new(move |transport, session_id, intercepted| {
-            // request_response_pair.request = intercepted.request;
-            // request = intercepted.request;
-
             request2.lock().unwrap().push(intercepted.request);
 
-            // if intercepted.request.url.ends_with(".js") {
-            //     let js_body = r#"document.body.appendChild(document.createElement("hr"));"#;
-            //     let js_response = tiny_http::Response::new(
-            //         200.into(),
-            //         vec![tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/javascript"[..]).unwrap()],
-            //         js_body.as_bytes(),
-            //         Some(js_body.len()),
-            //         None,
-            //     );
-            //
-            //     let mut wrapped_writer = Vec::new();
-            //     js_response
-            //         .raw_print(&mut wrapped_writer, (1, 2).into(), &[], false, None)
-            //         .unwrap();
-            //
-            //     let base64_response = base64::encode(&wrapped_writer);
-            //
-            //     RequestInterceptionDecision::Response(base64_response)
-            // } else {
-            //     RequestInterceptionDecision::Continue
-            // }
-            //
             RequestInterceptionDecision::Continue
         }),
     )?;
@@ -174,7 +147,7 @@ pub fn retrieve_bulk_pairs(
         // NOTE: you can only fetch the body after it's been downloaded, which might be some time
         // after the initial 'response' (with status code, headers, etc.) has come back. hence this
         // sleep:
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(50));
 
         let body = fetch_body().unwrap();
 
@@ -188,7 +161,9 @@ pub fn retrieve_bulk_pairs(
 
     // This is a hack
     if hostname == "wikia.com" {
-        let hostname = "lobste.rs";
+        // let hostname = "lobste.rs";
+        let hostname = "tmz.com";
+
         // println!("Changed wikia to lobsters",);
         // println!("\nDEBUG: Hostname: {:?}", hostname);
         let http_hostname = "http://".to_string() + &hostname;
@@ -196,13 +171,13 @@ pub fn retrieve_bulk_pairs(
 
         let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
 
-        // println!("OK",);
-
         // let request_response_pair = RequestResponsePair {
         //     request: request,
         //     response_params: response_params,
         //     response_body: response_body,
         // };
+
+        // println!("OK",);
         return Ok((current_browser, final_request, final_responses));
     }
 
@@ -218,6 +193,6 @@ pub fn retrieve_bulk_pairs(
     //     response_body: response_body,
     // };
 
-    // println!("OK",);
+    // println!("retrieve: OK",);
     Ok((current_browser, final_request, final_responses))
 }

@@ -6,10 +6,7 @@
 extern crate e2d2;
 extern crate fnv;
 extern crate getopts;
-extern crate rustls;
 extern crate time;
-extern crate webpki;
-extern crate webpki_roots;
 #[macro_use]
 extern crate slog;
 extern crate slog_scope;
@@ -17,13 +14,7 @@ extern crate slog_stdlog;
 extern crate slog_term;
 #[macro_use]
 extern crate log;
-extern crate base64;
 extern crate failure;
-
-extern crate bincode;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
 
 extern crate headless_chrome;
 extern crate rshttp;
