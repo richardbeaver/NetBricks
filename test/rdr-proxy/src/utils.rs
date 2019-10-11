@@ -70,7 +70,7 @@ pub fn browser_create() -> Fallible<Browser> {
     let browser = Browser::new(options)?;
     let tab = browser.wait_for_initial_tab()?;
 
-    // println!("Browser created",);
+    println!("Browser created",);
     Ok(browser)
 }
 
