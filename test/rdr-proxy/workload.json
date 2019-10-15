@@ -1,12 +1,16 @@
 {
-    "FirstName": "John",
-    "LastName": "Doe",
-    "Age": 43,
-    "Address": {
-        "Street": "Downing Street 10",
-        "City": "London",
-        "Country": "Great Britain"
+    "category": {
+        "google.com": 1,
+        "twitter.com": 0.9145,
+        "amazon.com": 0.7891,
+        "?computers/internet ": 0.7855,
+        "www.bbc.com/news" : 0.7489,
+        "soundcloud.com": 0.7229,
+        "youtube.com": 0.6734,
+        "wikipedia.org": 0.5098
     },
+    "user_number": ?,
+    "website_number" : ?,
     "PhoneNumbers": [
         "+44 1234567",
         "+44 2345678"

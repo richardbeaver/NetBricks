@@ -103,11 +103,6 @@ fn main() {
         info!("Starting PVN RDR proxy network function");
     }
 
-    load_json("workload.json".to_string());
-    load_json("workload.json".to_string());
-    load_json("workload.json".to_string());
-    load_json("workload.json".to_string());
-
     // setup default parameters
     let opts = basic_opts();
     let args: Vec<String> = env::args().collect();

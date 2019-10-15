@@ -61,6 +61,63 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
     }
 }
 
+#[allow(dead_code)]
+pub fn pkt_workload() {
+    // let flow = p.read_metadata();
+    // let _tcph = p.get_header();
+    // let _payload_size = p.payload_size();
+    //
+    // if _payload_size > 3 {
+    //     let payload = p.get_payload();
+    //     let host = extract_http_request(payload);
+    //     trace!("New HTTP GET request, we have {:?} browsers now", browser_list.len());
+    //     if browser_list.len() > 2 {
+    //         // println!("{:?} browsers now", browser_list.len());
+    //     }
+    //     match host {
+    //         Ok(h) => {
+    //             info!("hostname: {:?}", h);
+    //
+    //             // FIXME: hack
+    //             //
+    //             // if browser_list.contains_key(flow) {
+    //             //     unimplemented!();
+    //             // // info!("browser list has this key:",);
+    //             // // let new_tab = tab_create().unwrap();
+    //             // // let used_tab = retrieve_bulk_pairs(h, new_tab).unwrap();
+    //             // //
+    //             // // browser_list.insert(*flow, used_tab);
+    //             // } else {
+    //             info!("browser list doesnot have the key: ",);
+    //             let new_browser = browser_create().unwrap();
+    //             info!("1",);
+    //             let result_pair = retrieve_bulk_pairs(h, new_browser);
+    //             match result_pair {
+    //                 Ok((used_browser, current_request, current_responses)) => {
+    //                     // Ok((used_browser, request_response_pair)) => {
+    //                     // payload_cache.insert(*flow, request_response_pair);
+    //
+    //                     browser_list.insert(*flow, used_browser);
+    //                     request_cache.insert(*flow, current_request);
+    //                     responses_cache.insert(*flow, current_responses);
+    //
+    //                     // match used_browser {
+    //                     //     Ok(b) => {
+    //                     //         info!("insert the browser ",);
+    //                     //     }
+    //                     //     Err(e) => {
+    //                     //         info!("Error is: {:?}", e);
+    //                     //     }
+    //                     // }
+    //                 }
+    //                 Err(e) => info!("Error is: {:?}", e),
+    //             }
+    //         }
+    //         Err(_) => {}
+    //     }
+    // }
+}
+
 pub fn browser_create() -> Fallible<Browser> {
     // println!("try to create a browser",);
     let options = LaunchOptionsBuilder::default()

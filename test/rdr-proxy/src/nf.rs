@@ -6,14 +6,18 @@ use e2d2::utils::Flow;
 use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::Browser;
 use std::collections::HashMap;
+use std::thread;
+use std::time::Duration;
 
 use utils;
+
+const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // States that this NF needs to maintain.:parent
+    // States that this NF needs to maintain.
     //
     // The RDR proxy network function needs to maintain a list of active headless browsers. This is
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
@@ -30,6 +34,14 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             methods::GetResponseBodyReturnObject,
         )>,
     >::with_hasher(Default::default());
+
+    // Time states for scheduling tasks
+    const MAX_PRINT_INTERVAL: f64 = 10.;
+    const PRINT_DELAY: f64 = 10.;
+    let sleep_delay = (PRINT_DELAY / 2.) as u64;
+    let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
+    let sleep_time = Duration::from_millis(sleep_delay);
+    let mut last_printed = 0.;
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -56,61 +68,17 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            let flow = p.read_metadata();
-            let _tcph = p.get_header();
-            let _payload_size = p.payload_size();
-
-            if _payload_size > 3 {
-                let payload = p.get_payload();
-                let host = extract_http_request(payload);
-                trace!("New HTTP GET request, we have {:?} browsers now", browser_list.len());
-                if browser_list.len() > 2 {
-                    // println!("{:?} browsers now", browser_list.len());
-                }
-                match host {
-                    Ok(h) => {
-                        info!("hostname: {:?}", h);
-
-                        // FIXME: hack
-                        //
-                        // if browser_list.contains_key(flow) {
-                        //     unimplemented!();
-                        // // info!("browser list has this key:",);
-                        // // let new_tab = tab_create().unwrap();
-                        // // let used_tab = retrieve_bulk_pairs(h, new_tab).unwrap();
-                        // //
-                        // // browser_list.insert(*flow, used_tab);
-                        // } else {
-                        info!("browser list doesnot have the key: ",);
-                        let new_browser = browser_create().unwrap();
-                        info!("1",);
-                        let result_pair = retrieve_bulk_pairs(h, new_browser);
-                        match result_pair {
-                            Ok((used_browser, current_request, current_responses)) => {
-                                // Ok((used_browser, request_response_pair)) => {
-                                // payload_cache.insert(*flow, request_response_pair);
-
-                                browser_list.insert(*flow, used_browser);
-                                request_cache.insert(*flow, current_request);
-                                responses_cache.insert(*flow, current_responses);
-
-                                // match used_browser {
-                                //     Ok(b) => {
-                                //         info!("insert the browser ",);
-                                //     }
-                                //     Err(e) => {
-                                //         info!("Error is: {:?}", e);
-                                //     }
-                                // }
-                            }
-                            Err(e) => info!("Error is: {:?}", e),
-                        }
-                    }
-                    Err(_) => {}
+            // scheduling workload
+            thread::sleep(sleep_time); // Sleep for a bit
+            let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
+            if now - start > PRINT_DELAY {
+                // println!("DEBUG: now is {:?}, start is {:?}", now, start);
+                if now - last_printed > MAX_PRINT_INTERVAL {
+                    println!("DEBUG: now - start is {:.2} ", now - start);
+                    last_printed = now;
+                    start = now;
                 }
             }
-
-            //
         })
         .reset()
         .compose();
