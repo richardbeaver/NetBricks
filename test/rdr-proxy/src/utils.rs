@@ -6,7 +6,12 @@ use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
 use rshttp::{HttpHeaderName, HttpRequest};
+use rustc_serialize::json::Json;
+use serde_json::{from_reader, from_value, Value};
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::Read;
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -252,4 +257,56 @@ pub fn retrieve_bulk_pairs(
 
     // println!("retrieve: OK",);
     Ok((current_browser, final_request, final_responses))
+}
+
+// pub fn load_json(file_path: String) -> Result<()> {
+pub fn load_json2(file_path: String) {
+    // load the workload json
+    let mut file = File::open(file_path).unwrap();
+    let mut data = String::new();
+    file.read_to_string(&mut data).unwrap();
+
+    let json = Json::from_str(&data).unwrap();
+
+    let time = json.find_path(&["time"]).unwrap();
+    println!("time: {}", time);
+    let user_num = json.find_path(&["number_of_user"]).unwrap();
+    println!("user_num: {}", user_num);
+    let urls = json.find_path(&["workload_urls"]).unwrap();
+    println!("urls: {:?}", urls);
+    let visited_times = json.find_path(&["workload_visited_time"]).unwrap();
+    println!("visited_times: {:?}", visited_times);
+
+    //create_workload(*time);
+    //create_workload(time, urls, visited_times);
+}
+
+// pub fn load_json(file_path: String) -> Result<()> {
+pub fn load_json(file_path: String) {
+    let file = File::open("workload.json").expect("file should open read only");
+    let json: Value = from_reader(file).expect("file should be proper JSON");
+
+    let time_value = json.get("time").expect("file should have time key").clone();
+    let user_num_value = json
+        .get("number_of_user")
+        .expect("file should have number_of_user key")
+        .clone();
+    let urls_value = json.get("urls").expect("file should have number_of_user key").clone();
+    let visited_times_value = json
+        .get("visited_times")
+        .expect("file should have number_of_user key")
+        .clone();
+
+    let time: usize = serde_json::from_value(time_value).unwrap();
+    println!("time: {}", time);
+    let user_num: usize = serde_json::from_value(user_num_value).unwrap();
+    println!("user_num: {}", user_num);
+    let urls: Vec<String> = serde_json::from_value(urls_value).unwrap();
+    println!("urls: {:?}", urls);
+    let visited_times: Vec<u64> = serde_json::from_value(visited_times_value).unwrap();
+    println!("visited_times: {:?}", visited_times);
+}
+
+fn create_workload(time: usize) {
+    unimplemented!();
 }

@@ -1,4 +1,4 @@
-use self::utils::{browser_create, extract_http_request, retrieve_bulk_pairs, RequestResponsePair};
+use self::utils::{browser_create, extract_http_request, load_json, retrieve_bulk_pairs, RequestResponsePair};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
@@ -34,6 +34,8 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             methods::GetResponseBodyReturnObject,
         )>,
     >::with_hasher(Default::default());
+
+    load_json("workload.json".to_string());
 
     // Time states for scheduling tasks
     const MAX_PRINT_INTERVAL: f64 = 10.;

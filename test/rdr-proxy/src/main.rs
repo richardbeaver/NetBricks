@@ -18,6 +18,7 @@ extern crate failure;
 extern crate headless_chrome;
 extern crate rshttp;
 extern crate rustc_serialize;
+extern crate serde_json;
 extern crate tiny_http;
 
 use self::nf::rdr_proxy;
@@ -26,12 +27,9 @@ use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
-use rustc_serialize::json::Json;
 use slog::Drain;
 use std::env;
-use std::fs::File;
 use std::fs::OpenOptions;
-use std::io::Read;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
@@ -41,16 +39,6 @@ mod utils;
 
 const ENABLE_LOGGING: bool = false;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
-
-fn load_json(file_path: String) {
-    // load the workload json
-    let mut file = File::open(file_path).unwrap();
-    let mut data = String::new();
-    file.read_to_string(&mut data).unwrap();
-
-    let json = Json::from_str(&data).unwrap();
-    println!("{}", json.find_path(&["Address", "Street"]).unwrap());
-}
 
 /// Test for the rdr proxy network function to schedule pipelines.
 fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
