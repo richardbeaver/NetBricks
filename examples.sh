@@ -26,6 +26,7 @@ export examples=(
         test/tls-validator
         test/compression-proxy
         test/rdr-proxy
+        test/p2p
         test/pktgen-test
         test/adv-acl
 )

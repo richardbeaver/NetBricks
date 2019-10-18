@@ -38,7 +38,7 @@ pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
         debug!("Before writing more bytes {:?}", e.len());
         e.extend(payload);
         debug!("After writing the bytes {:?}", e.len());
-        ()
+        // ()
     });
 }
 
