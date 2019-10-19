@@ -37,10 +37,7 @@ impl PeerAddress {
 impl ToSocketAddrs for PeerAddress {
     type Iter = <(Ipv6Addr, u16) as ToSocketAddrs>::Iter;
     fn to_socket_addrs(&self) -> io::Result<Self::Iter> {
-        let ip = self
-            .ip
-            .to_ipv4()
-            .expect("failed to convert ipv6 address to ipv4");
+        let ip = self.ip.to_ipv4().expect("failed to convert ipv6 address to ipv4");
         <(Ipv4Addr, u16) as ToSocketAddrs>::to_socket_addrs(&(ip, self.port))
     }
 }
@@ -191,14 +188,8 @@ impl<S: Storage> Downloader<S> {
         while self.peers.len() < 8 {
             match self.pick_peer() {
                 Some(address) => {
-                    let connection =
-                        connection::bt::BtConnection::new(self.info.clone(), address.clone());
-                    let mut peer = Peer::new(
-                        Box::new(connection),
-                        address,
-                        self.piece_count,
-                        self.info.clone(),
-                    );
+                    let connection = connection::bt::BtConnection::new(self.info.clone(), address.clone());
+                    let mut peer = Peer::new(Box::new(connection), address, self.piece_count, self.info.clone());
                     // TODO: properly maintain and change state
                     // this is for debugging only
                     peer.set_choking(false);

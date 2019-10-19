@@ -1,6 +1,5 @@
-use self::utils::{
-    browser_create, extract_http_request, load_json, load_torrent, retrieve_bulk_pairs, RequestResponsePair,
-};
+use self::utils::{load_torrent, read_torrent_file};
+use downloader::Downloader;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
@@ -10,6 +9,10 @@ use headless_chrome::Browser;
 use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
+use storage::memory::MemoryStorage;
+use storage::partial::PartialStorage;
+use torrent::Torrent;
+use transmission::{Client, ClientConfig};
 
 use utils;
 
@@ -38,8 +41,29 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     >::with_hasher(Default::default());
 
     // load_json("workload.json".to_string());
-    load_torrent("OpenBSD-6.6-amd64.iso.torrent".to_string());
-    // load_torrent("test.torrent ".to_string());
+    //
+    // load_torrent("test.torrent".to_string());
+    // load_torrent("OpenBSD-6.6-amd64.iso.torrent".to_string());
+
+    // let file_path = "alpine.torrent";
+    let file_path = "OpenBSD-6.6-amd64.iso.torrent";
+    let config_dir = "/";
+    let download_dir = "/";
+
+    let c = ClientConfig::new()
+        .app_name("testing")
+        .config_dir(config_dir)
+        .download_dir(download_dir);
+    let mut c = Client::new(c);
+
+    let t = c.add_torrent_file(file_path).unwrap();
+    t.start();
+
+    // Run until done
+    while t.stats().percent_complete < 1.0 {
+        print!("{:#?}\r", t.stats().percent_complete);
+    }
+    c.close();
 
     // Time states for scheduling tasks
     const MAX_PRINT_INTERVAL: f64 = 10.;

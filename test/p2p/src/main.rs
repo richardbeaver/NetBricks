@@ -23,6 +23,7 @@ extern crate rustc_serialize;
 extern crate serde_json;
 extern crate sha1;
 extern crate tiny_http;
+extern crate transmission;
 
 use downloader::Downloader;
 use std::fs::File;
