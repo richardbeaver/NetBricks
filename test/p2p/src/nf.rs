@@ -45,23 +45,34 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // load_torrent("test.torrent".to_string());
     // load_torrent("OpenBSD-6.6-amd64.iso.torrent".to_string());
 
-    // let file_path = "alpine.torrent";
-    let file_path = "OpenBSD-6.6-amd64.iso.torrent";
-    let config_dir = "/";
-    let download_dir = "/";
+    // big-buck-bunny.torrent  cosmos-laundromat.torrent  sintel.torrent  tears-of-steel.torrent  wired-cd.torrent
+
+    let file_path = "torrents/tears-of-steel.torrent";
+    let file2_path = "torrents/wired-cd.torrent";
+    let config_dir = "config";
+    let download_dir = "downloads";
 
     let c = ClientConfig::new()
         .app_name("testing")
         .config_dir(config_dir)
+        .use_utp(false)
         .download_dir(download_dir);
-    let mut c = Client::new(c);
+    let c = Client::new(c);
 
     let t = c.add_torrent_file(file_path).unwrap();
     t.start();
 
+    let t2 = c.add_torrent_file(file2_path).unwrap();
+    t2.start();
+
     // Run until done
     while t.stats().percent_complete < 1.0 {
-        print!("{:#?}\r", t.stats().percent_complete);
+        // print!("{:#?}\r", t.stats().percent_complete);
+        print!(
+            "Download is {:#?} and the upload is {:#?}\r",
+            t.stats().raw_download_speed_kbps,
+            t.stats().raw_upload_speed_kbps
+        );
     }
     c.close();
 
