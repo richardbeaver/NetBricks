@@ -1,18 +1,14 @@
-use self::utils::{load_torrent, read_torrent_file};
-use downloader::Downloader;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
-use headless_chrome::protocol::network::{events, methods, Request};
-use headless_chrome::Browser;
+use job_scheduler::{Job, JobScheduler};
+use rand::Rng;
 use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
-use storage::memory::MemoryStorage;
-use storage::partial::PartialStorage;
-use torrent::Torrent;
 use transmission::{Client, ClientConfig};
+use utils::load_json;
 
 use utils;
 
@@ -28,61 +24,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    // Browser list.
-    let mut browser_list = HashMap::<Flow, Browser>::with_hasher(Default::default());
-    // Temporary payload cache.
-    let mut request_cache = HashMap::<Flow, Vec<Request>>::with_hasher(Default::default());
-    let mut responses_cache = HashMap::<
-        Flow,
-        Vec<(
-            events::ResponseReceivedEventParams,
-            methods::GetResponseBodyReturnObject,
-        )>,
-    >::with_hasher(Default::default());
-
-    // load_json("workload.json".to_string());
-    //
-    // load_torrent("test.torrent".to_string());
-    // load_torrent("OpenBSD-6.6-amd64.iso.torrent".to_string());
-
     // big-buck-bunny.torrent  cosmos-laundromat.torrent  sintel.torrent  tears-of-steel.torrent  wired-cd.torrent
-
-    let file_path = "torrents/tears-of-steel.torrent";
-    let file2_path = "torrents/wired-cd.torrent";
-    let config_dir = "config";
-    let download_dir = "downloads";
-
-    let c = ClientConfig::new()
-        .app_name("testing")
-        .config_dir(config_dir)
-        .use_utp(false)
-        .download_dir(download_dir);
-    let c = Client::new(c);
-
-    let t = c.add_torrent_file(file_path).unwrap();
-    t.start();
-
-    let t2 = c.add_torrent_file(file2_path).unwrap();
-    t2.start();
-
-    // Run until done
-    while t.stats().percent_complete < 1.0 {
-        // print!("{:#?}\r", t.stats().percent_complete);
-        print!(
-            "Download is {:#?} and the upload is {:#?}\r",
-            t.stats().raw_download_speed_kbps,
-            t.stats().raw_upload_speed_kbps
-        );
-    }
-    c.close();
-
-    // Time states for scheduling tasks
-    const MAX_PRINT_INTERVAL: f64 = 10.;
-    const PRINT_DELAY: f64 = 10.;
-    let sleep_delay = (PRINT_DELAY / 2.) as u64;
-    let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-    let sleep_time = Duration::from_millis(sleep_delay);
-    let mut last_printed = 0.;
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -109,17 +51,58 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            // scheduling workload
-            thread::sleep(sleep_time); // Sleep for a bit
-            let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-            if now - start > PRINT_DELAY {
-                // println!("DEBUG: now is {:?}, start is {:?}", now, start);
-                if now - last_printed > MAX_PRINT_INTERVAL {
-                    println!("DEBUG: now - start is {:.2} ", now - start);
-                    last_printed = now;
-                    start = now;
+            // transmission setup
+            let config_dir = "config";
+            let download_dir = "downloads";
+
+            let config = ClientConfig::new()
+                .app_name("testing")
+                .config_dir(config_dir)
+                .use_utp(false)
+                .download_dir(download_dir);
+            let c = Client::new(config);
+
+            let workload = load_json("workload.json".to_string());
+            // let workload = load_json("small_workload.json".to_string());
+            // println!("\nall the torrents are : {:?}", workload);
+            let mut iterator = workload.iter();
+
+            let mut sched = JobScheduler::new();
+            let rng = rand::thread_rng();
+
+            sched.add(Job::new("1/1 * * * * *".parse().unwrap(), move || {
+                let delay = rand::thread_rng().gen_range(0, 10);
+                thread::sleep(std::time::Duration::new(delay, 0));
+                println!("I get executed with the delay of {:?} seconds!", delay);
+
+                let t = iterator.next();
+                match t {
+                    Some(torrent) => {
+                        println!("torrent is : {:?}", torrent);
+                        let torrent_dir = "torrents/".to_owned() + torrent;
+                        // println!("torrent dir is : {:?}", torrent_dir);
+                        let t = c.add_torrent_file(&torrent_dir).unwrap();
+                        t.start();
+                    }
+                    None => {
+                        println!("Nothing in the work queue, waiting for 30 seconds");
+                        thread::sleep(std::time::Duration::new(30, 0));
+                    }
                 }
+            }));
+
+            loop {
+                sched.tick();
+
+                std::thread::sleep(Duration::from_millis(500));
             }
+
+            // Run until done
+            // while t.stats().percent_complete < 1.0 {
+            //     print!("{:#?}\r", t.stats().percent_complete);
+            //     print!("{:#?}\r", t2.stats().percent_complete);
+            // }
+            // c.close();
         })
         .reset()
         .compose();

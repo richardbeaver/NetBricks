@@ -17,6 +17,7 @@ extern crate log;
 extern crate failure;
 extern crate headless_chrome;
 extern crate hyper;
+extern crate job_scheduler;
 extern crate rand;
 extern crate rshttp;
 extern crate rustc_serialize;
@@ -25,13 +26,9 @@ extern crate sha1;
 extern crate tiny_http;
 extern crate transmission;
 
-use downloader::Downloader;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use storage::memory::MemoryStorage;
-use storage::partial::PartialStorage;
-use torrent::Torrent;
 
 use self::nf::p2p;
 use e2d2::allocators::CacheAligned;
@@ -46,11 +43,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-mod bencode;
-mod downloader;
 mod nf;
-mod storage;
-mod torrent;
 mod utils;
 
 const ENABLE_LOGGING: bool = false;

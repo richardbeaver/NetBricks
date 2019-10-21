@@ -1,0 +1,739 @@
+10:59:54 Total DISK READ :       0.00 B/s | Total DISK WRITE :       0.00 B/s
+10:59:54 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       0.00 B/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:04 Total DISK READ :       0.00 B/s | Total DISK WRITE :     107.81 K/s
+11:00:04 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     326.20 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:04 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.04 % [kworker/u12:2]
+11:00:04   381 be/3 root        0.00 B/s   11.93 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:00:04 17299 be/4 root        0.00 B/s   85.13 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:04 17298 be/4 root        0.00 B/s   10.34 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:04 17325 be/7 root        0.00 B/s  407.35 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:00:14 Total DISK READ :       0.00 B/s | Total DISK WRITE :      21.68 M/s
+11:00:14 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      44.17 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:14   381 be/3 root        0.00 B/s   31.04 K/s  0.00 %  0.09 % [jbd2/sda2-8]
+11:00:14 17299 be/4 root        0.00 B/s   21.64 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:14 17298 be/4 root        0.00 B/s   16.31 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:24 Total DISK READ :       0.00 B/s | Total DISK WRITE :      53.81 M/s
+11:00:24 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      11.58 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:24  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  3.17 % [kworker/u12:3]
+11:00:24   381 be/3 root        0.00 B/s   21.88 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:00:24 17299 be/4 root        0.00 B/s   53.77 M/s  0.00 %  0.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:24 17298 be/4 root        0.00 B/s   21.88 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:34 Total DISK READ :       0.00 B/s | Total DISK WRITE :      85.32 M/s
+11:00:34 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      96.36 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:34  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 41.48 % [kworker/u12:3]
+11:00:34   381 be/3 root        0.00 B/s   11.93 K/s  0.00 %  3.65 % [jbd2/sda2-8]
+11:00:34 17299 be/4 root        0.00 B/s   85.29 M/s  0.00 %  1.67 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:34 17298 be/4 root        0.00 B/s   13.92 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:34 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:00:44 Total DISK READ :       0.00 B/s | Total DISK WRITE :      86.49 M/s
+11:00:44 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       6.76 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:44   381 be/3 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:00:44 17298 be/4 root        0.00 B/s    2.78 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:44 17299 be/4 root        0.00 B/s   86.49 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:54 Total DISK READ :       0.00 B/s | Total DISK WRITE :     101.03 M/s
+11:00:54 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       8.35 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:00:54   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:00:54 17299 be/4 root        0.00 B/s  101.02 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:00:54 17298 be/4 root        0.00 B/s   11.14 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:04 Total DISK READ :       0.00 B/s | Total DISK WRITE :      72.03 M/s
+11:01:04 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     107.49 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:04 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 45.62 % [kworker/u12:2]
+11:01:04 17299 be/4 root        0.00 B/s   72.00 M/s  0.00 % 21.61 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:04   381 be/3 root        0.00 B/s   15.11 K/s  0.00 %  8.39 % [jbd2/sda2-8]
+11:01:04 17298 be/4 root        0.00 B/s   14.32 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:04 17325 be/7 root        0.00 B/s  407.31 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:01:14 Total DISK READ :       0.00 B/s | Total DISK WRITE :      97.76 M/s
+11:01:14 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     218.92 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:14 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 98.15 % [kworker/u12:2]
+11:01:14   381 be/3 root        0.00 B/s    9.15 K/s  0.00 %  4.75 % [jbd2/sda2-8]
+11:01:14 17299 be/4 root        0.00 B/s   97.73 M/s  0.00 %  1.69 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:14 17298 be/4 root        0.00 B/s   17.50 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:14 17325 be/7 root        0.00 B/s  407.33 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:01:24 Total DISK READ :       0.00 B/s | Total DISK WRITE :     103.16 M/s
+11:01:24 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      95.01 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:24 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 43.34 % [kworker/u12:2]
+11:01:24   381 be/3 root        0.00 B/s   18.70 K/s  0.00 %  1.87 % [jbd2/sda2-8]
+11:01:24 17299 be/4 root        0.00 B/s  103.14 M/s  0.00 %  1.27 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:24 17298 be/4 root        0.00 B/s    3.58 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:34 Total DISK READ :       0.00 B/s | Total DISK WRITE :     104.76 M/s
+11:01:34 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       7.51 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:34 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  2.16 % [kworker/u12:2]
+11:01:34   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:01:34 17299 be/4 root        0.00 B/s  104.75 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:34 17298 be/4 root        0.00 B/s   13.92 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:44 Total DISK READ :       0.00 B/s | Total DISK WRITE :      99.65 M/s
+11:01:44 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      99.03 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:44  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 43.53 % [kworker/u12:1]
+11:01:44   381 be/3 root        0.00 B/s    9.15 K/s  0.00 %  1.70 % [jbd2/sda2-8]
+11:01:44 17299 be/4 root        0.00 B/s   99.62 M/s  0.00 %  1.64 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:44 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.98 % [kworker/u12:2]
+11:01:44 17325 be/7 root        0.00 B/s    0.00 B/s  0.00 %  0.46 % python3 /usr/sbin/iotop -tbod10
+11:01:44 17298 be/4 root        0.00 B/s   14.32 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:54 Total DISK READ :       0.00 B/s | Total DISK WRITE :      84.56 M/s
+11:01:54 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     115.69 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:01:54  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 53.76 % [kworker/u12:1]
+11:01:54   381 be/3 root        0.00 B/s 2036.68 B/s  0.00 %  2.89 % [jbd2/sda2-8]
+11:01:54 17299 be/4 root        0.00 B/s   84.55 M/s  0.00 %  1.12 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:54 17298 be/4 root        0.00 B/s   11.54 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:01:54 17325 be/7 root        0.00 B/s  814.67 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:02:04 Total DISK READ :       0.00 B/s | Total DISK WRITE :     102.37 M/s
+11:02:04 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     150.60 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:04  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 70.97 % [kworker/u12:1]
+11:02:04   381 be/3 root        0.00 B/s   10.34 K/s  0.00 %  1.74 % [jbd2/sda2-8]
+11:02:04 17299 be/4 root        0.00 B/s  102.35 M/s  0.00 %  1.63 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:04 17298 be/4 root        0.00 B/s    2.78 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:14 Total DISK READ :       0.00 B/s | Total DISK WRITE :     100.22 M/s
+11:02:14 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     132.83 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:14  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 64.39 % [kworker/u12:1]
+11:02:14   381 be/3 root        0.00 B/s    9.94 K/s  0.00 %  5.55 % [jbd2/sda2-8]
+11:02:14 17299 be/4 root        0.00 B/s  100.20 M/s  0.00 %  1.97 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:14 17298 be/4 root        0.00 B/s   13.92 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:25 Total DISK READ :       0.00 B/s | Total DISK WRITE :      74.55 M/s
+11:02:25 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      60.67 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:25 17299 be/4 root        0.00 B/s   74.51 M/s  0.00 % 26.37 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:25  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  5.68 % [kworker/u12:1]
+11:02:25   381 be/3 root        0.00 B/s   27.05 K/s  0.00 %  3.45 % [jbd2/sda2-8]
+11:02:25 17298 be/4 root        0.00 B/s   13.13 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:35 Total DISK READ :       0.00 B/s | Total DISK WRITE :      77.69 M/s
+11:02:35 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      15.51 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:35   381 be/3 root        0.00 B/s    2.39 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:02:35 17299 be/4 root        0.00 B/s   77.68 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:35 17298 be/4 root        0.00 B/s   12.73 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:35 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:02:45 Total DISK READ :       0.00 B/s | Total DISK WRITE :      47.51 M/s
+11:02:45 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     105.85 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:45 17299 be/4 root        0.00 B/s   47.50 M/s  0.00 % 45.20 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:45   381 be/3 root        0.00 B/s  407.29 B/s  0.00 %  1.59 % [jbd2/sda2-8]
+11:02:45  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.68 % [kworker/u12:1]
+11:02:45 17298 be/4 root        0.00 B/s    7.16 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:45 17325 be/7 root        0.00 B/s  407.29 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:02:55 Total DISK READ :       0.00 B/s | Total DISK WRITE :      78.32 M/s
+11:02:55 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     118.03 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:02:55  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 47.42 % [kworker/u12:1]
+11:02:55 17299 be/4 root        0.00 B/s   78.30 M/s  0.00 % 10.33 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:02:55   381 be/3 root        0.00 B/s   10.74 K/s  0.00 %  3.13 % [jbd2/sda2-8]
+11:02:55 17298 be/4 root        0.00 B/s   10.74 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:05 Total DISK READ :       0.00 B/s | Total DISK WRITE :      91.23 M/s
+11:03:05 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      34.51 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:05  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 14.51 % [kworker/u12:1]
+11:03:05   381 be/3 root        0.00 B/s   13.53 K/s  0.00 %  5.48 % [jbd2/sda2-8]
+11:03:05 17299 be/4 root        0.00 B/s   91.20 M/s  0.00 %  1.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:05 17298 be/4 root        0.00 B/s   10.74 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:15 Total DISK READ :       0.00 B/s | Total DISK WRITE :      81.66 M/s
+11:03:15 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      61.58 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:15  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 22.24 % [kworker/u12:1]
+11:03:15   381 be/3 root        0.00 B/s  409.11 B/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:03:15 17299 be/4 root        0.00 B/s   81.64 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:15 17298 be/4 root        0.00 B/s   14.38 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:15 17325 be/7 root        0.00 B/s  409.11 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:03:25 Total DISK READ :       0.00 B/s | Total DISK WRITE :      73.30 M/s
+11:03:25 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      46.78 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:25  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 11.43 % [kworker/u12:1]
+11:03:25 17299 be/4 root        0.00 B/s   73.28 M/s  0.00 %  6.61 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:25   381 be/3 root        0.00 B/s    2.78 K/s  0.00 %  1.24 % [jbd2/sda2-8]
+11:03:25 17298 be/4 root        0.00 B/s   11.93 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:35 Total DISK READ :       0.00 B/s | Total DISK WRITE :      60.29 M/s
+11:03:35 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     215.13 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:35  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 93.05 % [kworker/u12:3]
+11:03:35 17299 be/4 root        0.00 B/s   60.26 M/s  0.00 % 25.68 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:35   381 be/3 root        0.00 B/s   27.52 K/s  0.00 % 25.02 % [jbd2/sda2-8]
+11:03:35 17298 be/4 root        0.00 B/s    5.19 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:35 17325 be/7 root        0.00 B/s  408.47 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:03:45 Total DISK READ :       0.00 B/s | Total DISK WRITE :      98.29 M/s
+11:03:45 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     989.63 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:45  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.61 % [kworker/u12:3]
+11:03:45   381 be/3 root        0.00 B/s    4.79 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:03:45 17298 be/4 root        0.00 B/s   22.34 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:45 17299 be/4 root        0.00 B/s   98.27 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:55 Total DISK READ :       0.00 B/s | Total DISK WRITE :      99.71 M/s
+11:03:55 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      35.55 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:03:55  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 10.91 % [kworker/u12:3]
+11:03:55 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.93 % [kworker/u12:2]
+11:03:55   381 be/3 root        0.00 B/s    5.18 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:03:55 17299 be/4 root        0.00 B/s   99.70 M/s  0.00 %  0.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:55 17298 be/4 root        0.00 B/s    6.37 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:03:55 17325 be/7 root        0.00 B/s  407.89 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:04:05 Total DISK READ :       0.00 B/s | Total DISK WRITE :      88.37 M/s
+11:04:05 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     105.00 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:05 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 34.23 % [kworker/u12:2]
+11:04:05 17299 be/4 root        0.00 B/s   88.34 M/s  0.00 % 12.34 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:05   381 be/3 root        0.00 B/s    8.36 K/s  0.00 %  1.67 % [jbd2/sda2-8]
+11:04:05 17298 be/4 root        0.00 B/s   15.12 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:15 Total DISK READ :       0.00 B/s | Total DISK WRITE :      74.27 M/s
+11:04:15 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     170.06 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:15 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 81.52 % [kworker/u12:2]
+11:04:15   381 be/3 root        0.00 B/s   12.73 K/s  0.00 % 38.66 % [jbd2/sda2-8]
+11:04:15 17299 be/4 root        0.00 B/s   74.26 M/s  0.00 %  0.60 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:15 17298 be/4 root        0.00 B/s    3.58 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:25 Total DISK READ :       0.00 B/s | Total DISK WRITE :      67.84 M/s
+11:04:25 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      39.37 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:25 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  9.43 % [kworker/u12:2]
+11:04:25 17299 be/4 root        0.00 B/s   67.82 M/s  0.00 %  2.71 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:25  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.25 % [kworker/u12:1]
+11:04:25   381 be/3 root        0.00 B/s    2.39 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:04:25 17298 be/4 root        0.00 B/s   11.14 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:25 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:04:35 Total DISK READ :       0.00 B/s | Total DISK WRITE :      69.24 M/s
+11:04:35 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       2.40 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:35 17299 be/4 root        0.00 B/s   69.20 M/s  0.00 %  0.94 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:35   381 be/3 root        0.00 B/s   29.04 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:04:35 17298 be/4 root        0.00 B/s    8.35 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:35 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:04:45 Total DISK READ :       0.00 B/s | Total DISK WRITE :      56.99 M/s
+11:04:45 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     171.38 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:45  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 49.40 % [kworker/u12:1]
+11:04:45 17299 be/4 root        0.00 B/s   56.98 M/s  0.00 % 28.32 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:45   381 be/3 root        0.00 B/s 2036.61 B/s  0.00 %  2.77 % [jbd2/sda2-8]
+11:04:45 17298 be/4 root        0.00 B/s    8.75 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:55 Total DISK READ :       0.00 B/s | Total DISK WRITE :      79.42 M/s
+11:04:55 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       8.49 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:04:55   381 be/3 root        0.00 B/s   13.18 K/s  0.00 %  6.20 % [jbd2/sda2-8]
+11:04:55  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  5.20 % [kworker/u12:1]
+11:04:55 17299 be/4 root        0.00 B/s   79.40 M/s  0.00 %  0.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:04:55 17298 be/4 root        0.00 B/s    5.19 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:05 Total DISK READ :       0.00 B/s | Total DISK WRITE :      98.17 M/s
+11:05:05 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      92.50 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:05  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 37.81 % [kworker/u12:3]
+11:05:05   381 be/3 root        0.00 B/s    5.97 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:05:05 17299 be/4 root        0.00 B/s   98.13 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:05   447 be/3 root        0.00 B/s   18.30 K/s  0.00 %  0.00 % systemd-journald
+11:05:05  1138 be/4 syslog      0.00 B/s  814.64 B/s  0.00 %  0.00 % rsyslogd -n [rs:main Q:Reg]
+11:05:05 17298 be/4 root        0.00 B/s   18.30 K/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:15 Total DISK READ :       0.00 B/s | Total DISK WRITE :      78.88 M/s
+11:05:15 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:       7.28 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:15  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.21 % [kworker/u12:1]
+11:05:15   381 be/3 root        0.00 B/s   10.74 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:05:15 17299 be/4 root        0.00 B/s   78.87 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:15 17325 be/7 root        0.00 B/s  814.64 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:05:25 Total DISK READ :       0.00 B/s | Total DISK WRITE :      39.35 M/s
+11:05:25 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     185.88 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:25  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 83.14 % [kworker/u12:1]
+11:05:25 17299 be/4 root        0.00 B/s   39.34 M/s  0.00 % 42.63 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:25   381 be/3 root        0.00 B/s    7.16 K/s  0.00 % 32.99 % [jbd2/sda2-8]
+11:05:35 Total DISK READ :       0.00 B/s | Total DISK WRITE :      74.08 M/s
+11:05:35 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      18.85 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:35  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  6.41 % [kworker/u12:1]
+11:05:35   381 be/3 root        0.00 B/s    3.58 K/s  0.00 %  2.23 % [jbd2/sda2-8]
+11:05:35 17299 be/4 root        0.00 B/s   74.08 M/s  0.00 %  0.61 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:46 Total DISK READ :       0.00 B/s | Total DISK WRITE :      88.06 M/s
+11:05:46 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      66.08 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:46 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 27.59 % [kworker/u12:0]
+11:05:46   381 be/3 root        0.00 B/s   33.02 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:05:46 17299 be/4 root        0.00 B/s   88.03 M/s  0.00 %  0.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:56 Total DISK READ :       0.00 B/s | Total DISK WRITE :      76.15 M/s
+11:05:56 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      19.10 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:05:56   381 be/3 root        0.00 B/s    7.56 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:05:56 17299 be/4 root        0.00 B/s   76.13 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:05:56   447 be/3 root        0.00 B/s    9.55 K/s  0.00 %  0.00 % systemd-journald
+11:05:56  1138 be/4 syslog      0.00 B/s  407.56 B/s  0.00 %  0.00 % rsyslogd -n [rs:main Q:Reg]
+11:05:56 17325 be/7 root        0.00 B/s  407.56 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:06:06 Total DISK READ :       0.00 B/s | Total DISK WRITE :      30.17 M/s
+11:06:06 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     147.68 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:06 17299 be/4 root        0.00 B/s   30.16 M/s  0.00 % 62.18 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:06:06 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 43.55 % [kworker/u12:0]
+11:06:06   381 be/3 root        0.00 B/s    9.57 K/s  0.00 %  4.94 % [jbd2/sda2-8]
+11:06:16 Total DISK READ :       0.00 B/s | Total DISK WRITE :      67.33 M/s
+11:06:16 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      71.73 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:16 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 24.60 % [kworker/u12:2]
+11:06:16 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 %  2.52 % [kworker/u12:0]
+11:06:16 17299 be/4 root        0.00 B/s   67.31 M/s  0.00 %  1.42 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:06:16   381 be/3 root        0.00 B/s   20.68 K/s  0.00 %  1.41 % [jbd2/sda2-8]
+11:06:16 17325 be/7 root        0.00 B/s  407.33 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:06:26 Total DISK READ :       0.00 B/s | Total DISK WRITE :      93.52 M/s
+11:06:26 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      58.37 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:26 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 26.07 % [kworker/u12:0]
+11:06:26   381 be/3 root        0.00 B/s   13.52 K/s  0.00 %  1.01 % [jbd2/sda2-8]
+11:06:26 17299 be/4 root        0.00 B/s   93.51 M/s  0.00 %  1.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:06:36 Total DISK READ :       0.00 B/s | Total DISK WRITE :      94.00 M/s
+11:06:36 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      23.25 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:36  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  9.27 % [kworker/u12:1]
+11:06:36   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:06:36 17299 be/4 root        0.00 B/s   94.00 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:06:36 17325 be/7 root        0.00 B/s  409.15 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:06:46 Total DISK READ :       0.00 B/s | Total DISK WRITE :      75.80 M/s
+11:06:46 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      87.79 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:46 17299 be/4 root        0.00 B/s   75.79 M/s  0.00 % 27.22 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:06:46  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  8.97 % [kworker/u12:1]
+11:06:46   381 be/3 root        0.00 B/s    8.79 K/s  0.00 %  3.19 % [jbd2/sda2-8]
+11:06:56 Total DISK READ :       0.00 B/s | Total DISK WRITE :      96.06 M/s
+11:06:56 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     206.05 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:06:56  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 85.71 % [kworker/u12:1]
+11:06:56   381 be/3 root        0.00 B/s   40.18 K/s  0.00 %  3.73 % [jbd2/sda2-8]
+11:06:56 17299 be/4 root        0.00 B/s   96.02 M/s  0.00 %  0.58 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:06 Total DISK READ :       0.00 B/s | Total DISK WRITE :     100.06 M/s
+11:07:06 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     104.11 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:06  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 42.38 % [kworker/u12:1]
+11:07:06   381 be/3 root        0.00 B/s    3.20 K/s  0.00 %  2.41 % [jbd2/sda2-8]
+11:07:06 17299 be/4 root        0.00 B/s  100.06 M/s  0.00 %  0.91 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:16 Total DISK READ :       0.00 B/s | Total DISK WRITE :     105.76 M/s
+11:07:16 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      28.99 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:16  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 10.51 % [kworker/u12:3]
+11:07:16   381 be/3 root        0.00 B/s    3.98 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:07:16 17299 be/4 root        0.00 B/s  105.76 M/s  0.00 %  0.01 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:16 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:07:26 Total DISK READ :       0.00 B/s | Total DISK WRITE :      97.67 M/s
+11:07:26 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      13.34 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:26  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  3.76 % [kworker/u12:1]
+11:07:26   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:07:26 17299 be/4 root        0.00 B/s   97.67 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:26 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:07:36 Total DISK READ :       0.00 B/s | Total DISK WRITE :      93.75 M/s
+11:07:36 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     119.68 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:36 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 29.16 % [kworker/u12:0]
+11:07:36  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 18.39 % [kworker/u12:1]
+11:07:36   381 be/3 root        0.00 B/s   13.96 K/s  0.00 %  1.21 % [jbd2/sda2-8]
+11:07:36 17299 be/4 root        0.00 B/s   93.74 M/s  0.00 %  0.70 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:46 Total DISK READ :       0.00 B/s | Total DISK WRITE :      94.11 M/s
+11:07:46 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     207.41 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:46 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 86.68 % [kworker/u12:0]
+11:07:46   381 be/3 root        0.00 B/s   16.71 K/s  0.00 %  6.55 % [jbd2/sda2-8]
+11:07:46 17299 be/4 root        0.00 B/s   94.09 M/s  0.00 %  1.71 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:46    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.53 % [kswapd0]
+11:07:56 Total DISK READ :     149.56 K/s | Total DISK WRITE :      92.97 M/s
+11:07:56 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:      52.49 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:07:56  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 21.02 % [kworker/u12:1]
+11:07:56 17299 be/4 root      149.56 K/s   92.97 M/s  0.00 %  1.54 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:07:56   381 be/3 root        0.00 B/s  407.31 B/s  0.00 %  1.49 % [jbd2/sda2-8]
+11:07:56    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.53 % [kswapd0]
+11:07:56 17325 be/7 root        0.00 B/s  407.31 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:08:06 Total DISK READ :       0.00 B/s | Total DISK WRITE :      96.95 M/s
+11:08:06 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      78.00 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:06 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 30.53 % [kworker/u12:0]
+11:08:06   381 be/3 root        0.00 B/s    9.59 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:08:06 17299 be/4 root        0.00 B/s   96.94 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:16 Total DISK READ :     204.16 K/s | Total DISK WRITE :     100.42 M/s
+11:08:16 Actual DISK READ:     204.16 K/s | Actual DISK WRITE:      61.29 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:16  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 24.46 % [kworker/u12:1]
+11:08:16 17299 be/4 root      204.16 K/s  100.41 M/s  0.00 %  1.68 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:16   381 be/3 root        0.00 B/s    7.58 K/s  0.00 %  1.52 % [jbd2/sda2-8]
+11:08:16    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.01 % [kswapd0]
+11:08:26 Total DISK READ :     150.20 K/s | Total DISK WRITE :      91.35 M/s
+11:08:26 Actual DISK READ:     150.20 K/s | Actual DISK WRITE:      91.57 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:26  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 36.24 % [kworker/u12:1]
+11:08:26 17299 be/4 root      150.20 K/s   91.34 M/s  0.00 %  1.54 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:26   381 be/3 root        0.00 B/s    9.99 K/s  0.00 %  1.49 % [jbd2/sda2-8]
+11:08:26 17325 be/7 root        0.00 B/s  409.05 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:08:36 Total DISK READ :     149.56 K/s | Total DISK WRITE :      80.81 M/s
+11:08:36 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     119.78 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:36  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 42.76 % [kworker/u12:1]
+11:08:36 17299 be/4 root      149.56 K/s   80.81 M/s  0.00 %  3.21 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:36    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.77 % [kswapd0]
+11:08:36   381 be/3 root        0.00 B/s    5.97 K/s  0.00 %  0.37 % [jbd2/sda2-8]
+11:08:36 17325 be/7 root        0.00 B/s  407.30 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:08:46 Total DISK READ :     149.58 K/s | Total DISK WRITE :      92.49 M/s
+11:08:46 Actual DISK READ:     149.58 K/s | Actual DISK WRITE:     120.41 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:46  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 40.46 % [kworker/u12:1]
+11:08:46   381 be/3 root        0.00 B/s   27.45 K/s  0.00 % 22.13 % [jbd2/sda2-8]
+11:08:46  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  8.01 % [kworker/u12:3]
+11:08:46 17299 be/4 root      149.58 K/s   92.46 M/s  0.00 %  1.87 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:46    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.55 % [kswapd0]
+11:08:56 Total DISK READ :     299.12 K/s | Total DISK WRITE :     101.27 M/s
+11:08:56 Actual DISK READ:     299.12 K/s | Actual DISK WRITE:      76.29 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:08:56  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 21.67 % [kworker/u12:3]
+11:08:56  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  9.27 % [kworker/u12:1]
+11:08:56   381 be/3 root        0.00 B/s    9.55 K/s  0.00 %  6.58 % [jbd2/sda2-8]
+11:08:56 17299 be/4 root      299.12 K/s  101.27 M/s  0.00 %  1.36 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:08:56    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.99 % [kswapd0]
+11:09:06 Total DISK READ :     149.56 K/s | Total DISK WRITE :      98.60 M/s
+11:09:06 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:      38.62 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:06  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 14.16 % [kworker/u12:3]
+11:09:06 17299 be/4 root      149.56 K/s   98.60 M/s  0.00 %  0.04 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:06   381 be/3 root        0.00 B/s    3.58 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:09:16 Total DISK READ :       0.00 B/s | Total DISK WRITE :      70.68 M/s
+11:09:16 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     165.43 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:16  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 31.75 % [kworker/u12:3]
+11:09:16 17299 be/4 root        0.00 B/s   70.67 M/s  0.00 % 21.98 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:16 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 17.15 % [kworker/u12:2]
+11:09:16   381 be/3 root        0.00 B/s   11.97 K/s  0.00 %  2.94 % [jbd2/sda2-8]
+11:09:16 17325 be/7 root        0.00 B/s  408.62 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:09:26 Total DISK READ :     299.12 K/s | Total DISK WRITE :      80.67 M/s
+11:09:26 Actual DISK READ:     299.12 K/s | Actual DISK WRITE:      94.20 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:26 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 39.12 % [kworker/u12:2]
+11:09:26   381 be/3 root        0.00 B/s   11.93 K/s  0.00 %  0.93 % [jbd2/sda2-8]
+11:09:26 17299 be/4 root      299.12 K/s   80.66 M/s  0.00 %  0.65 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:26 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:09:36 Total DISK READ :     149.56 K/s | Total DISK WRITE :      87.28 M/s
+11:09:36 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:      25.46 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:36 17299 be/4 root      149.56 K/s   87.26 M/s  0.00 %  0.04 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:36   381 be/3 root        0.00 B/s   21.48 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:09:47 Total DISK READ :     149.57 K/s | Total DISK WRITE :      89.56 M/s
+11:09:47 Actual DISK READ:     149.57 K/s | Actual DISK WRITE:     133.38 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:47  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 54.44 % [kworker/u12:1]
+11:09:47 17299 be/4 root      149.57 K/s   89.56 M/s  0.00 %  1.73 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:47   381 be/3 root        0.00 B/s    5.57 K/s  0.00 %  1.59 % [jbd2/sda2-8]
+11:09:57 Total DISK READ :     149.56 K/s | Total DISK WRITE :      46.64 M/s
+11:09:57 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     122.13 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:09:57  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 47.94 % [kworker/u12:1]
+11:09:57 17299 be/4 root      149.56 K/s   46.63 M/s  0.00 % 37.17 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:09:57   381 be/3 root        0.00 B/s   11.93 K/s  0.00 % 17.79 % [jbd2/sda2-8]
+11:09:57 17325 be/7 root        0.00 B/s  407.31 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:10:07 Total DISK READ :     424.76 K/s | Total DISK WRITE :      82.65 M/s
+11:10:07 Actual DISK READ:     424.76 K/s | Actual DISK WRITE:      67.72 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:07  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 16.98 % [kworker/u12:1]
+11:10:07 17299 be/4 root      424.76 K/s   82.64 M/s  0.00 % 11.96 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:07   381 be/3 root        0.00 B/s    7.19 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:10:17 Total DISK READ :     448.68 K/s | Total DISK WRITE :      69.71 M/s
+11:10:17 Actual DISK READ:     448.68 K/s | Actual DISK WRITE:       8.75 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:17 17299 be/4 root      448.68 K/s   69.71 M/s  0.00 %  0.11 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:17   381 be/3 root        0.00 B/s    3.98 K/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:10:27 Total DISK READ :     149.56 K/s | Total DISK WRITE :      75.97 M/s
+11:10:27 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     116.02 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:27  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 35.91 % [kworker/u12:1]
+11:10:27 17299 be/4 root      149.56 K/s   75.94 M/s  0.00 % 11.34 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:27   381 be/3 root        0.00 B/s   35.80 K/s  0.00 %  2.54 % [jbd2/sda2-8]
+11:10:27 17325 be/7 root        0.00 B/s  407.31 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:10:37 Total DISK READ :     398.18 K/s | Total DISK WRITE :      84.36 M/s
+11:10:37 Actual DISK READ:     398.18 K/s | Actual DISK WRITE:     101.91 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:37  4423 be/4 root      407.33 B/s    0.00 B/s  0.00 % 40.14 % [kworker/u12:3]
+11:10:37 17299 be/4 root      397.78 K/s   84.36 M/s  0.00 %  2.04 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:37   381 be/3 root        0.00 B/s    5.57 K/s  0.00 %  1.55 % [jbd2/sda2-8]
+11:10:37    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.48 % [kswapd0]
+11:10:37 17325 be/7 root        0.00 B/s  407.33 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:10:47 Total DISK READ :       0.00 B/s | Total DISK WRITE :      82.03 M/s
+11:10:47 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      13.66 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:47  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  6.33 % [kworker/u12:3]
+11:10:47   381 be/3 root        0.00 B/s    6.76 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:10:47 17299 be/4 root        0.00 B/s   82.03 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:57 Total DISK READ :     300.83 K/s | Total DISK WRITE :      77.75 M/s
+11:10:57 Actual DISK READ:     300.83 K/s | Actual DISK WRITE:     121.28 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:10:57 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 39.82 % [kworker/u12:2]
+11:10:57 17299 be/4 root      300.83 K/s   77.74 M/s  0.00 %  9.60 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:10:57   381 be/3 root        0.00 B/s    5.57 K/s  0.00 %  3.81 % [jbd2/sda2-8]
+11:11:07 Total DISK READ :     286.42 K/s | Total DISK WRITE :      69.91 M/s
+11:11:07 Actual DISK READ:     286.42 K/s | Actual DISK WRITE:      72.13 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:07 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 17.33 % [kworker/u12:2]
+11:11:07 17299 be/4 root      286.42 K/s   69.90 M/s  0.00 % 12.33 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:07   381 be/3 root        0.00 B/s    5.57 K/s  0.00 %  1.63 % [jbd2/sda2-8]
+11:11:17 Total DISK READ :     299.72 K/s | Total DISK WRITE :      67.44 M/s
+11:11:17 Actual DISK READ:     299.72 K/s | Actual DISK WRITE:      70.42 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:17 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 21.83 % [kworker/u12:0]
+11:11:17 17299 be/4 root      299.72 K/s   67.43 M/s  0.00 %  4.92 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:17   381 be/3 root        0.00 B/s   13.95 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:11:17 17325 be/7 root        0.00 B/s  408.13 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:11:27 Total DISK READ :     150.68 K/s | Total DISK WRITE :      78.68 M/s
+11:11:27 Actual DISK READ:     150.68 K/s | Actual DISK WRITE:     114.62 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:27 14724 be/4 root      409.27 B/s    0.00 B/s  0.00 % 44.51 % [kworker/u12:2]
+11:11:27 17299 be/4 root      150.28 K/s   78.65 M/s  0.00 %  3.32 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:27   381 be/3 root        0.00 B/s   28.78 K/s  0.00 %  2.14 % [jbd2/sda2-8]
+11:11:37 Total DISK READ :     273.67 K/s | Total DISK WRITE :      90.76 M/s
+11:11:37 Actual DISK READ:     273.67 K/s | Actual DISK WRITE:      19.14 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:37 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  6.04 % [kworker/u12:2]
+11:11:37 17299 be/4 root      273.67 K/s   90.75 M/s  0.00 %  0.08 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:37   381 be/3 root        0.00 B/s   12.73 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:11:37 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:11:47 Total DISK READ :     448.69 K/s | Total DISK WRITE :      83.22 M/s
+11:11:47 Actual DISK READ:     448.69 K/s | Actual DISK WRITE:     112.59 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:47 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 29.23 % [kworker/u12:0]
+11:11:47 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 18.68 % [kworker/u12:2]
+11:11:47 17299 be/4 root      448.69 K/s   83.22 M/s  0.00 %  2.58 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:47   381 be/3 root        0.00 B/s 2036.60 B/s  0.00 %  1.55 % [jbd2/sda2-8]
+11:11:57 Total DISK READ :     149.56 K/s | Total DISK WRITE :      81.90 M/s
+11:11:57 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:      49.25 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:11:57 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 20.80 % [kworker/u12:0]
+11:11:57   381 be/3 root        0.00 B/s   13.52 K/s  0.00 %  6.81 % [jbd2/sda2-8]
+11:11:57 17299 be/4 root      149.56 K/s   81.88 M/s  0.00 %  1.19 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:11:57 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:12:07 Total DISK READ :     149.56 K/s | Total DISK WRITE :      82.06 M/s
+11:12:07 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     136.89 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:07  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 55.47 % [kworker/u12:3]
+11:12:07 17299 be/4 root      149.56 K/s   82.05 M/s  0.00 %  9.83 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:07   381 be/3 root        0.00 B/s   14.32 K/s  0.00 %  3.42 % [jbd2/sda2-8]
+11:12:17 Total DISK READ :     582.31 K/s | Total DISK WRITE :      95.33 M/s
+11:12:17 Actual DISK READ:     582.31 K/s | Actual DISK WRITE:      35.50 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:17 17299 be/4 root      582.31 K/s   95.30 M/s  0.00 %  0.15 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:17   381 be/3 root        0.00 B/s   29.91 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:12:27 Total DISK READ :     102.62 K/s | Total DISK WRITE :      95.09 M/s
+11:12:27 Actual DISK READ:     102.62 K/s | Actual DISK WRITE:     165.53 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:27 14724 be/4 root      408.88 B/s    0.00 B/s  0.00 % 66.53 % [kworker/u12:2]
+11:12:27   381 be/3 root        0.00 B/s   16.37 K/s  0.00 %  3.73 % [jbd2/sda2-8]
+11:12:27 17299 be/4 root      102.22 K/s   95.07 M/s  0.00 %  2.16 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:37 Total DISK READ :     299.20 K/s | Total DISK WRITE :     101.01 M/s
+11:12:37 Actual DISK READ:     299.20 K/s | Actual DISK WRITE:      13.57 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:37 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 %  5.65 % [kworker/u12:2]
+11:12:37 17299 be/4 root      299.20 K/s  101.00 M/s  0.00 %  0.08 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:37   381 be/3 root        0.00 B/s 1629.69 B/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:12:37 17325 be/7 root        0.00 B/s  814.85 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:12:47 Total DISK READ :     149.57 K/s | Total DISK WRITE :      81.95 M/s
+11:12:47 Actual DISK READ:     149.57 K/s | Actual DISK WRITE:     206.25 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:47 14724 be/4 root        0.00 B/s    0.00 B/s  0.00 % 83.22 % [kworker/u12:2]
+11:12:47 17299 be/4 root      149.57 K/s   81.94 M/s  0.00 %  1.82 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:47   381 be/3 root        0.00 B/s   13.52 K/s  0.00 %  1.50 % [jbd2/sda2-8]
+11:12:57 Total DISK READ :     299.23 K/s | Total DISK WRITE :      90.32 M/s
+11:12:57 Actual DISK READ:     299.23 K/s | Actual DISK WRITE:      24.71 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:12:57  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  5.87 % [kworker/u12:3]
+11:12:57 17299 be/4 root      299.23 K/s   90.32 M/s  0.00 %  3.23 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:12:57   381 be/3 root        0.00 B/s 1222.38 B/s  0.00 %  2.22 % [jbd2/sda2-8]
+11:12:57    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.61 % [kswapd0]
+11:13:07 Total DISK READ :     149.56 K/s | Total DISK WRITE :      92.54 M/s
+11:13:07 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     100.19 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:07  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 42.78 % [kworker/u12:3]
+11:13:07 17299 be/4 root      149.56 K/s   92.53 M/s  0.00 %  1.28 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:07    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.05 % [kswapd0]
+11:13:07   381 be/3 root        0.00 B/s   14.72 K/s  0.00 %  0.55 % [jbd2/sda2-8]
+11:13:18 Total DISK READ :       0.00 B/s | Total DISK WRITE :      96.12 M/s
+11:13:18 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      14.36 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:18  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  4.75 % [kworker/u12:3]
+11:13:18    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.66 % [kswapd0]
+11:13:18   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:13:18 17299 be/4 root        0.00 B/s   96.12 M/s  0.00 %  0.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:18 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:13:28 Total DISK READ :     747.79 K/s | Total DISK WRITE :      65.34 M/s
+11:13:28 Actual DISK READ:     747.79 K/s | Actual DISK WRITE:     185.03 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:28  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 79.47 % [kworker/u12:3]
+11:13:28   381 be/3 root        0.00 B/s   15.11 K/s  0.00 % 37.64 % [jbd2/sda2-8]
+11:13:28 17299 be/4 root      747.79 K/s   65.33 M/s  0.00 % 15.81 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:38 Total DISK READ :     128.89 K/s | Total DISK WRITE :      97.25 M/s
+11:13:38 Actual DISK READ:     128.89 K/s | Actual DISK WRITE:     133.78 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:38 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 52.87 % [kworker/u12:0]
+11:13:38   381 be/3 root        0.00 B/s   21.48 K/s  0.00 %  2.49 % [jbd2/sda2-8]
+11:13:38 17299 be/4 root      128.89 K/s   97.23 M/s  0.00 %  1.17 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:48 Total DISK READ :     299.12 K/s | Total DISK WRITE :      89.54 M/s
+11:13:48 Actual DISK READ:     299.12 K/s | Actual DISK WRITE:       6.36 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:48 17299 be/4 root      299.12 K/s   89.54 M/s  0.00 %  0.07 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:48   381 be/3 root        0.00 B/s  814.62 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:13:48 17325 be/7 root        0.00 B/s  407.31 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:13:58 Total DISK READ :     124.31 K/s | Total DISK WRITE :      89.76 M/s
+11:13:58 Actual DISK READ:     124.31 K/s | Actual DISK WRITE:      29.06 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:13:58  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 10.04 % [kworker/u12:1]
+11:13:58 17299 be/4 root      124.31 K/s   89.74 M/s  0.00 %  1.61 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:13:58   381 be/3 root        0.00 B/s   19.92 K/s  0.00 %  1.57 % [jbd2/sda2-8]
+11:13:58 17325 be/7 root        0.00 B/s  408.00 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:14:08 Total DISK READ :     149.56 K/s | Total DISK WRITE :      84.61 M/s
+11:14:08 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:     117.41 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:08  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 47.55 % [kworker/u12:1]
+11:14:08   381 be/3 root        0.00 B/s    7.16 K/s  0.00 %  2.50 % [jbd2/sda2-8]
+11:14:08 17299 be/4 root      149.56 K/s   84.60 M/s  0.00 %  1.08 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:18 Total DISK READ :     149.62 K/s | Total DISK WRITE :      64.42 M/s
+11:14:18 Actual DISK READ:     149.62 K/s | Actual DISK WRITE:     168.03 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:18  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 70.13 % [kworker/u12:1]
+11:14:18 17299 be/4 root      149.62 K/s   64.41 M/s  0.00 % 21.56 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:18   381 be/3 root        0.00 B/s   10.35 K/s  0.00 %  1.69 % [jbd2/sda2-8]
+11:14:28 Total DISK READ :       0.00 B/s | Total DISK WRITE :      83.63 M/s
+11:14:28 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:      49.17 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:28 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 18.93 % [kworker/u12:0]
+11:14:28 17299 be/4 root        0.00 B/s   83.62 M/s  0.00 %  1.58 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:28   381 be/3 root        0.00 B/s    6.36 K/s  0.00 %  1.54 % [jbd2/sda2-8]
+11:14:38 Total DISK READ :     433.26 K/s | Total DISK WRITE :      74.86 M/s
+11:14:38 Actual DISK READ:     433.26 K/s | Actual DISK WRITE:     120.79 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:38 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 40.63 % [kworker/u12:0]
+11:14:38 17299 be/4 root      433.26 K/s   74.85 M/s  0.00 % 14.42 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:38   381 be/3 root        0.00 B/s   16.79 K/s  0.00 %  3.88 % [jbd2/sda2-8]
+11:14:38    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.40 % [kswapd0]
+11:14:38 17325 be/7 root        0.00 B/s  409.28 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:14:48 Total DISK READ :     291.17 K/s | Total DISK WRITE :      76.30 M/s
+11:14:48 Actual DISK READ:     291.17 K/s | Actual DISK WRITE:      17.02 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:48 17299 be/4 root      291.17 K/s   76.29 M/s  0.00 %  7.02 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:48   381 be/3 root        0.00 B/s 2036.59 B/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:14:48 17325 be/7 root        0.00 B/s  407.32 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:14:58 Total DISK READ :     300.72 K/s | Total DISK WRITE :      84.00 M/s
+11:14:58 Actual DISK READ:     300.72 K/s | Actual DISK WRITE:      29.82 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:14:58  4423 be/4 root      408.95 B/s    0.00 B/s  0.00 % 10.87 % [kworker/u12:3]
+11:14:58 17299 be/4 root      300.32 K/s   84.00 M/s  0.00 %  0.06 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:14:58   381 be/3 root        0.00 B/s    0.00 B/s  0.00 %  0.00 % [jbd2/sda2-8]
+11:15:08 Total DISK READ :       4.77 K/s | Total DISK WRITE :      76.56 M/s
+11:15:08 Actual DISK READ:       4.77 K/s | Actual DISK WRITE:     120.42 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:08  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 46.21 % [kworker/u12:3]
+11:15:08   381 be/3 root        0.00 B/s   17.50 K/s  0.00 % 14.44 % [jbd2/sda2-8]
+11:15:08 17299 be/4 root        4.77 K/s   76.53 M/s  0.00 % 13.20 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:08   447 be/3 root        0.00 B/s   15.91 K/s  0.00 %  0.37 % systemd-journald
+11:15:08  1138 be/4 syslog      0.00 B/s  814.61 B/s  0.00 %  0.00 % rsyslogd -n [rs:main Q:Reg]
+11:15:18 Total DISK READ :     295.44 K/s | Total DISK WRITE :      79.03 M/s
+11:15:18 Actual DISK READ:     295.44 K/s | Actual DISK WRITE:     135.56 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:18  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 60.23 % [kworker/u12:3]
+11:15:18 17299 be/4 root      295.44 K/s   79.02 M/s  0.00 % 13.00 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:18   381 be/3 root        0.00 B/s    9.58 K/s  0.00 %  1.59 % [jbd2/sda2-8]
+11:15:18    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.76 % [kswapd0]
+11:15:18 17325 be/7 root        0.00 B/s  408.82 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:15:28 Total DISK READ :     401.61 K/s | Total DISK WRITE :      55.45 M/s
+11:15:28 Actual DISK READ:     401.61 K/s | Actual DISK WRITE:      45.12 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:28 17299 be/4 root      401.61 K/s   55.45 M/s  0.00 % 19.89 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:28   381 be/3 root        0.00 B/s    3.18 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:15:38 Total DISK READ :     149.58 K/s | Total DISK WRITE :      75.96 M/s
+11:15:38 Actual DISK READ:     149.58 K/s | Actual DISK WRITE:      90.76 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:38  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 35.77 % [kworker/u12:1]
+11:15:38   381 be/3 root        0.00 B/s   24.66 K/s  0.00 %  2.27 % [jbd2/sda2-8]
+11:15:38 17299 be/4 root      149.58 K/s   75.94 M/s  0.00 %  1.03 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:38    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.64 % [kswapd0]
+11:15:48 Total DISK READ :     237.87 K/s | Total DISK WRITE :      71.57 M/s
+11:15:48 Actual DISK READ:     237.87 K/s | Actual DISK WRITE:      57.60 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:48 17299 be/4 root      237.87 K/s   71.20 M/s  0.00 % 14.08 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:48  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  9.08 % [kworker/u12:1]
+11:15:48   381 be/3 root        0.00 B/s  370.33 K/s  0.00 %  0.08 % [jbd2/sda2-8]
+11:15:58 Total DISK READ :     457.04 K/s | Total DISK WRITE :      65.26 M/s
+11:15:58 Actual DISK READ:     457.04 K/s | Actual DISK WRITE:      42.57 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:15:58 17299 be/4 root      457.04 K/s   65.21 M/s  0.00 % 17.40 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:15:58   381 be/3 root        0.00 B/s   46.94 K/s  0.00 %  0.04 % [jbd2/sda2-8]
+11:15:58 17325 be/7 root        0.00 B/s  814.64 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:16:08 Total DISK READ :     462.61 K/s | Total DISK WRITE :      78.20 M/s
+11:16:08 Actual DISK READ:     464.60 K/s | Actual DISK WRITE:      14.91 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:08  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 %  4.47 % [kworker/u12:1]
+11:16:08    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.63 % [kswapd0]
+11:16:08 17299 be/4 root      462.61 K/s   78.17 M/s  0.00 %  0.17 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:08   381 be/3 root        0.00 B/s   34.21 K/s  0.00 %  0.05 % [jbd2/sda2-8]
+11:16:18 Total DISK READ :     132.06 K/s | Total DISK WRITE :      84.26 M/s
+11:16:18 Actual DISK READ:     132.06 K/s | Actual DISK WRITE:     178.03 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:18  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 72.11 % [kworker/u12:3]
+11:16:18   381 be/3 root        0.00 B/s   23.07 K/s  0.00 % 11.27 % [jbd2/sda2-8]
+11:16:18 17299 be/4 root      132.06 K/s   84.24 M/s  0.00 %  2.06 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:18    69 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.95 % [kswapd0]
+11:16:28 Total DISK READ :     149.56 K/s | Total DISK WRITE :      86.79 M/s
+11:16:28 Actual DISK READ:     149.56 K/s | Actual DISK WRITE:      13.98 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:28  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  4.25 % [kworker/u12:3]
+11:16:28 17299 be/4 root      149.56 K/s   86.79 M/s  0.00 %  0.04 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:28   381 be/3 root        0.00 B/s    8.35 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:16:38 Total DISK READ :       0.00 B/s | Total DISK WRITE :      97.01 M/s
+11:16:38 Actual DISK READ:       0.00 B/s | Actual DISK WRITE:     120.54 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:38  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 30.65 % [kworker/u12:3]
+11:16:38  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 16.87 % [kworker/u12:1]
+11:16:38 17299 be/4 root        0.00 B/s   96.97 M/s  0.00 %  3.45 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:38   381 be/3 root        0.00 B/s   36.76 K/s  0.00 %  1.37 % [jbd2/sda2-8]
+11:16:38 17325 be/7 root        0.00 B/s  409.18 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:16:48 Total DISK READ :     277.63 K/s | Total DISK WRITE :      82.17 M/s
+11:16:48 Actual DISK READ:     277.63 K/s | Actual DISK WRITE:     112.66 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:48  3973 be/4 root        0.00 B/s    0.00 B/s  0.00 % 42.52 % [kworker/u12:1]
+11:16:48 17299 be/4 root      277.63 K/s   81.79 M/s  0.00 % 25.21 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:48 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 %  5.10 % [kworker/u12:0]
+11:16:48   381 be/3 root        0.00 B/s  392.59 K/s  0.00 %  2.72 % [jbd2/sda2-8]
+11:16:59 Total DISK READ :     150.20 K/s | Total DISK WRITE :     103.95 M/s
+11:16:59 Actual DISK READ:     150.20 K/s | Actual DISK WRITE:     452.20 K/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:16:59 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 %  1.29 % [kworker/u12:0]
+11:16:59 17299 be/4 root      150.20 K/s  103.95 M/s  0.00 %  0.04 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:16:59   381 be/3 root        0.00 B/s    6.79 K/s  0.00 %  0.01 % [jbd2/sda2-8]
+11:16:59 17325 be/7 root        0.00 B/s  409.05 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:17:09 Total DISK READ :     281.21 K/s | Total DISK WRITE :     100.34 M/s
+11:17:09 Actual DISK READ:     282.00 K/s | Actual DISK WRITE:     108.69 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:17:09  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 43.56 % [kworker/u12:3]
+11:17:09   381 be/3 root        0.00 B/s    9.55 K/s  0.00 %  1.60 % [jbd2/sda2-8]
+11:17:09 17299 be/4 root      276.83 K/s  100.32 M/s  0.00 %  0.41 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:17:09   447 be/3 root        4.38 K/s   17.90 K/s  0.00 %  0.01 % systemd-journald
+11:17:09  1138 be/4 syslog      0.00 B/s  814.59 B/s  0.00 %  0.00 % rsyslogd -n [rs:main Q:Reg]
+11:17:19 Total DISK READ :     273.65 K/s | Total DISK WRITE :      60.44 M/s
+11:17:19 Actual DISK READ:     273.65 K/s | Actual DISK WRITE:     197.10 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:17:19 17299 be/4 root      273.65 K/s   60.41 M/s  0.00 % 34.96 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:17:19 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 34.44 % [kworker/u12:0]
+11:17:19  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 12.64 % [kworker/u12:3]
+11:17:19   381 be/3 root        0.00 B/s   24.66 K/s  0.00 %  2.57 % [jbd2/sda2-8]
+11:17:19 17325 be/7 root        0.00 B/s  407.29 B/s  0.00 %  0.00 % python3 /usr/sbin/iotop -tbod10
+11:17:29 Total DISK READ :     400.15 K/s | Total DISK WRITE :      65.58 M/s
+11:17:29 Actual DISK READ:     400.15 K/s | Actual DISK WRITE:      43.32 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:17:29 17106 be/4 root        0.00 B/s    0.00 B/s  0.00 % 14.76 % [kworker/u12:0]
+11:17:29 17299 be/4 root      400.15 K/s   65.50 M/s  0.00 %  2.36 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:17:29   381 be/3 root        0.00 B/s   74.28 K/s  0.00 %  1.37 % [jbd2/sda2-8]
+11:17:29  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  0.04 % [kworker/u12:3]
+11:17:39 Total DISK READ :     280.41 K/s | Total DISK WRITE :      75.22 M/s
+11:17:39 Actual DISK READ:     280.41 K/s | Actual DISK WRITE:      37.36 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:17:39  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 %  8.78 % [kworker/u12:3]
+11:17:39 17299 be/4 root      280.41 K/s   74.89 M/s  0.00 %  6.03 % pvn-p2p -n \n=========== Running P2P ============\n -m 1 -c 4 -c 5 -p 0000:01:00.0 -p 0000:01:00.1 [sched-5]
+11:17:39   381 be/3 root        0.00 B/s  339.36 K/s  0.00 %  0.15 % [jbd2/sda2-8]
+11:17:49 Total DISK READ :     299.93 K/s | Total DISK WRITE :      45.92 M/s
+11:17:49 Actual DISK READ:     299.93 K/s | Actual DISK WRITE:      40.71 M/s
+    TIME  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+11:17:49  4423 be/4 root        0.00 B/s    0.00 B/s  0.00 % 15.45 % [kworker/u12:3]
+11:17:49 17

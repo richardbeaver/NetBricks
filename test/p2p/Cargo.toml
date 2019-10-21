@@ -33,7 +33,7 @@ hyper = "0.10"
 # log = "0.3.7"
 libevent-sys = { git = "https://github.com/jethrosun/libevent-sys", branch = "pvn" }
 transmission = { git = "https://github.com/jethrosun/transmission-rs", branch = "pvn" }
-
+job_scheduler = "*"
 
 [features]
 default = []

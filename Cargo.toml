@@ -27,7 +27,9 @@ members=["framework",
         "test/rdr-proxy",
         "test/p2p",
         "test/pktgen-test",
-        "test/adv-acl"]
+        "test/adv-acl",
+        # Additional building blocks
+        "test/job_scheduler" ]
 
 [profile.release]
 opt-level = 3

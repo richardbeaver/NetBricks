@@ -3,6 +3,10 @@
 #set -x
 set -euo pipefail
 
+# clean the states of transmission
+sudo rm -rf downloads/*
+sudo rm -rf config/*
+
 export RUST_BACKTRACE=full
 NF_NAME=pvn-p2p
 M_CORE=1

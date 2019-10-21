@@ -29,5 +29,7 @@ export examples=(
         test/p2p
         test/pktgen-test
         test/adv-acl
+        # Additional building blocks
+        test/job_scheduler
 )
 
