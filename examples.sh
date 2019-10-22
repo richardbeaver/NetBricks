@@ -25,6 +25,7 @@ export examples=(
         # PVN examples
         test/tls-validator
         test/compression-proxy
+        test/wd-rdr-proxy
         test/rdr-proxy
         test/p2p
         test/pktgen-test

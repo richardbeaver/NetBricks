@@ -5,14 +5,8 @@ use headless_chrome::protocol::network::methods::RequestPattern;
 use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
-use rand::{distributions::Uniform, Rng}; // 0.6.5
 use rshttp::{HttpHeaderName, HttpRequest};
-use rustc_serialize::json::Json;
-use serde_json::{from_reader, from_value, Value};
 use std::collections::HashMap;
-use std::error::Error;
-use std::fs::File;
-use std::io::Read;
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -67,63 +61,6 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
     }
 }
 
-#[allow(dead_code)]
-pub fn pkt_workload() {
-    // let flow = p.read_metadata();
-    // let _tcph = p.get_header();
-    // let _payload_size = p.payload_size();
-    //
-    // if _payload_size > 3 {
-    //     let payload = p.get_payload();
-    //     let host = extract_http_request(payload);
-    //     trace!("New HTTP GET request, we have {:?} browsers now", browser_list.len());
-    //     if browser_list.len() > 2 {
-    //         // println!("{:?} browsers now", browser_list.len());
-    //     }
-    //     match host {
-    //         Ok(h) => {
-    //             info!("hostname: {:?}", h);
-    //
-    //             // FIXME: hack
-    //             //
-    //             // if browser_list.contains_key(flow) {
-    //             //     unimplemented!();
-    //             // // info!("browser list has this key:",);
-    //             // // let new_tab = tab_create().unwrap();
-    //             // // let used_tab = retrieve_bulk_pairs(h, new_tab).unwrap();
-    //             // //
-    //             // // browser_list.insert(*flow, used_tab);
-    //             // } else {
-    //             info!("browser list doesnot have the key: ",);
-    //             let new_browser = browser_create().unwrap();
-    //             info!("1",);
-    //             let result_pair = retrieve_bulk_pairs(h, new_browser);
-    //             match result_pair {
-    //                 Ok((used_browser, current_request, current_responses)) => {
-    //                     // Ok((used_browser, request_response_pair)) => {
-    //                     // payload_cache.insert(*flow, request_response_pair);
-    //
-    //                     browser_list.insert(*flow, used_browser);
-    //                     request_cache.insert(*flow, current_request);
-    //                     responses_cache.insert(*flow, current_responses);
-    //
-    //                     // match used_browser {
-    //                     //     Ok(b) => {
-    //                     //         info!("insert the browser ",);
-    //                     //     }
-    //                     //     Err(e) => {
-    //                     //         info!("Error is: {:?}", e);
-    //                     //     }
-    //                     // }
-    //                 }
-    //                 Err(e) => info!("Error is: {:?}", e),
-    //             }
-    //         }
-    //         Err(_) => {}
-    //     }
-    // }
-}
-
 pub fn browser_create() -> Fallible<Browser> {
     // println!("try to create a browser",);
     let options = LaunchOptionsBuilder::default()
@@ -133,7 +70,7 @@ pub fn browser_create() -> Fallible<Browser> {
     let browser = Browser::new(options)?;
     let tab = browser.wait_for_initial_tab()?;
 
-    println!("Browser created",);
+    // println!("Browser created",);
     Ok(browser)
 }
 
@@ -147,8 +84,8 @@ pub fn tab_create() -> Fallible<Arc<Tab>> {
     let tab = browser.new_tab()?;
 
     // ONLY TEST
-    let http_hostname = "http://lobste.rs".to_string();
-    let data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
+    // let http_hostname = "http://lobste.rs".to_string();
+    // let data = tab.navigate_to(&http_hostname).unwrap().wait_until_navigated().unwrap();
 
     Ok(tab)
 }
@@ -166,12 +103,12 @@ pub fn retrieve_bulk_pairs(
 )> {
     // Doesn't use incognito mode
     //
-    let current_tab = current_browser.new_tab()?;
+    // let current_tab = current_browser.new_tab()?;
 
     // Incogeneto mode
     //
-    // let incognito_cxt = current_browser.new_context()?;
-    // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
+    let incognito_cxt = current_browser.new_context()?;
+    let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
 
     // println!("try to retrieve bulk",);
 
@@ -224,13 +161,13 @@ pub fn retrieve_bulk_pairs(
 
     // This is a hack
     if hostname == "wikia.com" {
-        // let hostname = "lobste.rs";
+        let hostname = "lobste.rs";
         let hostname = "tmz.com";
 
         // println!("Changed wikia to lobsters",);
         // println!("\nDEBUG: Hostname: {:?}", hostname);
         let http_hostname = "http://".to_string() + &hostname;
-        // println!("Break",);
+        // println!("Breakpoint hack",);
 
         let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
 
@@ -240,14 +177,15 @@ pub fn retrieve_bulk_pairs(
         //     response_body: response_body,
         // };
 
-        // println!("OK",);
+        println!("OK",);
         return Ok((current_browser, final_request, final_responses));
     }
 
     // println!("\nDEBUG: Hostname: {:?}", hostname);
     // println!("Break",);
 
-    let http_hostname = "http://".to_string() + &hostname;
+    // let http_hostname = "http://".to_string() + &hostname;
+    let http_hostname = "https://".to_string() + &hostname;
     let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
 
     // let request_response_pair = RequestResponsePair {
@@ -256,60 +194,6 @@ pub fn retrieve_bulk_pairs(
     //     response_body: response_body,
     // };
 
-    // println!("retrieve: OK",);
+    println!("retrieve: OK",);
     Ok((current_browser, final_request, final_responses))
-}
-
-// pub fn load_json(file_path: String) -> Result<()> {
-pub fn load_json(file_path: String) {
-    let file = File::open("workload.json").expect("file should open read only");
-    let json: Value = from_reader(file).expect("file should be proper JSON");
-
-    let time_value = json.get("time").expect("file should have time key").clone();
-    let user_num_value = json
-        .get("number_of_user")
-        .expect("file should have number_of_user key")
-        .clone();
-    let total_visited_times_value = json
-        .get("total_visited_times")
-        .expect("file should have time key")
-        .clone();
-    let urls_value = json.get("urls").expect("file should have number_of_user key").clone();
-    let visited_times_value = json
-        .get("visited_times")
-        .expect("file should have number_of_user key")
-        .clone();
-
-    let time: usize = serde_json::from_value(time_value).unwrap();
-    println!("time: {}", time);
-    let user_num: usize = serde_json::from_value(user_num_value).unwrap();
-    println!("user_num: {}", user_num);
-    let total_visited_times: usize = serde_json::from_value(total_visited_times_value).unwrap();
-    println!("total visited time: {}", time);
-    let urls: Vec<String> = serde_json::from_value(urls_value).unwrap();
-    println!("urls: {:?}", urls);
-    let visited_times: Vec<u64> = serde_json::from_value(visited_times_value).unwrap();
-    println!("visited_times: {:?}", visited_times);
-
-    create_workload(time, total_visited_times, urls, visited_times)
-}
-
-fn create_workload(time: usize, total_visited_times: usize, urls: Vec<String>, visited_times: Vec<u64>) {
-    let bucket_size = time * 6;
-    let mut workload: Vec<Vec<String>> = Vec::new();
-
-    let mut rng = rand::thread_rng();
-    let range = Uniform::new(0, bucket_size as u64);
-
-    let index_list: Vec<u64> = (0..total_visited_times).map(|_| rng.sample(&range)).collect();
-    let mut iter = index_list.iter();
-
-    // for n in 0..=urls.len() {
-    //     for i in 0..=visited_times[n].len() {
-    //         workload[iter.next().unwrap()].push(urls[n]);
-    //     }
-    //     println!("{}", n);
-    // }
-
-    unimplemented!();
 }

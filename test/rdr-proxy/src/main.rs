@@ -15,11 +15,9 @@ extern crate slog_term;
 #[macro_use]
 extern crate log;
 extern crate failure;
+
 extern crate headless_chrome;
-extern crate rand;
 extern crate rshttp;
-extern crate rustc_serialize;
-extern crate serde_json;
 extern crate tiny_http;
 
 use self::nf::rdr_proxy;
