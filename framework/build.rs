@@ -1,5 +1,6 @@
 extern crate bindgen;
 
+use bindgen::*;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
@@ -73,6 +74,7 @@ fn main() {
         .rust_target(bindgen::RustTarget::Nightly)
         .clang_args(vec!["-I", dpdk_include_path.to_str().unwrap()].iter())
         .blacklist_type("max_align_t") // https://github.com/servo/rust-bindgen/issues/550
+        .rust_target(RustTarget::Stable_1_26)
         .generate()
         .expect("Unable to generate DPDK bindings");
     let out_dir = env::var("OUT_DIR").unwrap();

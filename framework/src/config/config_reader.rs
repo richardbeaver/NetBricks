@@ -61,15 +61,13 @@ fn read_port(value: &Value) -> Result<PortConfiguration> {
 
         let symmetric_queue = port_def.contains_key("cores");
         if symmetric_queue && (port_def.contains_key("rx_cores") || port_def.contains_key("tx_cores")) {
-            println!(
-                "cores specified along with rx_cores and/or tx_cores for port {}",
-                name
-            );
+            println!("cores specified along with rx_cores and/or tx_cores for port {}", name);
             return Err(ErrorKind::ConfigurationError(format!(
                 "cores specified along with rx_cores and/or tx_cores \
                  for port {}",
                 name
-            )).into());
+            ))
+            .into());
         }
 
         fn read_queue(queue: &Value) -> Result<Vec<i32>> {
@@ -93,10 +91,10 @@ fn read_port(value: &Value) -> Result<PortConfiguration> {
         }
 
         let rx_queues = if symmetric_queue {
-            try!(read_queue(port_def.get("cores").unwrap()))
+            read_queue(port_def.get("cores").unwrap())?
         } else {
             match port_def.get("rx_cores") {
-                Some(v) => try!(read_queue(v)),
+                Some(v) => read_queue(v)?,
                 None => Vec::with_capacity(0),
             }
         };
@@ -105,7 +103,7 @@ fn read_port(value: &Value) -> Result<PortConfiguration> {
             rx_queues.clone()
         } else {
             match port_def.get("tx_cores") {
-                Some(v) => try!(read_queue(v)),
+                Some(v) => read_queue(v)?,
                 None => Vec::with_capacity(0),
             }
         };
@@ -219,7 +217,8 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
             return Err(ErrorKind::ConfigurationError(format!(
                 "Could not parse strict spec (should be boolean) {:?}",
                 v
-            )).into())
+            ))
+            .into())
         }
     };
 
@@ -227,7 +226,7 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
         Some(&Value::Array(ref ports)) => {
             let mut pouts = Vec::with_capacity(ports.len());
             for port in ports {
-                let p = try!(read_port(port));
+                let p = read_port(port)?;
                 pouts.push(p);
                 // match read_port(port) {
             }
@@ -257,7 +256,10 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
 /// `filename` should be TOML formatted file.
 pub fn read_configuration(filename: &str) -> Result<NetbricksConfiguration> {
     let mut toml_str = String::new();
-    let _ = try!{File::open(filename).and_then(|mut f| f.read_to_string(&mut toml_str))
-    .chain_err(|| ErrorKind::ConfigurationError(String::from("Could not read file")))};
+    let _ = {
+        File::open(filename)
+            .and_then(|mut f| f.read_to_string(&mut toml_str))
+            .chain_err(|| ErrorKind::ConfigurationError(String::from("Could not read file")))
+    }?;
     read_configuration_from_str(&toml_str[..], filename)
 }
