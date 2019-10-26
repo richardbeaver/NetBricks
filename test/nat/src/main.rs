@@ -40,11 +40,11 @@ where
         .map(|port| nat(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
-    if pipelines.len() > 1 {
-        sched.add_task(merge(pipelines)).unwrap()
-    } else {
-        sched.add_task(pipelines.pop().unwrap()).unwrap()
-    };
+
+    // schedule pipelines
+    for pipeline in pipelines {
+        sched.add_task(pipeline).unwrap();
+    }
 }
 
 fn main() {

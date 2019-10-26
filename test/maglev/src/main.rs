@@ -39,7 +39,11 @@ where
         .map(|port| maglev(ReceiveBatch::new(port.clone()), sched, &vec!["Larry", "Curly", "Moe"]).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
-    sched.add_task(merge(pipelines)).unwrap();
+
+    // schedule pipelines
+    for pipeline in pipelines {
+        sched.add_task(pipeline).unwrap();
+    }
 }
 
 fn main() {
