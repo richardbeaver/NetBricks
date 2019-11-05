@@ -1,17 +1,13 @@
-use self::utils::{browser_create, extract_http_request, load_json, retrieve_bulk_pairs, RequestResponsePair};
+use self::utils::{browser_create, load_json, user_browse};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::Flow;
-use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::Browser;
-use std::collections::HashMap;
+use job_scheduler::{Job, JobScheduler};
 use std::thread;
 use std::time::Duration;
 
 use utils;
-
-const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -23,27 +19,24 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
+    let workload_path = "workloads/current_workload.json";
+    let num_of_users = 140;
+    let num_of_secs = 2000;
+
+    // let workload_path = "workloads/simple_workload.json";
+    // let num_of_users = 20;
+    // let num_of_secs = 100;
+
     // Browser list.
-    let mut browser_list = HashMap::<Flow, Browser>::with_hasher(Default::default());
-    // Temporary payload cache.
-    let mut request_cache = HashMap::<Flow, Vec<Request>>::with_hasher(Default::default());
-    let mut responses_cache = HashMap::<
-        Flow,
-        Vec<(
-            events::ResponseReceivedEventParams,
-            methods::GetResponseBodyReturnObject,
-        )>,
-    >::with_hasher(Default::default());
+    let mut browser_list: Vec<Browser> = Vec::new();
 
-    load_json("workload.json".to_string());
+    let workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
 
-    // Time states for scheduling tasks
-    const MAX_PRINT_INTERVAL: f64 = 10.;
-    const PRINT_DELAY: f64 = 10.;
-    let sleep_delay = (PRINT_DELAY / 2.) as u64;
-    let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-    let sleep_time = Duration::from_millis(sleep_delay);
-    let mut last_printed = 0.;
+    for user in 0..num_of_users {
+        let browser = browser_create().unwrap();
+        browser_list.push(browser);
+    }
+    println!("All browsers are created ",);
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -70,16 +63,38 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            // scheduling workload
-            thread::sleep(sleep_time); // Sleep for a bit
-            let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-            if now - start > PRINT_DELAY {
-                // println!("DEBUG: now is {:?}, start is {:?}", now, start);
-                if now - last_printed > MAX_PRINT_INTERVAL {
-                    println!("DEBUG: now - start is {:.2} ", now - start);
-                    last_printed = now;
-                    start = now;
+            let mut sched = JobScheduler::new();
+            let mut iterator = workload.iter();
+            let mut count = 0;
+
+            sched.add(Job::new("1/1 * * * * *".parse().unwrap(), || {
+                let t = iterator.next();
+                count += 1;
+                // println!("count: {:?}", count);
+                match t {
+                    Some(current_work) => {
+                        // println!("current work {:?}", current_work);
+                        for current_user in 1..num_of_users + 1 {
+                            // println!("{:?}", current_work[&current_user]);
+                            // println!("current_user {:?}", current_user);
+                            match user_browse(&browser_list[current_user - 1], current_work[&current_user].clone()) {
+                                Ok(_) => {}
+                                Err(e) => println!("Error is {:?}", e),
+                            }
+                            // user_browse(&browser_list[current_user], current_work[&current_user].clone());
+                        }
+                    }
+                    None => {
+                        println!("Nothing in the work queue, waiting for 30 seconds");
+                        thread::sleep(std::time::Duration::new(30, 0));
+                    }
                 }
+            }));
+
+            loop {
+                sched.tick();
+
+                std::thread::sleep(Duration::from_millis(500));
             }
         })
         .reset()
