@@ -57,6 +57,7 @@ fn main() {
     let dpdk_libs = dpdk_build.clone().join("lib");
     let native_path = Path::new(&cargo_dir).parent().unwrap().join("target").join("native");
     //println!("DPDK {:?}", dpdk_libs.to_str());
+
     // Use DPDK directory as -L
     println!("cargo:rustc-link-search=native={}", dpdk_libs.to_str().unwrap());
     if dpdk_libs.join("libdpdk.so").exists() {
@@ -69,14 +70,15 @@ fn main() {
         .join("dpdk-headers.h");
     let dpdk_include_path = dpdk_build.clone().join("include");
     println!("Header path {:?}", header_path.to_str());
+
     let bindings = bindgen::Builder::default()
         .header(header_path.to_str().unwrap())
-        .rust_target(bindgen::RustTarget::Nightly)
+        .rust_target(RustTarget::Nightly)
         .clang_args(vec!["-I", dpdk_include_path.to_str().unwrap()].iter())
         .blacklist_type("max_align_t") // https://github.com/servo/rust-bindgen/issues/550
-        .rust_target(RustTarget::Stable_1_26)
         .generate()
         .expect("Unable to generate DPDK bindings");
+
     let out_dir = env::var("OUT_DIR").unwrap();
     let dpdk_bindings = Path::new(&out_dir).join("dpdk_bindings.rs");
     bindings.write_to_file(dpdk_bindings).expect("Could not write bindings");
