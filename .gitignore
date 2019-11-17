@@ -36,3 +36,6 @@ cscope*
 # ignore example out file
 test/*/out
 test/*/output
+
+
+torrent_files/*

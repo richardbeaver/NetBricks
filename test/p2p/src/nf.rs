@@ -52,8 +52,14 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<TcpHeader>()
         .transform(box move |p| {
             // transmission setup
-            let config_dir = "config";
-            let download_dir = "downloads";
+
+            let config_dir = "/data/config";
+            let download_dir = "/data/downloads";
+            let torrents_dir = "/data/torrents/";
+
+            // let config_dir = "config";
+            // let download_dir = "downloads";
+            // let torrents_dir = "torrent_files/";
 
             let config = ClientConfig::new()
                 .app_name("testing")
@@ -79,9 +85,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 match t {
                     Some(torrent) => {
                         println!("torrent is : {:?}", torrent);
-                        let torrent_dir = "torrents/".to_owned() + torrent;
+                        let torrent = torrents_dir.to_owned() + torrent;
                         // println!("torrent dir is : {:?}", torrent_dir);
-                        let t = c.add_torrent_file(&torrent_dir).unwrap();
+                        let t = c.add_torrent_file(&torrent).unwrap();
                         t.start();
                     }
                     None => {

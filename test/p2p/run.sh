@@ -7,6 +7,10 @@ set -euo pipefail
 sudo rm -rf downloads/*
 sudo rm -rf config/*
 
+sudo rm -rf /data/downloads/*
+sudo rm -rf /data/config/*
+
+
 export RUST_BACKTRACE=full
 NF_NAME=pvn-p2p
 M_CORE=1

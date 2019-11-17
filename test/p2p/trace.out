@@ -1,14 +1,10 @@
-Going to start with configuration Configuration: name:  =========== Running ZCSI Maglev ============   mempool size: 2047 core cache: 32 primary core: 0
+Going to start with configuration Configuration: name:  =========== Running TLS Validator ============   mempool size: 2047 core cache: 32 primary core: 1
  Ports:
 	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 4 ] TXQ_Count: 1 TX_Queues: 4 RXD: 128 TXD: 128 Loopback false
 	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 5 ] TXQ_Count: 1 TX_Queues: 5 RXD: 128 TXD: 128 Loopback false
 Cores:
 	4
 	5
-	6
-	7
-	8
-	9
 
 EAL: Probing VFIO support...
 Running on node 0
@@ -22,38 +18,12 @@ EAL: PCI device 0000:01:00.1 on NUMA socket -1
 EAL:   Invalid NUMA socket, default to 0
 EAL:   probe driver: 8086:1583 net_i40e
 Going to try and use port 1
-EAL: pthread_setaffinity_np failed
-Running on node 0
-Receiving started
-Generating permutations
 Running on node 0
 Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-Receiving started
-Running 0 pipelines
-Receiving started
-Running 0 pipelines
-Receiving started
-Receiving started
-Running 0 pipelines
-Generating permutations
-Receiving started
-Running 0 pipelines
-Generating LUT
-Generating LUT
-Done Generating LUT
+Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
 Running 1 pipelines
 Starting scheduler on 5
-Starting scheduler on 7
-Starting scheduler on 8
-Starting scheduler on 9
-Done Generating LUT
+Receiving port f8:f2:1e:2e:9c:50 rxq 0 txq 0
 Running 1 pipelines
 Starting scheduler on 4
-Starting scheduler on 6
 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
