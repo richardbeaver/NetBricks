@@ -2,35 +2,20 @@ use e2d2::utils::Flow;
 use rustls::internal::msgs::{
     codec::Codec,
     enums::{ContentType, ExtensionType},
-    handshake::HandshakePayload::{
-        Certificate as CertificatePayload, ClientHello, ClientKeyExchange, ServerHello, ServerHelloDone,
-        ServerKeyExchange,
-    },
+    handshake::HandshakePayload::{Certificate as CertificatePayload, ClientHello, ServerHello},
     handshake::{ClientExtension, ServerName, ServerNamePayload},
     message::{Message as TLSMessage, MessagePayload},
 };
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use webpki;
 use webpki_roots;
 
 // TODO: move to failure crate!
 #[derive(Debug, Clone)]
 pub struct CertificateNotExtractedError;
-
-/// Start a TLS flow entry by inserting a TLS frame.
-#[allow(dead_code)]
-pub fn tlsf_insert(
-    flow: Flow,
-    payload_cache: &mut HashMap<Flow, Vec<u8>>,
-    seqnum_map: &mut HashMap<Flow, u32>,
-    payload: &[u8],
-    expected_seq: u32,
-) {
-    payload_cache.insert(flow, payload.to_vec());
-    seqnum_map.insert(flow, expected_seq);
-}
 
 /// Update a TLS flow entry by updating the entry with continuing TLS frame.
 pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
@@ -40,42 +25,6 @@ pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
         debug!("After writing the bytes {:?}", e.len());
         // ()
     });
-}
-
-/// Remove a TLS flow entry.
-#[allow(dead_code)]
-pub fn tlsf_remove(e: Entry<Flow, Vec<u8>>) {
-    // let buf = match e {
-    //     Entry::Vacant(_) => println!("?"),
-    //     Entry::Occupied(b) => {
-    //         println!("?");
-    //         b
-    //     }
-    // };
-    // parse_tls_frame(&buf);
-    unimplemented!();
-}
-
-#[allow(dead_code)]
-pub fn tlsf_tmp_store(
-    flow: Flow,
-    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
-    tmp_seqnum_map: &HashMap<Flow, u32>,
-    payload: &[u8],
-) {
-    //unimplemented!();
-}
-
-/// Remove a TLS flow entry.
-#[allow(dead_code)]
-pub fn tlsf_combine_remove(
-    flow: Flow,
-    payload_cache: &HashMap<Flow, Vec<u8>>,
-    seqnum_map: &HashMap<Flow, u32>,
-    tmp_payload_cache: &HashMap<Flow, Vec<u8>>,
-    tmp_seqnum_map: &HashMap<Flow, (u32, u32)>,
-) {
-    unimplemented!();
 }
 
 // FIXME: Allocating too much memory???
@@ -183,69 +132,6 @@ pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Hands
     }
 }
 
-/// Test if the current TLS frame is a ServerHello.
-pub fn is_server_hello(buf: &[u8]) -> bool {
-    info!("Testing for server hello",);
-    if on_frame(&buf).is_none() {
-        info!("On frame is none");
-        return false;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
-
-        match handshake.payload {
-            ServerHello(_) => {
-                info!("is server hello",);
-                true
-            }
-            _ => {
-                info!("not server hello",);
-                false
-            }
-        }
-    }
-}
-
-/// Test if the current TLS frame is a ClientHello.
-pub fn is_client_hello(buf: &[u8]) -> bool {
-    if on_frame(&buf).is_none() {
-        return false;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
-
-        match handshake.payload {
-            ClientHello(_) => {
-                info!("is client hello",);
-                true
-            }
-            _ => {
-                info!("not client hello",);
-                false
-            }
-        }
-    }
-}
-
-/// Test if the current TLS frame is ClientKeyExchange.
-pub fn is_client_key_exchange(buf: &[u8]) -> bool {
-    info!("Testing client key exchange",);
-    if on_frame(&buf).is_none() {
-        return false;
-    } else {
-        let (handshake, _) = on_frame(&buf).unwrap();
-
-        match handshake.payload {
-            ClientKeyExchange(_) => {
-                info!("is Client Key Exchange",);
-                true
-            }
-            _ => {
-                info!("not Client Key Exchange",);
-                false
-            }
-        }
-    }
-}
-
 /// Parse the bytes into tls frames.
 pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNotExtractedError> {
     // TLS Header length is 5.
@@ -313,42 +199,103 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
         }
     };
 
-    // FIXME: we probably don't want to do this...
-    return certs;
-
-    let (_, rest) = rest.split_at(_offset2 + tls_hdr_len);
-    info!("And the magic number is {}\n", _offset2 + tls_hdr_len);
-    info!("The THIRD TLS frame starts with: {:x?}", rest);
-
-    /////////////////////////////////////////////
-    //
-    //  TLS FRAME Three: ServerKeyExchange
-    //
-    /////////////////////////////////////////////
-
-    let (handshake3, offset3) = on_frame(&rest).expect("oh no! parsing the ServerKeyExchange failed!!");
-
-    match handshake3.payload {
-        ServerKeyExchange(payload) => info!("Server Key Exchange \n{:x?}", payload), //parse_serverhello(payload, tags),
-        _ => info!("None"),
-    }
-
-    let (_, rest) = rest.split_at(offset3 + tls_hdr_len);
-    info!("And the magic number is {}\n", offset3 + tls_hdr_len);
-    info!("The FOURTH TLS frame starts with: {:x?}", rest);
-
-    /////////////////////////////////////////////
-    //
-    //  TLS FRAME Four: ServerHelloDone
-    //
-    /////////////////////////////////////////////
-
-    let (handshake4, offset4) = on_frame(&rest).expect("oh no! parsing the ServerHelloDone failed!!");
-    match handshake4.payload {
-        ServerHelloDone => info!("Hooray! Server Hello Done!!!"),
-        _ => info!("None"),
-    }
-    info!("And the magic number is {}\n", offset4 + tls_hdr_len);
-
     certs
+}
+
+pub fn do_client_key_exchange(
+    dns_name: webpki::DNSName,
+    flow: &Flow,
+    rev_flow: &Flow,
+    cert_count: &mut usize,
+    unsafe_connection: &mut HashSet<Flow>,
+    tmp_payload_cache: &mut HashMap<Flow, Vec<u8>>,
+    tmp_seqnum_map: &mut HashMap<Flow, (u32, u32)>,
+    payload_cache: &mut HashMap<Flow, Vec<u8>>,
+    seqnum_map: &mut HashMap<Flow, u32>,
+) {
+    // We need to retrieve the DNS name from the entry of the current flow, and
+    // also parse the entry for the reverse flow.
+    if tmp_payload_cache.contains_key(&rev_flow) {
+        debug!("OOO: We have OOO segment for this connection");
+        // We have out-of-order segment for this TLS connection.
+        let (tmp_entry_seqnum, _) = tmp_seqnum_map.get(&rev_flow).unwrap();
+        if seqnum_map.get(&rev_flow).unwrap() == tmp_entry_seqnum {
+            debug!("OOO: We are ready to merge entries in two payload caches together!!!");
+            if payload_cache.contains_key(&rev_flow) && tmp_payload_cache.contains_key(&rev_flow) {
+                info!("1");
+                let (_, tmp_entry) = tmp_payload_cache.remove_entry(&rev_flow).unwrap();
+                info!("size of the tmp entry is {:?}", tmp_entry.len());
+                info!("2");
+                let _ = tmp_seqnum_map.remove_entry(&rev_flow);
+                let _ = seqnum_map.remove_entry(&rev_flow);
+                info!("3");
+                let (_, mut e) = payload_cache.remove_entry(&rev_flow).unwrap();
+                info!("size of the entry is {:?}", e.len());
+                info!("4");
+                e.extend(tmp_entry);
+                info!("size of the merged entry is {:?}", e.len());
+                info!("5");
+                let certs = parse_tls_frame(&e);
+                info!("info: We now retrieve the certs from the tcp payload");
+
+                match certs {
+                    Ok(chain) => {
+                        debug!("Testing our cert");
+                        let result = test_extracted_cert(chain, dns_name);
+                        *cert_count = *cert_count + 1;
+                        if *cert_count % 100000 as usize == 0 {
+                            println!("cert count is {}", cert_count);
+                        }
+                        if !result {
+                            debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
+                            unsafe_connection.insert(*flow);
+                            unsafe_connection.insert(*rev_flow);
+                        }
+                    }
+                    Err(e) => {
+                        debug!("ISSUE: match cert incurs error: {:?}\n", e);
+                    }
+                }
+            } else {
+                debug!("ISSUE: Oops, the payload cache doesn't have the entry for this flow");
+            }
+        } else {
+            debug!("ISSUE: Oops the expected seq# from our PLC entry doesn't match the seq# from the TPC entry");
+        }
+    } else {
+        info!("No out of order segment for this connection");
+        // Retrieve the payload cache and extract the cert.
+        if payload_cache.contains_key(&rev_flow) {
+            info!("1");
+            let (_, e) = payload_cache.remove_entry(&rev_flow).unwrap();
+            info!("2");
+            let _ = seqnum_map.remove_entry(&rev_flow);
+            info!("3");
+            let certs = parse_tls_frame(&e);
+            info!("info: We now retrieve the certs from the tcp payload");
+            info!("info: flow is {:?}", flow);
+
+            match certs {
+                Ok(chain) => {
+                    debug!("Testing our cert");
+                    let result = test_extracted_cert(chain, dns_name);
+
+                    *cert_count = *cert_count + 1;
+                    if *cert_count % 100000 as usize == 0 {
+                        println!("cert count is {}", cert_count);
+                    }
+                    if !result {
+                        debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
+                        unsafe_connection.insert(*flow);
+                        unsafe_connection.insert(*rev_flow);
+                    }
+                }
+                Err(e) => {
+                    debug!("ISSUE: match cert incurs error: {:?}\n", e);
+                }
+            }
+        } else {
+            debug!("ISSUE: Oops, the payload cache doesn't have the entry for this flow");
+        }
+    }
 }
