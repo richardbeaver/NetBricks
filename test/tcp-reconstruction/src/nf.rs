@@ -75,7 +75,7 @@ pub fn reconstruction<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                     } else if p.get_header().fin_flag() {
                         match payload_cache.entry(*flow) {
                             Entry::Occupied(e) => {
-                                let (_, payload) = e.remove_entry();
+                                let (_, _) = e.remove_entry();
                                 //println!("{}", String::from_utf8_lossy(&payload));
                             }
                             Entry::Vacant(_) => {

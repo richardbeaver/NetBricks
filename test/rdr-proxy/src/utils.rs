@@ -1,4 +1,3 @@
-use e2d2::utils::Flow;
 use failure::Fallible;
 use headless_chrome::browser::tab::RequestInterceptionDecision;
 use headless_chrome::protocol::network::methods::RequestPattern;
@@ -6,7 +5,6 @@ use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
 use rshttp::{HttpHeaderName, HttpRequest};
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -27,12 +25,12 @@ pub fn extract_http_request(payload: &[u8]) -> Result<String, HttpRequestNotExtr
     // if the first three bytes are 0x16, 0x30, 0x00-0x03, there's a chance the packet is TLS
 
     let get: &[u8] = &[71, 69, 84]; // GET
-    let post: &[u8] = &[80, 79, 83]; // POS
-    let http: &[u8] = &[72, 84, 84]; // HTT
-    let tls0: &[u8] = &[22, 3, 0];
-    let tls1: &[u8] = &[22, 3, 1];
-    let tls2: &[u8] = &[22, 3, 2];
-    let tls3: &[u8] = &[22, 3, 3];
+    let _post: &[u8] = &[80, 79, 83]; // POS
+    let _http: &[u8] = &[72, 84, 84]; // HTT
+    let _tls0: &[u8] = &[22, 3, 0];
+    let _tls1: &[u8] = &[22, 3, 1];
+    let _tls2: &[u8] = &[22, 3, 2];
+    let _tls3: &[u8] = &[22, 3, 3];
 
     let (head, _) = payload.split_at(3);
 
@@ -68,7 +66,7 @@ pub fn browser_create() -> Fallible<Browser> {
         .expect("Couldn't find appropriate Chrome binary.");
 
     let browser = Browser::new(options)?;
-    let tab = browser.wait_for_initial_tab()?;
+    let _ = browser.wait_for_initial_tab()?;
 
     // println!("Browser created",);
     Ok(browser)
@@ -130,7 +128,7 @@ pub fn retrieve_bulk_pairs(
 
     current_tab.enable_request_interception(
         &patterns,
-        Box::new(move |transport, session_id, intercepted| {
+        Box::new(move |_, _, intercepted| {
             request2.lock().unwrap().push(intercepted.request);
 
             RequestInterceptionDecision::Continue
@@ -156,37 +154,9 @@ pub fn retrieve_bulk_pairs(
 
     let final_responses: Vec<_> = responses.lock().unwrap().clone();
 
-    // println!("responses {:?}", responses);
-    // println!("RDR tab enable response",);
-
-    // This is a hack
-    if hostname == "wikia.com" {
-        let hostname = "lobste.rs";
-        let hostname = "tmz.com";
-
-        // println!("Changed wikia to lobsters",);
-        // println!("\nDEBUG: Hostname: {:?}", hostname);
-        let http_hostname = "http://".to_string() + &hostname;
-        // println!("Breakpoint hack",);
-
-        let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
-
-        // let request_response_pair = RequestResponsePair {
-        //     request: request,
-        //     response_params: response_params,
-        //     response_body: response_body,
-        // };
-
-        println!("OK",);
-        return Ok((current_browser, final_request, final_responses));
-    }
-
-    // println!("\nDEBUG: Hostname: {:?}", hostname);
-    // println!("Break",);
-
     // let http_hostname = "http://".to_string() + &hostname;
     let http_hostname = "https://".to_string() + &hostname;
-    let data = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
+    let _ = current_tab.navigate_to(&http_hostname)?.wait_until_navigated()?;
 
     // let request_response_pair = RequestResponsePair {
     //     request: request,

@@ -12,10 +12,11 @@ extern crate fnv;
 extern crate getopts;
 extern crate rand;
 extern crate time;
+
 use self::nf::nat;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::{PacketRx, PacketTx};
-use e2d2::operators::{merge, Batch, ReceiveBatch};
+use e2d2::operators::{Batch, ReceiveBatch};
 use e2d2::scheduler::{initialize_system, Scheduler, StandaloneScheduler};
 use std::env;
 use std::fmt::Display;
@@ -24,6 +25,7 @@ use std::process;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
 mod nf;
 
 const CONVERSION_FACTOR: f64 = 1000000000.;
@@ -35,7 +37,7 @@ where
 {
     println!("Receiving started");
 
-    let mut pipelines: Vec<_> = ports
+    let pipelines: Vec<_> = ports
         .iter()
         .map(|port| nat(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
         .collect();

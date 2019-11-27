@@ -1,18 +1,12 @@
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::Flow;
 use job_scheduler::{Job, JobScheduler};
 use rand::Rng;
-use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 use transmission::{Client, ClientConfig};
 use utils::load_json;
-
-use utils;
-
-const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -50,7 +44,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             flow
         })
         .parse::<TcpHeader>()
-        .transform(box move |p| {
+        .transform(box move |_| {
             // transmission setup
 
             let config_dir = "/data/config";
@@ -74,7 +68,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let mut iterator = workload.iter();
 
             let mut sched = JobScheduler::new();
-            let rng = rand::thread_rng();
 
             sched.add(Job::new("1/1 * * * * *".parse().unwrap(), move || {
                 let delay = rand::thread_rng().gen_range(0, 10);

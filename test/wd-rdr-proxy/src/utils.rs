@@ -34,7 +34,7 @@ pub fn browser_create() -> Fallible<Browser> {
 
 pub fn load_json(
     file_path: String,
-    num_of_users: usize,
+    _num_of_users: usize,
     num_of_secs: usize,
 ) -> Result<Vec<HashMap<usize, String>>, HttpRequestNotExtractedError> {
     let file = File::open(file_path).expect("file should open read only");

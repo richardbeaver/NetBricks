@@ -6,14 +6,12 @@
 extern crate e2d2;
 extern crate fnv;
 extern crate getopts;
+extern crate log;
 extern crate rand;
 extern crate rustls;
 extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
-
-#[macro_use]
-extern crate log;
 
 use self::nf::lib::validator;
 //use self::nf::*;

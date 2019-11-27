@@ -3,18 +3,10 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
-use fnv::FnvHasher;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
-use std::hash::BuildHasherDefault;
 
 use utils;
-
-type FnvHash = BuildHasherDefault<FnvHasher>;
-/// The buffer size needs to be chosen wisely.
-///
-/// The buffer size needs to larger than the largest assembled TLS ServerHello message.
-const BUFFER_SIZE: usize = 16384; // 2048, 4096, 8192, 16384
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,

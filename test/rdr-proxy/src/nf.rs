@@ -1,4 +1,4 @@
-use self::utils::{browser_create, extract_http_request, retrieve_bulk_pairs, RequestResponsePair};
+use self::utils::{browser_create, extract_http_request, retrieve_bulk_pairs};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;

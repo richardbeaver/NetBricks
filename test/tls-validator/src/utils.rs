@@ -2,7 +2,7 @@ use e2d2::utils::Flow;
 use rustls::internal::msgs::{
     codec::Codec,
     enums::{ContentType, ExtensionType},
-    handshake::HandshakePayload::{Certificate as CertificatePayload, ClientHello, ServerHello},
+    handshake::HandshakePayload::{Certificate as CertificatePayload, ClientHello},
     handshake::{ClientExtension, ServerName, ServerNamePayload},
     message::{Message as TLSMessage, MessagePayload},
 };
@@ -18,7 +18,7 @@ use webpki_roots;
 pub struct CertificateNotExtractedError;
 
 /// Update a TLS flow entry by updating the entry with continuing TLS frame.
-pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
+pub fn tlsf_update(_flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
     e.and_modify(|e| {
         debug!("Before writing more bytes {:?}", e.len());
         e.extend(payload);
@@ -27,7 +27,6 @@ pub fn tlsf_update(flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
     });
 }
 
-// FIXME: Allocating too much memory???
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
     info!("Matching server name");
 

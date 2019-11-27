@@ -32,7 +32,7 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     let workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
 
-    for user in 0..num_of_users {
+    for _ in 0..num_of_users {
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
@@ -62,7 +62,7 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             flow
         })
         .parse::<TcpHeader>()
-        .transform(box move |p| {
+        .transform(box move |_| {
             let mut sched = JobScheduler::new();
             let mut iterator = workload.iter();
             let mut count = 0;

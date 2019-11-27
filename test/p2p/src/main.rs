@@ -4,31 +4,25 @@
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
+extern crate failure;
 extern crate fnv;
 extern crate getopts;
-extern crate time;
-#[macro_use]
-extern crate slog;
-extern crate slog_scope;
-extern crate slog_stdlog;
-extern crate slog_term;
-#[macro_use]
-extern crate log;
-extern crate failure;
 extern crate headless_chrome;
 extern crate hyper;
 extern crate job_scheduler;
+extern crate log;
 extern crate rand;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate sha1;
+extern crate slog;
+extern crate slog_scope;
+extern crate slog_stdlog;
+extern crate slog_term;
+extern crate time;
 extern crate tiny_http;
 extern crate transmission;
-
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
 
 use self::nf::p2p;
 use e2d2::allocators::CacheAligned;
@@ -36,9 +30,7 @@ use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
-use slog::Drain;
 use std::env;
-use std::fs::OpenOptions;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
@@ -46,7 +38,6 @@ use std::time::Duration;
 mod nf;
 mod utils;
 
-const ENABLE_LOGGING: bool = false;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the rdr proxy network function to schedule pipelines.

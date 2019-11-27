@@ -13,8 +13,6 @@ use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
 use std::sync::Arc;
-use std::thread::sleep;
-use std::time::Duration;
 mod nf;
 
 fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
