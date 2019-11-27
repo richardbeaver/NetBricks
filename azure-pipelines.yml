@@ -1,0 +1,23 @@
+trigger:
+  - dev
+
+resources:
+  repositories:
+    - repository: rust_pipelines
+      type: github
+      name: xoac/rust-azure-pipelines
+      endpoint: jethrosun
+
+stages:
+  - stage: build
+    displayName: "Build and deploy docs"
+    jobs:
+    # Deploy doc
+    - template: ci/deploy-doc.yml
+      parameters:
+        branch: dev
+        job_name: build_deploy_doc
+        github:
+          user: jethrosun
+          email: jethro.sun7@gmail.com
+          repo: https://github.com/jethrosun/NetBricks
