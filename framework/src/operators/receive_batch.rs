@@ -20,8 +20,8 @@ impl<T: PacketRx> ReceiveBatch<T> {
     // TODO:doc
     pub fn new_with_parent(parent: PacketBatch, queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
-            parent: parent,
-            queue: queue,
+            parent,
+            queue,
             received: 0,
         }
     }
@@ -31,7 +31,7 @@ impl<T: PacketRx> ReceiveBatch<T> {
     pub fn new(queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
             parent: PacketBatch::new(32),
-            queue: queue,
+            queue,
             received: 0,
         }
     }

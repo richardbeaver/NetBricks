@@ -38,9 +38,9 @@ where
     pub fn new(parent: V, filter: FilterFn<T, V::Metadata>) -> FilterBatch<T, V> {
         let capacity = parent.capacity() as usize;
         FilterBatch {
-            parent: parent,
-            filter: filter,
-            capacity: capacity,
+            parent,
+            filter,
+            capacity,
             remove: Vec::with_capacity(capacity),
         }
     }

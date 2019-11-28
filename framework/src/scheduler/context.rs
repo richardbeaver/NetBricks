@@ -27,7 +27,7 @@ impl<'a> BarrierHandle<'a> {
 
     /// Allocate a new BarrierHandle with threads.
     pub fn with_threads(threads: Vec<&'a Thread>) -> BarrierHandle {
-        BarrierHandle { threads: threads }
+        BarrierHandle { threads }
     }
 }
 
@@ -57,7 +57,7 @@ impl NetBricksContext {
         let (sender, receiver) = sync_channel(0);
         self.scheduler_channels.insert(core, sender);
         let join_handle = builder
-            .name(format!("sched-{}", core).into())
+            .name(format!("sched-{}", core))
             .spawn(move || {
                 init_thread(core, core);
                 // Other init?
@@ -90,7 +90,10 @@ impl NetBricksContext {
         T: Fn(Vec<AlignedVirtualQueue>, &mut StandaloneScheduler) + Send + Sync + 'static,
     {
         for (core, channel) in &self.scheduler_channels {
-            let port = self.virtual_ports.entry(*core).or_insert(VirtualPort::new(1).unwrap());
+            let port = self
+                .virtual_ports
+                .entry(*core)
+                .or_insert_with(|| VirtualPort::new(1).unwrap());
             let boxed_run = run.clone();
             let queue = port.new_virtual_queue(1).unwrap();
             channel
@@ -109,8 +112,11 @@ impl NetBricksContext {
         run: Arc<T>,
     ) -> Result<()> {
         if let Some(channel) = self.scheduler_channels.get(&core) {
-            let port = self.virtual_ports.entry(core).or_insert(VirtualPort::new(1).unwrap());
-            let boxed_run = run.clone();
+            let port = self
+                .virtual_ports
+                .entry(core)
+                .or_insert_with(|| VirtualPort::new(1).unwrap());
+            let boxed_run = run;
             let queue = port.new_virtual_queue(1).unwrap();
             channel
                 .send(SchedulerCommand::Run(Arc::new(move |s| {
@@ -134,7 +140,7 @@ impl NetBricksContext {
                 Some(v) => v.clone(),
                 None => vec![],
             };
-            let boxed_run = run.clone();
+            let boxed_run = run;
             channel
                 .send(SchedulerCommand::Run(Arc::new(move |s| boxed_run(ports.clone(), s))))
                 .unwrap();

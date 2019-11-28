@@ -31,11 +31,11 @@ struct Segment {
 impl Segment {
     pub fn new(idx: isize, seq: u32, length: u16) -> Segment {
         Segment {
-            idx: idx,
+            idx,
             prev: -1,
             next: -1,
-            seq: seq,
-            length: length,
+            seq,
+            length,
         }
     }
 }
@@ -294,6 +294,9 @@ impl SegmentList {
 
 /// A structure for storing data that might be received out of order. This allows data to be inserted in any order, but
 /// then allows ordered read from data.
+///
+/// Note: reorderedbuffer has a series performance bug as it will also try to sort the current
+/// packet.
 pub struct ReorderedBuffer {
     data: RingBuffer,
     segment_list: SegmentList,
@@ -404,12 +407,12 @@ impl ReorderedBuffer {
         self.tail_seq = self.tail_seq.wrapping_add(written as u32);
         if written == data.len() {
             InsertionResult::Inserted {
-                written: written,
+                written,
                 available: self.available(),
             }
         } else {
             InsertionResult::OutOfMemory {
-                written: written,
+                written,
                 available: self.available(),
             }
         }
@@ -486,7 +489,7 @@ impl ReorderedBuffer {
             }
 
             InsertionResult::Inserted {
-                written: written,
+                written,
                 available: self.available(),
             }
         } else if self.tail_seq >= seq {
@@ -510,12 +513,12 @@ impl ReorderedBuffer {
             self.segment_list.insert_segment(seq, written as u16);
             if written == data.len() {
                 InsertionResult::Inserted {
-                    written: written,
+                    written,
                     available: self.available(),
                 }
             } else {
                 InsertionResult::OutOfMemory {
-                    written: written,
+                    written,
                     available: self.available(),
                 }
             }

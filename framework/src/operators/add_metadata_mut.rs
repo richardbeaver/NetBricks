@@ -32,8 +32,8 @@ where
     /// Return a mutable add metadata batch.
     pub fn new(parent: V, generator: MutableMetadataFn<V::Header, V::Metadata, M>) -> MutableAddMetadataBatch<M, V> {
         MutableAddMetadataBatch {
-            parent: parent,
-            generator: generator,
+            parent,
+            generator,
             applied: false,
             _phantom_m: PhantomData,
         }

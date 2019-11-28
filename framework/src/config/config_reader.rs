@@ -9,7 +9,7 @@ pub const DEFAULT_POOL_SIZE: u32 = 2048 - 1;
 pub const DEFAULT_CACHE_SIZE: u32 = 32;
 pub const DEFAULT_SECONDARY: bool = false;
 pub const DEFAULT_PRIMARY_CORE: i32 = 0;
-pub const DEFAULT_NAME: &'static str = "zcsi";
+pub const DEFAULT_NAME: &str = "zcsi";
 pub const NUM_RXD: i32 = 128;
 pub const NUM_TXD: i32 = 128;
 
@@ -109,14 +109,14 @@ fn read_port(value: &Value) -> Result<PortConfiguration> {
         };
 
         Ok(PortConfiguration {
-            name: name,
-            rx_queues: rx_queues,
-            tx_queues: tx_queues,
-            rxd: rxd,
-            txd: txd,
-            loopback: loopback,
-            csum: csum,
-            tso: tso,
+            name,
+            rx_queues,
+            tx_queues,
+            rxd,
+            txd,
+            loopback,
+            csum,
+            tso,
         })
     } else {
         Err(ErrorKind::ConfigurationError(String::from("Could not understand port spec")).into())
@@ -240,14 +240,14 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
     };
 
     Ok(NetbricksConfiguration {
-        name: name,
+        name,
         primary_core: master_lcore,
-        cores: cores,
-        strict: strict,
-        secondary: secondary,
-        pool_size: pool_size,
-        cache_size: cache_size,
-        ports: ports,
+        cores,
+        strict,
+        secondary,
+        pool_size,
+        cache_size,
+        ports,
         dpdk_args: None,
     })
 }

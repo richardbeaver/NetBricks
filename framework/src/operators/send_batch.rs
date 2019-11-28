@@ -28,11 +28,7 @@ where
     /// Return a send batch.
     // TODO:doc
     pub fn new(parent: V, port: Port) -> SendBatch<Port, V> {
-        SendBatch {
-            port: port,
-            sent: 0,
-            parent: parent,
-        }
+        SendBatch { port, sent: 0, parent }
     }
 }
 

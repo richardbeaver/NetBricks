@@ -92,17 +92,17 @@ where
         }
         let task = sched
             .add_task(GroupByProducer {
-                parent: parent,
-                group_fn: group_fn,
-                producers: producers,
+                parent,
+                group_fn,
+                producers,
             })
             .unwrap();
         GroupBy {
             _phantom_v: PhantomData,
-            groups: groups,
+            groups,
             _phantom_t: PhantomData,
-            consumers: consumers,
-            task: task,
+            consumers,
+            task,
         }
     }
 
@@ -117,9 +117,7 @@ where
     pub fn get_group(&mut self, group: usize) -> Option<RestoreHeader<T, V::Metadata, ReceiveBatch<MpscConsumer>>> {
         match self.consumers.remove(&group) {
             Some(mut p) => {
-                {
-                    p.get_packet_batch().add_parent_task(self.task)
-                };
+                p.get_packet_batch().add_parent_task(self.task);
                 Some(RestoreHeader::new(p))
             }
             None => None,

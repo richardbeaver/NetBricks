@@ -34,8 +34,8 @@ where
     // TODO:doc
     pub fn new(parent: V, transformer: MapFn<T, V::Metadata>) -> MapBatch<T, V> {
         MapBatch {
-            parent: parent,
-            transformer: transformer,
+            parent,
+            transformer,
             applied: false,
             phantom_t: PhantomData,
         }

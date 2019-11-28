@@ -22,7 +22,7 @@ where
     /// Return a reset parsing batch.
     // TODO:doc
     pub fn new(parent: V) -> ResetParsingBatch<V> {
-        ResetParsingBatch { parent: parent }
+        ResetParsingBatch { parent }
     }
 }
 

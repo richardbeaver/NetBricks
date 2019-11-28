@@ -48,7 +48,7 @@ where
     #[inline]
     pub fn new(parent: V) -> RestoreHeader<T, M, V> {
         RestoreHeader {
-            parent: parent,
+            parent,
             _phantom_t: PhantomData,
             _phantom_m: PhantomData,
         }

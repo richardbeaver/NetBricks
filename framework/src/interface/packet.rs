@@ -22,10 +22,10 @@ pub struct Packet<T: EndOffset, M: Sized + Send> {
 #[cfg(not(feature = "packet_offset"))]
 fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, offset: usize) -> Packet<T, M> {
     Packet::<T, M> {
-        mbuf: mbuf,
+        mbuf,
         _phantom_t: PhantomData,
         _phantom_m: PhantomData,
-        offset: offset,
+        offset,
         header: hdr,
     }
 }
@@ -44,7 +44,7 @@ pub struct Packet<T: EndOffset, M: Sized + Send> {
 #[cfg(feature = "packet_offset")]
 fn create_packet<T: EndOffset, M: Sized + Send>(mbuf: *mut MBuf, hdr: *mut T, offset: usiz) -> Packet<T, M> {
     let mut pkt = Packet::<T> {
-        mbuf: mbuf,
+        mbuf,
         _phantom_t: PhantomData,
         _phantom_m: PhantomData,
     };
@@ -68,6 +68,10 @@ const END_OF_STACK_SLOT: usize = STACK_OFFSET_SLOT + STACK_SIZE;
 const FREEFORM_METADATA_SLOT: usize = END_OF_STACK_SLOT;
 const FREEFORM_METADATA_SIZE: usize = (METADATA_SLOTS as usize - FREEFORM_METADATA_SLOT) * 8;
 
+/// FIXME
+///
+/// # Safety
+///
 /// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
@@ -76,6 +80,10 @@ pub unsafe fn packet_from_mbuf<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> 
     packet_from_mbuf_no_increment(mbuf, offset)
 }
 
+/// FIXME
+///
+/// # Safety
+///
 /// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf_no_increment<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
@@ -84,6 +92,10 @@ pub unsafe fn packet_from_mbuf_no_increment<T: EndOffset>(mbuf: *mut MBuf, offse
     create_packet(mbuf, header, offset)
 }
 
+/// FIXME
+///
+/// # Safety
+///
 /// Missing.
 #[inline]
 pub unsafe fn packet_from_mbuf_no_free<T: EndOffset>(mbuf: *mut MBuf, offset: usize) -> Packet<T, EmptyMetadata> {
@@ -181,6 +193,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
     }
 
     #[inline]
+    #[allow(clippy::absurd_extreme_comparisons)]
     #[cfg_attr(feature = "dev", allow(absurd_extreme_comparisons))]
     fn push_offset(&mut self, offset: usize) -> Option<usize> {
         let depth = self.read_stack_depth();
@@ -240,7 +253,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
     fn payload(&self) -> *mut u8 {
         unsafe {
             let payload_offset = self.payload_offset();
-            self.header_u8().offset(payload_offset as isize)
+            self.header_u8().add(payload_offset)
         }
     }
 
@@ -322,7 +335,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
                 let dst = if len != offset {
                     // Need to move down the rest of the data down.
                     let final_dst = self.payload();
-                    let move_loc = final_dst.offset(size as isize);
+                    let move_loc = final_dst.add(size);
                     let to_move = len - offset;
                     ptr::copy_nonoverlapping(final_dst, move_loc, to_move);
                     final_dst as *mut T2
@@ -342,7 +355,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
     pub fn remove_from_payload_head(&mut self, size: usize) -> Result<()> {
         unsafe {
             let src = self.data_base();
-            let dst = src.offset(size as isize);
+            let dst = src.add(size);
             ptr::copy_nonoverlapping(src, dst, size);
             (*self.mbuf).remove_data_beginning(size);
             Ok(())
@@ -356,7 +369,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
             let added = (*self.mbuf).add_data_end(size);
             if added >= size {
                 let src = self.payload();
-                let dst = src.offset(size as isize);
+                let dst = src.add(size);
                 ptr::copy_nonoverlapping(src, dst, size);
                 Ok(())
             } else {
@@ -391,7 +404,7 @@ impl<T: EndOffset, M: Sized + Send> Packet<T, M> {
             Err(ErrorKind::BadOffset(offset).into())
         } else {
             unsafe {
-                let dst = self.payload().offset(offset as isize);
+                let dst = self.payload().add(offset);
                 ptr::copy_nonoverlapping(header, dst as *mut T2, 1);
             }
             Ok(())

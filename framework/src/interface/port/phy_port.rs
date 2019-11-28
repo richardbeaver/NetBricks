@@ -1,5 +1,5 @@
-use super::PortStats;
 use super::super::{PacketRx, PacketTx};
+use super::PortStats;
 use allocators::*;
 use common::*;
 use config::{PortConfiguration, NUM_RXD, NUM_TXD};
@@ -9,8 +9,8 @@ use regex::Regex;
 use std::cmp::min;
 use std::ffi::CString;
 use std::fmt;
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.
@@ -118,10 +118,15 @@ impl PacketRx for PortQueue {
 #[cfg_attr(feature = "dev", allow(match_bool))]
 #[inline]
 fn i32_from_bool(x: bool) -> i32 {
-    match x {
-        true => 1,
-        false => 0,
+    if x {
+        1
+    } else {
+        0
     }
+    // match x {
+    //     true => 1,
+    //     false => 0,
+    // }
 }
 
 impl PmdPort {
@@ -155,8 +160,8 @@ impl PmdPort {
             Ok(CacheAligned::allocate(PortQueue {
                 port: port.clone(),
                 port_id: port.port,
-                txq: txq,
-                rxq: rxq,
+                txq,
+                rxq,
                 stats_rx: port.stats_rx[rxq as usize].clone(),
                 stats_tx: port.stats_tx[txq as usize].clone(),
             }))
@@ -217,7 +222,7 @@ impl PmdPort {
             if ret == 0 {
                 Ok(Arc::new(PmdPort {
                     connected: true,
-                    port: port,
+                    port,
                     rxqs: actual_rxqs,
                     txqs: actual_txqs,
                     should_close: true,
@@ -244,7 +249,7 @@ impl PmdPort {
         if port >= 0 {
             Ok(Arc::new(PmdPort {
                 connected: true,
-                port: port,
+                port,
                 rxqs: 1,
                 txqs: 1,
                 should_close: false,
@@ -264,7 +269,7 @@ impl PmdPort {
                 if port >= 0 {
                     Ok(Arc::new(PmdPort {
                         connected: true,
-                        port: port,
+                        port,
                         rxqs: 1,
                         txqs: 1,
                         should_close: false,
@@ -306,7 +311,8 @@ impl PmdPort {
                 loopback,
                 tso,
                 csumoffload,
-            ).chain_err(|| ErrorKind::BadDev(String::from(spec)))
+            )
+            .chain_err(|| ErrorKind::BadDev(String::from(spec)))
         } else {
             Err(ErrorKind::BadDev(String::from(spec)).into())
         }
@@ -400,16 +406,7 @@ impl PmdPort {
         tx_cores: &[i32],
     ) -> Result<Arc<PmdPort>> {
         PmdPort::new_port_with_queues_descriptors_offloads(
-            name,
-            rxqs,
-            txqs,
-            rx_cores,
-            tx_cores,
-            NUM_RXD,
-            NUM_TXD,
-            false,
-            false,
-            false,
+            name, rxqs, txqs, rx_cores, tx_cores, NUM_RXD, NUM_TXD, false, false, false,
         )
     }
 

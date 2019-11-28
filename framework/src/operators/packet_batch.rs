@@ -250,6 +250,7 @@ impl Act for PacketBatch {
     fn done(&mut self) {}
 
     #[inline]
+    #[allow(clippy::never_loop)]
     fn send_q(&mut self, port: &dyn PacketTx) -> Result<u32> {
         let mut total_sent = 0;
         // FIXME: Make it optionally possible to wait for all packets to be sent.

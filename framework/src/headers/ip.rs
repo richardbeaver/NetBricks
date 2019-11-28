@@ -75,15 +75,15 @@ impl IpHeader {
         if (protocol == 6 || protocol == 17) && self.payload_size(0) >= 4 {
             unsafe {
                 let self_as_u8 = (self as *const IpHeader) as *const u8;
-                let port_as_u8 = self_as_u8.offset(self.offset() as isize);
+                let port_as_u8 = self_as_u8.add(self.offset());
                 let port_slice = slice::from_raw_parts(port_as_u8, 4);
                 let dst_port = BigEndian::read_u16(&port_slice[..2]);
                 let src_port = BigEndian::read_u16(&port_slice[2..]);
                 Some(Flow {
-                    src_ip: src_ip,
-                    dst_ip: dst_ip,
-                    src_port: src_port,
-                    dst_port: dst_port,
+                    src_ip,
+                    dst_ip,
+                    src_port,
+                    dst_port,
                     proto: protocol,
                 })
             }
@@ -120,13 +120,13 @@ impl IpHeader {
     #[inline]
     pub fn ttl(&self) -> u8 {
         let ttlpcsum = self.ttl_to_csum;
-        (ttlpcsum & 0x000000ff) as u8
+        (ttlpcsum & 0x0000_00ff) as u8
     }
 
     #[inline]
     pub fn set_ttl(&mut self, ttl: u8) {
         let ttlpcsum = self.ttl_to_csum;
-        let blanked = ttlpcsum & !0x000000ff;
+        let blanked = ttlpcsum & !0x0000_00ff;
         self.ttl_to_csum = blanked | (ttl as u32);
     }
 
@@ -146,13 +146,13 @@ impl IpHeader {
     #[inline]
     pub fn csum(&self) -> u16 {
         let ttlpcsum = self.ttl_to_csum;
-        ((ttlpcsum & 0xffff0000) >> 16) as u16
+        ((ttlpcsum & 0xffff_0000) >> 16) as u16
     }
 
     #[inline]
     pub fn set_csum(&mut self, csum: u16) {
         let ttlpcsum = self.ttl_to_csum;
-        let blanked = ttlpcsum & !0xffff0000;
+        let blanked = ttlpcsum & !0xffff_0000;
         self.ttl_to_csum = blanked | ((u16::to_be(csum) as u32) << 16);
     }
 
@@ -178,7 +178,7 @@ impl IpHeader {
 
     #[inline]
     pub fn set_flags(&mut self, flags: u8) {
-        self.id_to_foffset = (self.id_to_foffset & !0x00e00000) | (((flags & 0x7) as u32) << (16 + 5));
+        self.id_to_foffset = (self.id_to_foffset & !0x00e0_0000) | (((flags & 0x7) as u32) << (16 + 5));
     }
 
     #[inline]
@@ -237,11 +237,11 @@ impl IpHeader {
 
     #[inline]
     pub fn length(&self) -> u16 {
-        u16::from_be(((self.version_to_len & 0xffff0000) >> 16) as u16)
+        u16::from_be(((self.version_to_len & 0xffff_0000) >> 16) as u16)
     }
 
     #[inline]
     pub fn set_length(&mut self, len: u16) {
-        self.version_to_len = (self.version_to_len & !0xffff0000) | ((u16::to_be(len) as u32) << 16);
+        self.version_to_len = (self.version_to_len & !0xffff_0000) | ((u16::to_be(len) as u32) << 16);
     }
 }

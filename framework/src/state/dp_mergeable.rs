@@ -1,6 +1,6 @@
 use fnv::FnvHasher;
-use std::collections::HashMap;
 use std::collections::hash_map::Iter;
+use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::ops::AddAssign;
 use utils::Flow;
@@ -16,7 +16,8 @@ use utils::Flow;
 /// Garbage collection.
 type FnvHash = BuildHasherDefault<FnvHasher>;
 const VEC_SIZE: usize = 1 << 24;
-#[derive(Clone)]
+
+#[derive(Default, Clone)]
 pub struct DpMergeableStore<T: AddAssign<T> + Default> {
     /// Contains the counts on the data path.
     state: HashMap<Flow, T, FnvHash>,

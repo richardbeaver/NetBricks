@@ -34,7 +34,7 @@ where
     // TODO:doc
     #[inline]
     pub fn new(parent: V) -> DeparsedBatch<V> {
-        DeparsedBatch { parent: parent }
+        DeparsedBatch { parent }
     }
 }
 

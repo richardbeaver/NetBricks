@@ -20,10 +20,7 @@ impl<T: Batch> MergeBatch<T> {
     /// Return a merge batch.
     // TODO:doc
     pub fn new(parents: Vec<T>) -> MergeBatch<T> {
-        MergeBatch {
-            parents: parents,
-            which: 0,
-        }
+        MergeBatch { parents, which: 0 }
     }
 }
 

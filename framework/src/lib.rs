@@ -16,10 +16,8 @@
 #![allow(unused_doc_comments)]
 #![cfg_attr(feature = "dev", allow(unstable_features))]
 // Need this since PMD port construction triggers too many arguments.
-#![cfg_attr(feature = "dev", allow(too_many_arguments))]
 #![cfg_attr(feature = "dev", feature(plugin))]
-// #![cfg_attr(feature = "dev", plugin(clippy))]
-#![cfg_attr(feature = "dev", deny(warnings))]
+#![cfg_attr(feature = "dev", plugin(clippy))]
 // Try to deny missing doc?
 #![deny(missing_docs)]
 extern crate byteorder;

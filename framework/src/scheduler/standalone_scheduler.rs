@@ -23,7 +23,7 @@ impl Runnable {
     }
     pub fn from_boxed_task(task: Box<dyn Executable>) -> Runnable {
         Runnable {
-            task: task,
+            task,
             cycles: 0,
             last_run: utils::rdtsc_unsafe(),
         }

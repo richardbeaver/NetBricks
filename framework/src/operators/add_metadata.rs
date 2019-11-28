@@ -31,8 +31,8 @@ where
     // TODO:doc
     pub fn new(parent: V, generator: MetadataFn<V::Header, V::Metadata, M>) -> AddMetadataBatch<M, V> {
         AddMetadataBatch {
-            parent: parent,
-            generator: generator,
+            parent,
+            generator,
             applied: false,
             _phantom_m: PhantomData,
         }

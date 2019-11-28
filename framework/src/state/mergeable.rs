@@ -1,7 +1,7 @@
 use fnv::FnvHasher;
 use std::cmp::max;
-use std::collections::HashMap;
 use std::collections::hash_map::Iter;
+use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::ops::AddAssign;
 use std::sync::{Arc, RwLock, RwLockReadGuard};
@@ -24,6 +24,7 @@ const CACHE_SIZE: usize = 1 << 10;
 const MAX_CACHE_SIZE: usize = 1 << 20;
 const CHAN_SIZE: usize = 128;
 
+#[derive(Default)]
 pub struct MergeableStoreCP<T: AddAssign<T> + Default + Clone> {
     flow_counters: HashMap<Flow, T, FnvHash>,
     hashmaps: Vec<Arc<RwLock<HashMap<Flow, T, FnvHash>>>>,
@@ -38,10 +39,7 @@ impl<T: AddAssign<T> + Default + Clone> MergeableStoreCP<T> {
     }
 
     pub fn dp_store_with_cache_and_size(&mut self, cache: usize, size: usize) -> MergeableStoreDP<T> {
-        let hmap = Arc::new(RwLock::new(HashMap::with_capacity_and_hasher(
-            size,
-            Default::default(),
-        )));
+        let hmap = Arc::new(RwLock::new(HashMap::with_capacity_and_hasher(size, Default::default())));
         self.hashmaps.push(hmap.clone());
         MergeableStoreDP {
             flow_counters: hmap,

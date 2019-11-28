@@ -6,8 +6,8 @@ use operators::ReceiveBatch;
 use std::clone::Clone;
 use std::cmp::min;
 use std::default::Default;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
+use std::sync::Arc;
 use utils::{pause, round_to_power_of_2};
 
 #[derive(Default)]
@@ -37,7 +37,7 @@ impl MpscQueue {
             size
         };
         MpscQueue {
-            slots: slots,
+            slots,
             mask: slots - 1,
             queue: (0..slots).map(|_| Default::default()).collect(),
             producer: Default::default(),
@@ -94,9 +94,7 @@ impl MpscQueue {
         let producer_head = self.producer.head.load(Ordering::Acquire);
         let consumer_tail = self.consumer.tail.load(Ordering::Acquire);
 
-        let free = self.mask
-            .wrapping_add(consumer_tail)
-            .wrapping_sub(producer_head);
+        let free = self.mask.wrapping_add(consumer_tail).wrapping_sub(producer_head);
         let insert = min(free, len);
 
         if insert > 0 {
@@ -124,9 +122,7 @@ impl MpscQueue {
         while {
             producer_head = self.producer.head.load(Ordering::Acquire);
             consumer_tail = self.consumer.tail.load(Ordering::Acquire);
-            let free = self.mask
-                .wrapping_add(consumer_tail)
-                .wrapping_sub(producer_head);
+            let free = self.mask.wrapping_add(consumer_tail).wrapping_sub(producer_head);
             insert = min(free, len);
             if insert == 0 {
                 // Short circuit, no insertion
@@ -135,12 +131,7 @@ impl MpscQueue {
                 let producer_next = producer_head.wrapping_add(insert);
                 self.producer
                     .head
-                    .compare_exchange(
-                        producer_head,
-                        producer_next,
-                        Ordering::AcqRel,
-                        Ordering::Relaxed,
-                    )
+                    .compare_exchange(producer_head, producer_next, Ordering::AcqRel, Ordering::Relaxed)
                     .is_err()
             }
         } {}

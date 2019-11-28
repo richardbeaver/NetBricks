@@ -4,9 +4,9 @@ pub use self::epoll::*;
 #[cfg(target_os = "linux")]
 #[path = "linux/epoll.rs"]
 mod epoll;
-pub mod tcp;
 #[cfg(feature = "sctp")]
 pub mod sctp;
+pub mod tcp;
 
 use std::os::unix::io::RawFd;
 
@@ -26,11 +26,7 @@ pub struct IOScheduler {
 impl IOScheduler {
     pub fn new(scheduler: PollHandle, fd: RawFd, token: Token) -> IOScheduler {
         scheduler.new_io_fd(fd, token);
-        IOScheduler {
-            fd: fd,
-            scheduler: scheduler,
-            token: token,
-        }
+        IOScheduler { fd, scheduler, token }
     }
 
     pub fn schedule_read(&self) {

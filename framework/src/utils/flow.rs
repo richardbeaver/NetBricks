@@ -45,8 +45,8 @@ impl Ipv4Prefix {
         };
         Ipv4Prefix {
             ip_address: address & mask,
-            prefix: prefix,
-            mask: mask,
+            prefix,
+            mask,
         }
     }
 
