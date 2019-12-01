@@ -241,7 +241,7 @@ rust_fmt () {
     RUSTFMT=${BIN_DIR}/cargo-fmt
     echo "Checking if ${RUSTFMT} exists (${REQUIRE_RUSTFMT})"
     if [ ! -e "${RUSTFMT}" ]; then
-        ${CARGO} install --root ${TOOLS_BASE} rustfmt-nightly
+        ${CARGO} install --root ${TOOLS_BASE} rustfmt
         export RUSTFMT=${RUSTFMT}
     else
         export RUSTFMT=${RUSTFMT}
