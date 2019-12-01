@@ -1,10 +1,7 @@
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use job_scheduler::{Job, JobScheduler};
-use rand::Rng;
 use std::thread;
-use std::time::Duration;
 use transmission::{Client, ClientConfig};
 use utils::load_json;
 
@@ -17,8 +14,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // The RDR proxy network function needs to maintain a list of active headless browsers. This is
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
-
-    // big-buck-bunny.torrent  cosmos-laundromat.torrent  sintel.torrent  tears-of-steel.torrent  wired-cd.torrent
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -39,21 +34,20 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let pipe = groups
         .get_group(0)
         .unwrap()
-        .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
-        })
+        .metadata(box move |p| p.get_header().flow().unwrap())
         .parse::<TcpHeader>()
         .transform(box move |_| {
-            // transmission setup
+            // Fixed transmission setup
+            let torrents_dir = "torrent_files/";
+            // let workload = "p2p-workload.json";
+            // 1, 10, 20, 40, 50, 75, 100, 150, 200
+            let workload = "workloads/200_workload.json";
 
             let config_dir = "/data/config";
             let download_dir = "/data/downloads";
-            let torrents_dir = "/data/torrents/";
 
             // let config_dir = "config";
             // let download_dir = "downloads";
-            // let torrents_dir = "torrent_files/";
 
             let config = ClientConfig::new()
                 .app_name("testing")
@@ -62,38 +56,25 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 .download_dir(download_dir);
             let c = Client::new(config);
 
-            let workload = load_json("workload.json".to_string());
+            let workload = load_json(workload.to_string());
             // let workload = load_json("small_workload.json".to_string());
             // println!("\nall the torrents are : {:?}", workload);
             let mut iterator = workload.iter();
-
-            let mut sched = JobScheduler::new();
-
-            sched.add(Job::new("1/1 * * * * *".parse().unwrap(), move || {
-                let delay = rand::thread_rng().gen_range(0, 10);
-                thread::sleep(std::time::Duration::new(delay, 0));
-                println!("I get executed with the delay of {:?} seconds!", delay);
-
-                let t = iterator.next();
-                match t {
+            loop {
+                match iterator.next() {
                     Some(torrent) => {
                         println!("torrent is : {:?}", torrent);
                         let torrent = torrents_dir.to_owned() + torrent;
                         // println!("torrent dir is : {:?}", torrent_dir);
                         let t = c.add_torrent_file(&torrent).unwrap();
                         t.start();
+                        continue;
                     }
                     None => {
                         println!("Nothing in the work queue, waiting for 30 seconds");
                         thread::sleep(std::time::Duration::new(30, 0));
                     }
                 }
-            }));
-
-            loop {
-                sched.tick();
-
-                std::thread::sleep(Duration::from_millis(500));
             }
 
             // Run until done
