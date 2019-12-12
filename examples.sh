@@ -24,6 +24,7 @@ export examples=(
         test/packet_test
         # PVN examples
         test/tls-validator
+        test/tls-validator-re
         test/wd-rdr-proxy
         test/rdr-proxy
         test/p2p
