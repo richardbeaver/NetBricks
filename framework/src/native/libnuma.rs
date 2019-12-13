@@ -49,8 +49,8 @@ extern "C" {
 }
 
 mod wrapped {
+    use crate::native::libnuma::NumaBitmap;
     use libc::c_void;
-    use native::libnuma::NumaBitmap;
     extern "C" {
         /// Memory nodes from which allocation is permitted.
         pub fn numa_get_mems_allowed() -> *mut NumaBitmap;

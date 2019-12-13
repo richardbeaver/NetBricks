@@ -1,7 +1,7 @@
 extern crate getopts;
 use self::getopts::{Matches, Options};
 use super::{read_configuration, NetbricksConfiguration, PortConfiguration};
-use common::print_error;
+use crate::common::print_error;
 use std::collections::HashMap;
 use std::env;
 use std::process;

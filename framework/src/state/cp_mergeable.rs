@@ -1,10 +1,10 @@
+use crate::utils::Flow;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::ops::AddAssign;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use twox_hash::XxHash;
-use utils::Flow;
 
 type XxHasher = BuildHasherDefault<XxHash>;
 const VEC_SIZE: usize = 1 << 24;

@@ -2,10 +2,10 @@ use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use super::Batch;
-use common::*;
-use headers::NullHeader;
-use interface::PacketTx;
-use scheduler::Executable;
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::interface::PacketTx;
+use crate::scheduler::Executable;
 
 /// Send batch.
 // TODO:doc

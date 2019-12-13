@@ -2,9 +2,9 @@ use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use super::Batch;
-use common::*;
-use headers::NullHeader;
-use interface::PacketTx;
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::interface::PacketTx;
 
 /// Reset parsing batch.
 // TODO:doc

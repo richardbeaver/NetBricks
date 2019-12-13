@@ -1,10 +1,10 @@
 use super::{Executable, Scheduler};
-use common::*;
+use crate::common::*;
+use crate::utils;
 use std::default::Default;
 use std::sync::mpsc::{sync_channel, Receiver, RecvError, SyncSender};
 use std::sync::Arc;
 use std::thread;
-use utils;
 
 /// Used to keep stats about each pipeline and eventually grant tokens, etc.
 struct Runnable {

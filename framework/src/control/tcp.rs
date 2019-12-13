@@ -1,8 +1,8 @@
 use super::{Available, IOScheduler, PollHandle, PollScheduler, Token, HUP, READ, WRITE};
+use crate::scheduler::Executable;
 use fnv::FnvHasher;
 /// TCP connection.
 use net2::TcpBuilder;
-use scheduler::Executable;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::marker::PhantomData;

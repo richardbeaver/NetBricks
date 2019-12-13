@@ -2,9 +2,9 @@ use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use super::Batch;
-use common::*;
-use headers::NullHeader;
-use interface::{PacketRx, PacketTx};
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::interface::{PacketRx, PacketTx};
 
 /// Receive batch.
 // TODO:doc
