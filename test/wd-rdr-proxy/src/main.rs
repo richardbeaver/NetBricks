@@ -4,23 +4,16 @@
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
+extern crate failure;
 extern crate fnv;
 extern crate getopts;
-extern crate time;
-#[macro_use]
-extern crate slog;
-extern crate slog_scope;
-extern crate slog_stdlog;
-extern crate slog_term;
-#[macro_use]
-extern crate log;
-extern crate failure;
 extern crate headless_chrome;
 extern crate job_scheduler;
 extern crate rand;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
+extern crate time;
 extern crate tiny_http;
 
 use self::nf::rdr_proxy;
@@ -29,12 +22,11 @@ use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
-use slog::Drain;
 use std::env;
 use std::fs::OpenOptions;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 mod nf;
 mod utils;
@@ -69,30 +61,6 @@ fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sch
 
 /// default main
 fn main() {
-    if ENABLE_LOGGING {
-        //logging will incur severe perf overhead.
-        let log_path = "rdr.log";
-        let file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(log_path)
-            .unwrap();
-
-        // create logger
-        let decorator = slog_term::PlainSyncDecorator::new(file);
-        let drain = slog_term::FullFormat::new(decorator).build().fuse();
-        let logger = slog::Logger::root(drain, o!());
-
-        // slog_stdlog uses the logger from slog_scope, so set a logger there
-        let _guard = slog_scope::set_global_logger(logger);
-
-        // register slog_stdlog as the log handler with the log crate
-        slog_stdlog::init().unwrap();
-
-        info!("Starting PVN RDR proxy network function");
-    }
-
     // setup default parameters
     let opts = basic_opts();
     let args: Vec<String> = env::args().collect();
@@ -104,8 +72,9 @@ fn main() {
 
     // configure and start the schedulers
     let mut config = initialize_system(&configuration).unwrap();
-    config.start_schedulers();
+    let duration = configuration.duration;
 
+    config.start_schedulers();
     config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| rdr_proxy_test(p, s)));
     config.execute();
 
@@ -118,6 +87,7 @@ fn main() {
     let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
     let sleep_time = Duration::from_millis(sleep_delay);
     println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
+    let begining = Instant::now();
 
     loop {
         thread::sleep(sleep_time); // Sleep for a bit
@@ -145,6 +115,17 @@ fn main() {
                 start = now;
                 pkts_so_far = pkts;
             }
+        }
+        match duration {
+            Some(d) => {
+                let new_now = Instant::now();
+                if new_now.duration_since(begining) > Duration::new(d as u64, 0) {
+                    println!("Have run for {:?}, system shutting down", d);
+                    config.shutdown();
+                    break;
+                }
+            }
+            None => {}
         }
     }
 }

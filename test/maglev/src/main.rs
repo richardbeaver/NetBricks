@@ -23,7 +23,7 @@ use std::fmt::Display;
 use std::process;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 mod nf;
 
@@ -56,6 +56,7 @@ fn main() {
         Err(f) => panic!(f.to_string()),
     };
     let configuration = read_matches(&matches, &opts);
+    let duration = configuration.duration;
 
     match initialize_system(&configuration) {
         Ok(mut context) => {
@@ -71,6 +72,8 @@ fn main() {
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
             let sleep_time = Duration::from_millis(sleep_delay);
             println!("0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0");
+            let begining = Instant::now();
+
             loop {
                 thread::sleep(sleep_time); // Sleep for a bit
                 let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
@@ -97,6 +100,17 @@ fn main() {
                         start = now;
                         pkts_so_far = pkts;
                     }
+                }
+                match duration {
+                    Some(d) => {
+                        let new_now = Instant::now();
+                        if new_now.duration_since(begining) > Duration::new(d as u64, 0) {
+                            println!("Have run for {:?}, system shutting down", d);
+                            context.shutdown();
+                            break;
+                        }
+                    }
+                    None => {}
                 }
             }
         }
