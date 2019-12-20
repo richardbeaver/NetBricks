@@ -10,6 +10,7 @@ pub const DEFAULT_CACHE_SIZE: u32 = 32;
 pub const DEFAULT_SECONDARY: bool = false;
 pub const DEFAULT_PRIMARY_CORE: i32 = 0;
 pub const DEFAULT_NAME: &str = "zcsi";
+pub const DEFAULT_DURATION: Option<u64> = None;
 pub const NUM_RXD: i32 = 128;
 pub const NUM_TXD: i32 = 128;
 
@@ -239,6 +240,18 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
         }
     };
 
+    let duration = match toml.get("duration") {
+        Some(&Value::Integer(d)) => Some(d),
+        None => None,
+        v => {
+            return Err(ErrorKind::ConfigurationError(format!(
+                "Could not parse duration spec (should be integer) {:?}",
+                v
+            ))
+            .into())
+        }
+    };
+
     Ok(NetbricksConfiguration {
         name,
         primary_core: master_lcore,
@@ -249,6 +262,7 @@ pub fn read_configuration_from_str(configuration: &str, filename: &str) -> Resul
         cache_size,
         ports,
         dpdk_args: None,
+        duration,
     })
 }
 

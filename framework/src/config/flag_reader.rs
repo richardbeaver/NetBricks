@@ -20,6 +20,7 @@ pub fn basic_opts() -> Options {
     opts.optopt("m", "master", "Master core", "master");
     opts.optopt("f", "configuration", "Configuration file", "path");
     opts.optmulti("", "dpdk_args", "DPDK arguments", "DPDK arguments");
+    opts.optopt("d", "duration", "Run duration", "duration");
 
     opts
 }
@@ -79,6 +80,17 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
     let configuration = if matches.opt_present("primary") {
         NetbricksConfiguration {
             secondary: false,
+            ..configuration
+        }
+    } else {
+        configuration
+    };
+
+    let configuration = if matches.opt_present("duration") {
+        let duration = matches.opt_strs("d");
+
+        NetbricksConfiguration {
+            duration: None,
             ..configuration
         }
     } else {

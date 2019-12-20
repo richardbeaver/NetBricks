@@ -28,6 +28,9 @@ pub struct NetbricksConfiguration {
     pub cache_size: u32,
     /// Custom DPDK arguments.
     pub dpdk_args: Option<String>,
+    /// Duration for running netbricks network function
+    /// (esp. useful for testing); used if not setting from cli-args
+    pub duration: Option<i64>,
 }
 
 /// Create an empty `NetbricksConfiguration`, useful when initializing through arguments.
@@ -43,6 +46,7 @@ impl Default for NetbricksConfiguration {
             secondary: false,
             ports: vec![],
             dpdk_args: None,
+            duration: None,
         }
     }
 }
@@ -73,6 +77,9 @@ impl fmt::Display for NetbricksConfiguration {
         }
         if let Some(ref arg) = self.dpdk_args {
             writeln!(f, "DPDK Args: {}", arg)?
+        };
+        if let Some(ref arg) = self.duration {
+            writeln!(f, "Duration: {}", arg)?
         };
         write!(f, "")
     }
