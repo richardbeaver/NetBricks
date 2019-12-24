@@ -31,7 +31,6 @@ use std::time::{Duration, Instant};
 mod nf;
 mod utils;
 
-const ENABLE_LOGGING: bool = false;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the rdr proxy network function to schedule pipelines.

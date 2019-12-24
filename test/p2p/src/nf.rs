@@ -38,10 +38,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<TcpHeader>()
         .transform(box move |_| {
             // Fixed transmission setup
-            let torrents_dir = "torrent_files/";
+            let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
             // let workload = "p2p-workload.json";
             // 1, 10, 20, 40, 50, 75, 100, 150, 200
-            let workload = "workloads/200_workload.json";
+            let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
 
             let config_dir = "/data/config";
             let download_dir = "/data/downloads";
@@ -58,7 +58,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             let workload = load_json(workload.to_string());
             // let workload = load_json("small_workload.json".to_string());
-            // println!("\nall the torrents are : {:?}", workload);
+            println!("DEBUG: workload parsing done",);
+
             let mut iterator = workload.iter();
             loop {
                 match iterator.next() {
