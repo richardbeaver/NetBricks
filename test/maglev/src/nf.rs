@@ -6,10 +6,17 @@ use fnv::FnvHasher;
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::hash::{BuildHasher, Hash, Hasher};
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::{Duration, Instant};
 use twox_hash::XxHash;
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 type XxHashFactory = BuildHasherDefault<XxHash>;
+
+const EPSILON: usize = 1000;
+const NUM_TO_IGNORE: usize = 0;
+const TOTAL_MEASURED_PKT: usize = 1_000_000_000;
+const MEASURE_TIME: u64 = 60;
 
 struct Maglev {
     // permutation: Box<Vec<Vec<usize>>>,
@@ -86,10 +93,32 @@ pub fn maglev<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     s: &mut S,
     backends: &[&str],
 ) -> CompositionBatch {
+    // Measurement code
+
+    // pkt count
+    let mut pkt_count = 0;
+
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let start1 = Arc::clone(&start_ts);
+    let start2 = Arc::clone(&start_ts);
+    let mut stop_ts = Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+
+    let now = Instant::now();
+
     let ct = backends.len();
     let lut = Maglev::new(backends, 65537);
     let mut cache = HashMap::<usize, usize, FnvHash>::with_hasher(Default::default());
     let mut groups = parent
+        .transform(box move |_| {
+            // first time access start_ts, need to insert timestamp
+            pkt_count += 1;
+            if pkt_count > NUM_TO_IGNORE {
+                let now = Instant::now();
+                let mut w = start1.lock().unwrap();
+                // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
+                w.push(now);
+            }
+        })
         .parse::<MacHeader>()
         .transform(box move |pkt| {
             assert!(pkt.refcnt() == 1);
@@ -102,6 +131,38 @@ pub fn maglev<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let payload = pkt.get_payload();
                 let hash = ipv4_flow_hash(payload, 0);
                 let out = cache.entry(hash).or_insert_with(|| lut.lookup(hash));
+                pkt_count += 1;
+
+                if now.elapsed().as_secs() == MEASURE_TIME {
+                    // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+                    let now = Instant::now();
+                    // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
+                    stop_ts.push(now);
+
+                    println!("\npkt count {:?}", pkt_count);
+                    let mut total_time = Duration::new(0, 0);
+                    let start = start2.lock().unwrap();
+                    println!("# of start ts: {:?}, # of stop ts: {:?}", start.len(), stop_ts.len());
+                    // assert_ge!(w.len(), stop_ts.len());
+                    let num = stop_ts.len();
+                    println!("Latency results start: {:?}", num);
+                    for i in 0..num {
+                        let since_the_epoch = stop_ts[i].duration_since(start[i]);
+                        total_time = total_time + since_the_epoch;
+                        // print!("{:?}, ", since_the_epoch);
+                    }
+                    println!("Latency results end",);
+                    println!("start to reset: avg processing time is {:?}", total_time / num as u32);
+                }
+
+                if pkt_count > NUM_TO_IGNORE {
+                    if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+                    } else {
+                        let now = Instant::now();
+                        // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
+                        stop_ts.push(now);
+                    }
+                }
                 *out
             },
             s,

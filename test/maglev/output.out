@@ -24,24 +24,24 @@ EAL:   probe driver: 8086:1583 net_i40e
 Going to try and use port 1
 EAL: pthread_setaffinity_np failed
 Running on node 0
+Running on node 0
+EAL: pthread_setaffinity_np failed
+Running on node 0
+EAL: pthread_setaffinity_np failed
+EAL: pthread_setaffinity_np failed
 Receiving started
+Running on node 0
 Generating permutations
 Running on node 0
 Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-EAL: pthread_setaffinity_np failed
-Running on node 0
-Receiving started
-Running 0 pipelines
 Receiving started
 Running 0 pipelines
 Receiving started
 Receiving started
 Running 0 pipelines
 Generating permutations
+Receiving started
+Running 0 pipelines
 Receiving started
 Running 0 pipelines
 Generating LUT
@@ -49,11 +49,18 @@ Generating LUT
 Done Generating LUT
 Running 1 pipelines
 Starting scheduler on 5
+Starting scheduler on 9
 Starting scheduler on 7
 Starting scheduler on 8
-Starting scheduler on 9
 Done Generating LUT
 Running 1 pipelines
 Starting scheduler on 4
 Starting scheduler on 6
 0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
+
+pkt count 339297386
+# of start ts: 339297386, # of stop ts: 339297386
+Latency results start: 339297386
+60.03 OVERALL RX 5652476.68 TX 5466451.30
+Latency results end
+start to reset: avg processing time is 1.122µs
