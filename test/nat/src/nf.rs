@@ -11,9 +11,9 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 
 const EPSILON: usize = 1000;
-
 const NUM_TO_IGNORE: usize = 0;
 const TOTAL_MEASURED_PKT: usize = 1_000_000_000;
+const MEASURE_TIME: u64 = 60;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -46,6 +46,7 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
     let mut next_port = 1024;
     const MIN_PORT: u16 = 1024;
     const MAX_PORT: u16 = 65535;
+    let now = Instant::now();
 
     let pipeline = parent
         .transform(box move |_| {
@@ -90,9 +91,9 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
             }
 
             pkt_count += 1;
-            // println!("STOP pkt count {:?}", pkt_count);
 
-            if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+            if now.elapsed().as_secs() == MEASURE_TIME {
+                // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
                 let now = Instant::now();
                 // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
                 stop_ts.push(now);
@@ -103,11 +104,13 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
                 println!("# of start ts: {:?}, # of stop ts: {:?}", start.len(), stop_ts.len());
                 // assert_ge!(w.len(), stop_ts.len());
                 let num = stop_ts.len();
+                println!("Latency results start: {:?}", num);
                 for i in 0..num {
                     let since_the_epoch = stop_ts[i].duration_since(start[i]);
                     total_time = total_time + since_the_epoch;
-                    // println!("since_the_epoch: {:?}", since_the_epoch);
+                    print!("{:?}", since_the_epoch);
                 }
+                println!("Latency results end",);
                 println!("start to reset: avg processing time is {:?}", total_time / num as u32);
             }
 
