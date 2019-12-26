@@ -74,7 +74,7 @@ fn main() {
             loop {
                 thread::sleep(sleep_time); // Sleep for a bit
                 let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-                if now - start > 1.0 {
+                if now - start > 30.0 {
                     let mut rx = 0;
                     let mut tx = 0;
                     for port in context.ports.values() {

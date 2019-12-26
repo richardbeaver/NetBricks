@@ -7,6 +7,13 @@ use std::collections::HashMap;
 use std::convert::From;
 use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::{Duration, Instant};
+
+const EPSILON: usize = 1000;
+
+const NUM_TO_IGNORE: usize = 0;
+const TOTAL_MEASURED_PKT: usize = 1_000_000_000;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -23,41 +30,95 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
     _s: &mut dyn Scheduler,
     nat_ip: &Ipv4Addr,
 ) -> CompositionBatch {
+    // Measurement code
+
+    // pkt count
+    let mut pkt_count = 0;
+
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let start1 = Arc::clone(&start_ts);
+    let start2 = Arc::clone(&start_ts);
+    let mut stop_ts = Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+
     let ip = u32::from(*nat_ip);
     let mut port_hash = HashMap::<Flow, Flow, FnvHash>::with_capacity_and_hasher(65536, Default::default());
     let mut flow_vec: Vec<FlowUsed> = (MIN_PORT..65535).map(|_| Default::default()).collect();
     let mut next_port = 1024;
     const MIN_PORT: u16 = 1024;
     const MAX_PORT: u16 = 65535;
-    let pipeline = parent.parse::<MacHeader>().transform(box move |pkt| {
-        // let hdr = pkt.get_mut_header();
-        let payload = pkt.get_mut_payload();
-        if let Some(flow) = ipv4_extract_flow(payload) {
-            let found = match port_hash.get(&flow) {
-                Some(s) => {
-                    s.ipv4_stamp_flow(payload);
-                    true
-                }
-                None => false,
-            };
-            if !found {
-                if next_port < MAX_PORT {
-                    let assigned_port = next_port; //FIXME.
-                    next_port += 1;
-                    flow_vec[assigned_port as usize].flow = flow;
-                    flow_vec[assigned_port as usize].used = true;
-                    let mut outgoing_flow = flow.clone();
-                    outgoing_flow.src_ip = ip;
-                    outgoing_flow.src_port = assigned_port;
-                    let rev_flow = outgoing_flow.reverse_flow();
 
-                    port_hash.insert(flow, outgoing_flow);
-                    port_hash.insert(rev_flow, flow.reverse_flow());
+    let pipeline = parent
+        .transform(box move |_| {
+            // first time access start_ts, need to insert timestamp
+            pkt_count += 1;
+            if pkt_count > NUM_TO_IGNORE {
+                let now = Instant::now();
+                let mut w = start1.lock().unwrap();
+                // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
+                w.push(now);
+            }
+        })
+        .parse::<MacHeader>()
+        .transform(box move |pkt| {
+            // let hdr = pkt.get_mut_header();
+            let payload = pkt.get_mut_payload();
+            if let Some(flow) = ipv4_extract_flow(payload) {
+                let found = match port_hash.get(&flow) {
+                    Some(s) => {
+                        s.ipv4_stamp_flow(payload);
+                        true
+                    }
+                    None => false,
+                };
+                if !found {
+                    if next_port < MAX_PORT {
+                        let assigned_port = next_port; //FIXME.
+                        next_port += 1;
+                        flow_vec[assigned_port as usize].flow = flow;
+                        flow_vec[assigned_port as usize].used = true;
+                        let mut outgoing_flow = flow.clone();
+                        outgoing_flow.src_ip = ip;
+                        outgoing_flow.src_port = assigned_port;
+                        let rev_flow = outgoing_flow.reverse_flow();
 
-                    outgoing_flow.ipv4_stamp_flow(payload);
+                        port_hash.insert(flow, outgoing_flow);
+                        port_hash.insert(rev_flow, flow.reverse_flow());
+
+                        outgoing_flow.ipv4_stamp_flow(payload);
+                    }
                 }
             }
-        }
-    });
+
+            pkt_count += 1;
+            // println!("STOP pkt count {:?}", pkt_count);
+
+            if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+                let now = Instant::now();
+                // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
+                stop_ts.push(now);
+
+                println!("\npkt count {:?}", pkt_count);
+                let mut total_time = Duration::new(0, 0);
+                let start = start2.lock().unwrap();
+                println!("# of start ts: {:?}, # of stop ts: {:?}", start.len(), stop_ts.len());
+                // assert_ge!(w.len(), stop_ts.len());
+                let num = stop_ts.len();
+                for i in 0..num {
+                    let since_the_epoch = stop_ts[i].duration_since(start[i]);
+                    total_time = total_time + since_the_epoch;
+                    // println!("since_the_epoch: {:?}", since_the_epoch);
+                }
+                println!("start to reset: avg processing time is {:?}", total_time / num as u32);
+            }
+
+            if pkt_count > NUM_TO_IGNORE {
+                if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+                } else {
+                    let now = Instant::now();
+                    // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
+                    stop_ts.push(now);
+                }
+            }
+        });
     pipeline.compose()
 }
