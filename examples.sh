@@ -28,6 +28,7 @@ export examples=(
         test/wd-rdr-proxy
         test/rdr-proxy
         test/p2p
+        test/p2p-nat
         test/pktgen-test
         test/adv-acl
 )

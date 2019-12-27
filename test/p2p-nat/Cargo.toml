@@ -1,0 +1,40 @@
+[package]
+name = "pvn-p2p-nat"
+version = "0.1.0"
+authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
+
+[dependencies]
+e2d2 = { path = "../../framework", features = ["performance"] }
+time = ">=0.1.0"
+getopts = "*"
+rand = "0.6.5"
+fnv = "*"
+twox-hash = "*"
+# rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.15.2", features = ["dangerous_configuration"] }
+# webpki = "0.19"
+# webpki-roots = "*"
+log = "0.4"
+slog = "2.5"
+slog-term = "2.4"
+slog-stdlog = "3.0"
+slog-scope = "4.1"
+failure = "*"
+tiny_http = "0.6"
+rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
+# base64 = "0.10"
+# headless_chrome = "0.9"
+headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn" }
+rustc-serialize = "*"
+serde_json = "*"
+
+# rand = "0.3"
+sha1 = "0.2.0"
+hyper = "0.10"
+# log = "0.3.7"
+libevent-sys = { git = "https://github.com/jethrosun/libevent-sys", branch = "pvn" }
+transmission = { git = "https://github.com/jethrosun/transmission-rs", branch = "pvn" }
+job_scheduler = "*"
+
+[features]
+default = []
+print = []
