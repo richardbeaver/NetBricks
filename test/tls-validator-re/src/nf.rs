@@ -147,52 +147,52 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                     info!("Pkt #{} is Vacant", _seq);
                     info!("And the flow is: {:?}", flow);
 
-                    let handshake = match on_frame(&p.get_payload()) {
-                        Some((handshake, _)) => handshake,
-                        None => return,
-                    };
-
-                    match handshake.payload {
-                        ClientHello(_) => {
-                            name_cache
-                                .entry(rev_flow)
-                                .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
-                                .or_insert(get_server_name(&p.get_payload()).unwrap());
-                        }
-                        ServerHello(_) => {
-                            // capture the sequence number
-                            debug!("Got ServerHello, insert the flow entry");
-                            seqnum_map.insert(*flow, _seq + _payload_size as u32);
-                            payload_cache.insert(*flow, p.get_payload().to_vec());
-                        }
-                        ClientKeyExchange(_) => {
-                            let dns_name = name_cache.remove(&rev_flow);
-                            match dns_name {
-                                Some(name) => do_client_key_exchange(
-                                    name,
-                                    flow,
-                                    &rev_flow,
-                                    &mut cert_count,
-                                    &mut unsafe_connection,
-                                    &mut tmp_payload_cache,
-                                    &mut tmp_seqnum_map,
-                                    &mut payload_cache,
-                                    &mut seqnum_map,
-                                ),
-                                None => info!("We are missing the dns name from the client hello",),
+                    match on_frame(&p.get_payload()) {
+                        Some((handshake, _)) => {
+                            match handshake.payload {
+                                ClientHello(_) => {
+                                    name_cache
+                                        .entry(rev_flow)
+                                        .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
+                                        .or_insert(get_server_name(&p.get_payload()).unwrap());
+                                }
+                                ServerHello(_) => {
+                                    // capture the sequence number
+                                    debug!("Got ServerHello, insert the flow entry");
+                                    seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                                    payload_cache.insert(*flow, p.get_payload().to_vec());
+                                }
+                                ClientKeyExchange(_) => {
+                                    let dns_name = name_cache.remove(&rev_flow);
+                                    match dns_name {
+                                        Some(name) => do_client_key_exchange(
+                                            name,
+                                            flow,
+                                            &rev_flow,
+                                            &mut cert_count,
+                                            &mut unsafe_connection,
+                                            &mut tmp_payload_cache,
+                                            &mut tmp_seqnum_map,
+                                            &mut payload_cache,
+                                            &mut seqnum_map,
+                                        ),
+                                        None => info!("We are missing the dns name from the client hello",),
+                                    }
+                                }
+                                _ => info!("Other kinds of payload",),
                             }
                         }
-                        _ => return,
+                        None => info!("Get none for matching payload",),
                     }
                 }
             } else {
                 // Disabled for now, we can enable it when we are finished.
 
-                info!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
-                let _ = unsafe_connection.take(flow);
-                let tcph = p.get_mut_header();
-                tcph.set_rst_flag();
+                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                // let _ = unsafe_connection.take(flow);
+                // let tcph = p.get_mut_header();
+                // tcph.set_rst_flag();
             }
 
             pkt_count += 1;
