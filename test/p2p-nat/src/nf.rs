@@ -3,10 +3,10 @@ use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
 use fnv::FnvHasher;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
@@ -159,25 +159,27 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             // println!("DEBUG: workload parsing done",);
 
             let mut iterator = workload.iter();
-            // loop {
-            //     match iterator.next() {
-            //         Some(torrent) => {
-            //             println!("torrent is : {:?}", torrent);
-            //             let torrent = torrents_dir.to_owned() + torrent;
-            //             // println!("torrent dir is : {:?}", torrent_dir);
-            //             let t = c.add_torrent_file(&torrent).unwrap();
-            //             t.start();
-            //             continue;
-            //         }
-            //         None => {
-            //             println!("Nothing in the work queue, waiting for 30 seconds");
-            //             // thread::sleep(std::time::Duration::new(30, 0));
-            //             break;
-            //         }
-            //     }
-            // }
+            // FIXME: this needs to be reimplemented
+            loop {
+                match iterator.next() {
+                    Some(torrent) => {
+                        println!("torrent is : {:?}", torrent);
+                        let torrent = torrents_dir.to_owned() + torrent;
+                        // println!("torrent dir is : {:?}", torrent_dir);
+                        let t = c.add_torrent_file(&torrent).unwrap();
+                        t.start();
+                        continue;
+                    }
+                    None => {
+                        println!("Nothing in the work queue, waiting for 30 seconds");
+                        thread::sleep(std::time::Duration::new(30, 0));
+                        // break;
+                    }
+                }
+            }
 
             pkt_count += 1;
+            println!("pkt count {:?}", pkt_count);
 
             if pkt_count == NUM_TO_IGNORE {
                 println!("\nMeasurement started ",);
