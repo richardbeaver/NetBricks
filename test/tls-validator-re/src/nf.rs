@@ -1,12 +1,20 @@
-use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
+use self::utils::{do_client_key_exchange, get_server_name, merge_ts, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::{Duration, Instant};
 
 use utils;
+
+const EPSILON: usize = 1000;
+const NUM_TO_IGNORE: usize = 0;
+const TOTAL_MEASURED_PKT: usize = 100_000_000;
+const MEASURE_TIME: u64 = 60;
+
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // New payload cache.
     //
@@ -33,11 +41,44 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
     // pkt count
     let mut pkt_count = 0;
 
+    // Measurement code
+    //
+    // start timestamps will be a vec protected with arc and mutex.
+    let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
+        TOTAL_MEASURED_PKT + EPSILON,
+    )));
+    let mut stop_ts_tcp: Vec<Instant> = Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+
+    let t1_1 = Arc::clone(&start_ts_1);
+    let t1_2 = Arc::clone(&start_ts_1);
+    let t2_1 = Arc::clone(&stop_ts_non_tcp);
+    let t2_2 = Arc::clone(&stop_ts_non_tcp);
+
     // group packets into MAC, TCP and UDP packet.
     let pipeline = parent
+        .transform(box move |p| {
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t1_1.lock().unwrap();
+                w.push(Instant::now());
+            }
+
+            // p.get_mut_header().swap_addresses();
+            p.get_mut_header();
+        })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
-        .filter(box move |p| p.get_header().protocol() == 6)
+        .filter(box move |p| {
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE && p.get_header().protocol() != 6 {
+                let mut w = t2_1.lock().unwrap();
+                w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+            }
+            p.get_header().protocol() == 6
+        })
         .metadata(box move |p| {
             let flow = p.get_header().flow().unwrap();
             flow
@@ -154,13 +195,51 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 tcph.set_rst_flag();
             }
 
-            if pkt_count % 1000000 == 0 {
-                // payload_cache.clear();
-                // tmp_payload_cache.clear();
-                // seqnum_map.clear();
-                // tmp_seqnum_map.clear();
-                // name_cache.clear();
-                // unsafe_connection.clear();
+            pkt_count += 1;
+
+            if pkt_count == NUM_TO_IGNORE {
+                println!("\nMeasurement started ",);
+                println!(
+                    "NUM_TO_IGNORE: {:#?}, TOTAL_MEASURED_PKT: {:#?}, pkt_count: {:#?}",
+                    NUM_TO_IGNORE, TOTAL_MEASURED_PKT, pkt_count
+                );
+            }
+
+            if pkt_count > NUM_TO_IGNORE {
+                let new_now = Instant::now();
+
+                // we calculate the deltas for all 1_000_000_000 packets
+                if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
+                    println!("pkt count {:?}", pkt_count);
+                    let mut total_duration = Duration::new(0, 0);
+                    let mut total_duration_btw_tranform = Duration::new(0, 0);
+                    let mut total_time1 = Duration::new(0, 0);
+                    let mut w1 = t1_2.lock().unwrap();
+                    let mut w2 = t2_2.lock().unwrap();
+                    println!(
+                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                        w1.len(),
+                        w2.len(),
+                        stop_ts_tcp.len(),
+                    );
+                    let num = stop_ts_tcp.len();
+                    let actual_stop_ts = merge_ts(TOTAL_MEASURED_PKT - 1, stop_ts_tcp.clone(), w2.clone());
+
+                    for i in 0..num {
+                        let stop = actual_stop_ts.get(&i).unwrap();
+                        let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
+
+                        total_time1 = total_time1 + since_the_epoch1;
+                    }
+                    println!(
+                        "avg processing duration in the transform  is {:?}",
+                        total_duration / num as u32
+                    );
+                    println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                }
+
+                let end = Instant::now();
+                stop_ts_tcp.push(end);
             }
         });
     pipeline.compose()
