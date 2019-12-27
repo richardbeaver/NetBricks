@@ -12,7 +12,7 @@ use utils;
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 100_000_000;
+const TOTAL_MEASURED_PKT: usize = 800_000_000;
 const MEASURE_TIME: u64 = 60;
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
@@ -54,6 +54,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
     let t1_2 = Arc::clone(&start_ts_1);
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
+
+    let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
     let pipeline = parent
@@ -205,39 +207,37 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 );
             }
 
-            if pkt_count > NUM_TO_IGNORE {
-                let new_now = Instant::now();
-
-                // we calculate the deltas for all 1_000_000_000 packets
-                if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
-                    println!("pkt count {:?}", pkt_count);
-                    let mut total_duration = Duration::new(0, 0);
-                    let mut total_duration_btw_tranform = Duration::new(0, 0);
-                    let mut total_time1 = Duration::new(0, 0);
-                    let mut w1 = t1_2.lock().unwrap();
-                    let mut w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        w2.len(),
-                        stop_ts_tcp.len(),
-                    );
-                    let num = stop_ts_tcp.len();
-                    let actual_stop_ts = merge_ts(TOTAL_MEASURED_PKT - 1, stop_ts_tcp.clone(), w2.clone());
-
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
-
-                        total_time1 = total_time1 + since_the_epoch1;
-                    }
-                    println!(
-                        "avg processing duration in the transform  is {:?}",
-                        total_duration / num as u32
-                    );
-                    println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+            if now.elapsed().as_secs() == MEASURE_TIME {
+                println!("pkt count {:?}", pkt_count);
+                // let mut total_duration = Duration::new(0, 0);
+                let mut total_time1 = Duration::new(0, 0);
+                let w1 = t1_2.lock().unwrap();
+                let w2 = t2_2.lock().unwrap();
+                println!(
+                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                    w1.len(),
+                    w2.len(),
+                    stop_ts_tcp.len(),
+                );
+                let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
+                let num = actual_stop_ts.len();
+                println!(
+                    "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
+                    stop_ts_tcp.len(),
+                    actual_stop_ts.len()
+                );
+                println!("Latency results start: {:?}", num);
+                for i in 0..num {
+                    let stop = actual_stop_ts.get(&i).unwrap();
+                    let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
+                    print!("{:?}, ", since_the_epoch1);
+                    total_time1 = total_time1 + since_the_epoch1;
                 }
+                println!("\nLatency results end",);
+                println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+            }
 
+            if pkt_count > NUM_TO_IGNORE {
                 let end = Instant::now();
                 stop_ts_tcp.push(end);
             }
