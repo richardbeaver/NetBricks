@@ -1,12 +1,19 @@
-use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
+use self::utils::{do_client_key_exchange, get_server_name, merge_ts, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::{Duration, Instant};
 
 use utils;
+
+const EPSILON: usize = 1000;
+const NUM_TO_IGNORE: usize = 0;
+const TOTAL_MEASURED_PKT: usize = 800_000_000;
+const MEASURE_TIME: u64 = 60;
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -37,18 +44,51 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // pkt count
     let mut pkt_count = 0;
 
+    // Measurement code
+    //
+    // start timestamps will be a vec protected with arc and mutex.
+    let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
+        TOTAL_MEASURED_PKT + EPSILON,
+    )));
+    let mut stop_ts_tcp: Vec<Instant> = Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+
+    let t1_1 = Arc::clone(&start_ts_1);
+    let t1_2 = Arc::clone(&start_ts_1);
+    let t2_1 = Arc::clone(&stop_ts_non_tcp);
+    let t2_2 = Arc::clone(&stop_ts_non_tcp);
+
+    let now = Instant::now();
+
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
-        .parse::<MacHeader>()
         .transform(box move |p| {
-            // FIXME: what is this?!
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t1_1.lock().unwrap();
+                w.push(Instant::now());
+            }
+
             // p.get_mut_header().swap_addresses();
             p.get_mut_header();
         })
+        .parse::<MacHeader>()
         .parse::<IpHeader>()
         .group_by(
             2,
-            box move |p| if p.get_header().protocol() == 6 { 0 } else { 1 },
+            box move |p| {
+                pkt_count += 1;
+                if p.get_header().protocol() == 6 {
+                    0
+                } else {
+                    if pkt_count > NUM_TO_IGNORE {
+                        let mut w = t2_1.lock().unwrap();
+                        w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    }
+                    1
+                }
+            },
             sched,
         );
 
@@ -68,7 +108,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let _tcph = p.get_header();
             let _payload_size = p.payload_size();
 
-            pkt_count += 1;
             info!("");
             info!("TCP Headers: {}", _tcph);
 
@@ -125,61 +164,97 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     info!("Pkt #{} is Vacant", _seq);
                     info!("And the flow is: {:?}", flow);
 
-                    let handshake = match on_frame(&p.get_payload()) {
-                        Some((handshake, _)) => handshake,
-                        None => return,
-                    };
-
-                    match handshake.payload {
-                        ClientHello(_) => {
-                            name_cache
-                                .entry(rev_flow)
-                                .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
-                                .or_insert(get_server_name(&p.get_payload()).unwrap());
-                        }
-                        ServerHello(_) => {
-                            // capture the sequence number
-                            debug!("Got ServerHello, insert the flow entry");
-                            seqnum_map.insert(*flow, _seq + _payload_size as u32);
-                            payload_cache.insert(*flow, p.get_payload().to_vec());
-                        }
-                        ClientKeyExchange(_) => {
-                            let dns_name = name_cache.remove(&rev_flow);
-                            match dns_name {
-                                Some(name) => do_client_key_exchange(
-                                    name,
-                                    flow,
-                                    &rev_flow,
-                                    &mut cert_count,
-                                    &mut unsafe_connection,
-                                    &mut tmp_payload_cache,
-                                    &mut tmp_seqnum_map,
-                                    &mut payload_cache,
-                                    &mut seqnum_map,
-                                ),
-                                None => info!("We are missing the dns name from the client hello",),
+                    match on_frame(&p.get_payload()) {
+                        Some((handshake, _)) => {
+                            match handshake.payload {
+                                ClientHello(_) => {
+                                    name_cache
+                                        .entry(rev_flow)
+                                        .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
+                                        .or_insert(get_server_name(&p.get_payload()).unwrap());
+                                }
+                                ServerHello(_) => {
+                                    // capture the sequence number
+                                    debug!("Got ServerHello, insert the flow entry");
+                                    seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                                    payload_cache.insert(*flow, p.get_payload().to_vec());
+                                }
+                                ClientKeyExchange(_) => {
+                                    let dns_name = name_cache.remove(&rev_flow);
+                                    match dns_name {
+                                        Some(name) => do_client_key_exchange(
+                                            name,
+                                            flow,
+                                            &rev_flow,
+                                            &mut cert_count,
+                                            &mut unsafe_connection,
+                                            &mut tmp_payload_cache,
+                                            &mut tmp_seqnum_map,
+                                            &mut payload_cache,
+                                            &mut seqnum_map,
+                                        ),
+                                        None => info!("We are missing the dns name from the client hello",),
+                                    }
+                                }
+                                _ => info!("Other kinds of payload",),
                             }
                         }
-                        _ => return,
+                        None => info!("Get none for matching payload",),
                     }
                 }
             } else {
                 // Disabled for now, we can enable it when we are finished.
 
-                info!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
-                let _ = unsafe_connection.take(flow);
-                let tcph = p.get_mut_header();
-                tcph.set_rst_flag();
+                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                // let _ = unsafe_connection.take(flow);
+                // let tcph = p.get_mut_header();
+                // tcph.set_rst_flag();
             }
 
-            if pkt_count % 1000000 == 0 {
-                // payload_cache.clear();
-                // tmp_payload_cache.clear();
-                // seqnum_map.clear();
-                // tmp_seqnum_map.clear();
-                // name_cache.clear();
-                // unsafe_connection.clear();
+            pkt_count += 1;
+
+            if pkt_count == NUM_TO_IGNORE {
+                println!("\nMeasurement started ",);
+                println!(
+                    "NUM_TO_IGNORE: {:#?}, TOTAL_MEASURED_PKT: {:#?}, pkt_count: {:#?}",
+                    NUM_TO_IGNORE, TOTAL_MEASURED_PKT, pkt_count
+                );
+            }
+
+            if now.elapsed().as_secs() == MEASURE_TIME {
+                println!("pkt count {:?}", pkt_count);
+                // let mut total_duration = Duration::new(0, 0);
+                let mut total_time1 = Duration::new(0, 0);
+                let w1 = t1_2.lock().unwrap();
+                let w2 = t2_2.lock().unwrap();
+                println!(
+                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                    w1.len(),
+                    w2.len(),
+                    stop_ts_tcp.len(),
+                );
+                let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
+                let num = actual_stop_ts.len();
+                println!(
+                    "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
+                    stop_ts_tcp.len(),
+                    actual_stop_ts.len()
+                );
+                println!("Latency results start: {:?}", num);
+                for i in 0..num {
+                    let stop = actual_stop_ts.get(&i).unwrap();
+                    let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
+                    print!("{:?}, ", since_the_epoch1);
+                    total_time1 = total_time1 + since_the_epoch1;
+                }
+                println!("\nLatency results end",);
+                println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+            }
+
+            if pkt_count > NUM_TO_IGNORE {
+                let end = Instant::now();
+                stop_ts_tcp.push(end);
             }
         })
         .reset()
