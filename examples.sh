@@ -29,6 +29,7 @@ export examples=(
         test/rdr-proxy
         test/p2p
         test/p2p-nat
+        test/p2p-nat-2
         test/pktgen-test
         test/adv-acl
 )
