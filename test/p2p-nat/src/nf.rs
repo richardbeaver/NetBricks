@@ -15,7 +15,7 @@ use utils::*;
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
 const TOTAL_MEASURED_PKT: usize = 800_000_000;
-const MEASURE_TIME: u64 = 60;
+const MEASURE_TIME: u64 = 120;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -57,6 +57,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut next_port = 1024;
     const MIN_PORT: u16 = 1024;
     const MAX_PORT: u16 = 65535;
+
+    // Workload
+    let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
+    let mut workload = load_json(workload.to_string());
 
     let now = Instant::now();
 
@@ -139,7 +143,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
             // let workload = "p2p-workload.json";
             // 1, 10, 20, 40, 50, 75, 100, 150, 200
-            let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
 
             let config_dir = "/data/config";
             let download_dir = "/data/downloads";
@@ -154,32 +157,19 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 .download_dir(download_dir);
             let c = Client::new(config);
 
-            let workload = load_json(workload.to_string());
             // let workload = load_json("small_workload.json".to_string());
             // println!("DEBUG: workload parsing done",);
 
-            let mut iterator = workload.iter();
-            // FIXME: this needs to be reimplemented
-            loop {
-                match iterator.next() {
-                    Some(torrent) => {
-                        println!("torrent is : {:?}", torrent);
-                        let torrent = torrents_dir.to_owned() + torrent;
-                        // println!("torrent dir is : {:?}", torrent_dir);
-                        let t = c.add_torrent_file(&torrent).unwrap();
-                        t.start();
-                        continue;
-                    }
-                    None => {
-                        println!("Nothing in the work queue, waiting for 30 seconds");
-                        thread::sleep(std::time::Duration::new(30, 0));
-                        // break;
-                    }
-                }
+            while let Some(torrent) = workload.pop() {
+                println!("torrent is : {:?}", torrent);
+                let torrent = torrents_dir.to_owned() + &torrent;
+                // println!("torrent dir is : {:?}", torrent_dir);
+                let t = c.add_torrent_file(&torrent).unwrap();
+                t.start();
             }
 
             pkt_count += 1;
-            println!("pkt count {:?}", pkt_count);
+            // println!("pkt count {:?}", pkt_count);
 
             if pkt_count == NUM_TO_IGNORE {
                 println!("\nMeasurement started ",);
