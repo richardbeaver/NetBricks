@@ -19,13 +19,13 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    // let workload_path = "workloads/current_workload.json";
-    // let num_of_users = 140;
-    // let num_of_secs = 2000;
+    let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/current_workload.json";
+    let num_of_users = 120;
+    let num_of_secs = 2000;
 
-    let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/simple_workload.json";
-    let num_of_users = 20;
-    let num_of_secs = 100;
+    // let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/simple_workload.json";
+    // let num_of_users = 20;
+    // let num_of_secs = 100;
     println!("DEBUG: workload path {:?}", workload_path);
 
     // Browser list.

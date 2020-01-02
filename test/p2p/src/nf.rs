@@ -41,7 +41,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
             // let workload = "p2p-workload.json";
             // 1, 10, 20, 40, 50, 75, 100, 150, 200
-            let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
+            let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/200_workload.json";
 
             let config_dir = "/data/config";
             let download_dir = "/data/downloads";
