@@ -108,7 +108,7 @@ pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<A
                 for i in 0..num {
                     let since_the_epoch = stop_ts[i].duration_since(start[i]);
                     total_time = total_time + since_the_epoch;
-                    print!("{:?}", since_the_epoch);
+                    // print!("{:?}", since_the_epoch);
                 }
                 println!("Latency results end",);
                 println!("start to reset: avg processing time is {:?}", total_time / num as u32);
