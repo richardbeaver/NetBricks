@@ -12,7 +12,7 @@ use utils;
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 500_000_000;
+const TOTAL_MEASURED_PKT: usize = 300_000_000;
 const MEASURE_TIME: u64 = 60;
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
