@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
-use utils::*;
+use crate::utils::*;
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
@@ -164,8 +164,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 println!("torrent is : {:?}", torrent);
                 let torrent = torrents_dir.to_owned() + &torrent;
                 // println!("torrent dir is : {:?}", torrent_dir);
-                let t = c.add_torrent_file(&torrent).unwrap();
-                t.start();
+                async {
+                    let t = c.add_torrent_file(&torrent).unwrap();
+                    t.start();
+                };
             }
 
             pkt_count += 1;

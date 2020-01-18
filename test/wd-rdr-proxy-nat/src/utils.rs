@@ -80,7 +80,7 @@ pub fn load_json(
     Ok(workload)
 }
 
-pub fn user_browse(current_browser: &Browser, hostname: String) -> Fallible<()> {
+pub async fn user_browse(current_browser: &Browser, hostname: String) -> Fallible<()> {
     // println!("Entering user browsing",);
     // Doesn't use incognito mode
     //

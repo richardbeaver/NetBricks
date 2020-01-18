@@ -1,4 +1,5 @@
-use self::utils::{browser_create, load_json, user_browse};
+// use self::utils::{browser_create, load_json, user_browse};
+use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
@@ -12,14 +13,11 @@ use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
-use utils::*;
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
 const TOTAL_MEASURED_PKT: usize = 800_000_000;
 const MEASURE_TIME: u64 = 120;
-
-use utils;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -147,10 +145,15 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         for current_user in 1..num_of_users + 1 {
                             // println!("{:?}", current_work[&current_user]);
                             // println!("current_user {:?}", current_user);
-                            match user_browse(&browser_list[current_user - 1], current_work[&current_user].clone()) {
-                                Ok(_) => {}
-                                Err(e) => println!("User {} caused an error: {:?}", current_user, e),
-                            }
+                            async {
+                                match user_browse(&browser_list[current_user - 1], current_work[&current_user].clone())
+                                    .await
+                                {
+                                    Ok(_) => {}
+                                    Err(e) => println!("User {} caused an error: {:?}", current_user, e),
+                                }
+
+                            };
                             // user_browse(&browser_list[current_user], current_work[&current_user].clone());
                         }
                     }
