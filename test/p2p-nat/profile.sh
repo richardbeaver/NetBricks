@@ -5,7 +5,16 @@
 #set -x
 set -euo pipefail
 
-NF_NAME=pvn-rdr-wd-nat
+# clean the states of transmission
+sudo rm -rf downloads/*
+sudo rm -rf config/*
+mkdir -p config downloads
+
+sudo rm -rf /data/downloads/*
+sudo rm -rf /data/config/*
+sudo mkdir -p /data/config /data/downloads
+
+NF_NAME=pvn-p2p-nat
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"
