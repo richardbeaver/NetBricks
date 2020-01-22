@@ -1,3 +1,4 @@
+use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
@@ -10,7 +11,6 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
-use crate::utils::*;
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
@@ -19,6 +19,7 @@ const MEASURE_TIME: u64 = 120;
 
 #[derive(Clone, Default)]
 struct Unit;
+
 #[derive(Clone, Copy, Default)]
 struct FlowUsed {
     pub flow: Flow,
@@ -60,7 +61,25 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     // Workload
     let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
+    // let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/1_workload.json";
     let mut workload = load_json(workload.to_string());
+
+    // Fixed transmission setup
+    let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
+    // let workload = "p2p-workload.json";
+    // 1, 10, 20, 40, 50, 75, 100, 150, 200
+
+    let config_dir = "/data/config";
+    let download_dir = "/data/downloads";
+
+    // let config_dir = "config";
+    // let download_dir = "downloads";
+    let config = ClientConfig::new()
+        .app_name("testing")
+        .config_dir(config_dir)
+        .use_utp(false)
+        .download_dir(download_dir);
+    let c = Client::new(config);
 
     let now = Instant::now();
 
@@ -139,36 +158,15 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .metadata(box move |p| p.get_header().flow().unwrap())
         .parse::<TcpHeader>()
         .transform(box move |_| {
-            // Fixed transmission setup
-            let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
-            // let workload = "p2p-workload.json";
-            // 1, 10, 20, 40, 50, 75, 100, 150, 200
-
-            let config_dir = "/data/config";
-            let download_dir = "/data/downloads";
-
-            // let config_dir = "config";
-            // let download_dir = "downloads";
-
-            let config = ClientConfig::new()
-                .app_name("testing")
-                .config_dir(config_dir)
-                .use_utp(false)
-                .download_dir(download_dir);
-            let c = Client::new(config);
-
             // let workload = load_json("small_workload.json".to_string());
             // println!("DEBUG: workload parsing done",);
+            let torrents_dir = &torrents_dir.to_string();
 
-            while let Some(torrent) = workload.pop() {
-                println!("torrent is : {:?}", torrent);
-                let torrent = torrents_dir.to_owned() + &torrent;
-                // println!("torrent dir is : {:?}", torrent_dir);
-                async {
-                    let t = c.add_torrent_file(&torrent).unwrap();
-                    t.start();
-                };
-            }
+            // Async version
+            // let fut = async_run_torrents(&mut workload, torrents_dir, &c);
+
+            // Non-async version
+            run_torrents(&mut workload, torrents_dir, &c);
 
             pkt_count += 1;
             // println!("pkt count {:?}", pkt_count);

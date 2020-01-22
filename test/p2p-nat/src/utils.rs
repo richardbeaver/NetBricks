@@ -2,6 +2,7 @@ use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::time::{Duration, Instant};
+use transmission::{Client, ClientConfig};
 
 pub fn load_json(file_path: String) -> Vec<String> {
     let file = fs::File::open(file_path).expect("file should open read only");
@@ -43,4 +44,27 @@ pub fn merge_ts(
 
     println!("merging finished!",);
     actual_ts
+}
+
+
+pub async fn async_run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+    // println!("exec run torrents");
+    while let Some(torrent) = workload.pop() {
+        // println!("torrent is : {:?}", torrent);
+        let torrent = torrents_dir.clone().to_owned() + &torrent;
+        // println!("torrent dir is : {:?}", torrent_dir);
+        let t = c.add_torrent_file(&torrent).unwrap();
+        t.start();
+    }
+}
+
+pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+    // println!("exec run torrents");
+    while let Some(torrent) = workload.pop() {
+        println!("torrent is : {:?}", torrent);
+        let torrent = torrents_dir.clone().to_owned() + &torrent;
+        // println!("torrent dir is : {:?}", torrent_dir);
+        let t = c.add_torrent_file(&torrent).unwrap();
+        t.start();
+    }
 }
