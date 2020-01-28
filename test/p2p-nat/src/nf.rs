@@ -14,8 +14,8 @@ use transmission::{Client, ClientConfig};
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 800_000_000;
-const MEASURE_TIME: u64 = 120;
+const TOTAL_MEASURED_PKT: usize = 400_000_000;
+const MEASURE_TIME: u64 = 60;
 
 #[derive(Clone, Default)]
 struct Unit;
