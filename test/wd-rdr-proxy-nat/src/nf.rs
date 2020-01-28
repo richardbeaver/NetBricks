@@ -1,4 +1,3 @@
-// use self::utils::{browser_create, load_json, user_browse};
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
@@ -6,18 +5,16 @@ use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
 use fnv::FnvHasher;
 use headless_chrome::Browser;
-use job_scheduler::{Job, JobScheduler};
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::{Duration, Instant};
 
 const EPSILON: usize = 1000;
 const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 800_000_000;
-const MEASURE_TIME: u64 = 120;
+const TOTAL_MEASURED_PKT: usize = 300_000_000;
+const MEASURE_TIME: u64 = 60;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -30,7 +27,7 @@ struct FlowUsed {
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 
-pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn rdr_nat<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
     nat_ip: &Ipv4Addr,
@@ -66,37 +63,46 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/one.json";
-    let num_of_users = 1;
-    let num_of_secs = 100;
-    println!("DEBUG: workload path {:?}", workload_path);
+    // Workloads:
 
     // let workload_path = "workloads/current_workload.json";
     // let num_of_users = 140;
     // let num_of_secs = 2000;
 
-    // let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/simple_workload.json";
-    // let num_of_users = 20;
-    // let num_of_secs = 100;
+    let workload_path = "/home/jethros/dev/netbricks/test/wd-rdr-proxy/workloads/simple_workload.json";
+    let num_of_users = 20;
+    let num_of_secs = 100;
+
     // println!("DEBUG: workload path {:?}", workload_path);
+    let mut workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
+    // println!("DEBUG: json to workload is done",);
 
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
-
-    let workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
-    println!("DEBUG: json to workload is done",);
 
     for _ in 0..num_of_users {
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
-    println!("All browsers are created ",);
+    // println!("All browsers are created ",);
+
+    // Jobs stack.
+    let mut job_stack = Vec::new();
+    let mut pivot = 0 as u64;
+    for i in (1..num_of_secs).rev() {
+        job_stack.push(i);
+    }
+    // println!("job stack: {:?}", job_stack);
+    // println!("Job stack is created",);
+
+    // log msg are printed twice
+    // FIXME
 
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
-        .transform(box move |p| {
+        .transform(box move |_| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
@@ -105,8 +111,38 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             }
         })
         .parse::<MacHeader>()
-        .transform(box move |p| {
-            p.get_mut_header();
+        .transform(box move |pkt| {
+            pkt_count += 1;
+            // println!("pkt count {:?}", pkt_count);
+
+            // let hdr = pkt.get_mut_header();
+            let payload = pkt.get_mut_payload();
+            if let Some(flow) = ipv4_extract_flow(payload) {
+                let found = match port_hash.get(&flow) {
+                    Some(s) => {
+                        s.ipv4_stamp_flow(payload);
+                        true
+                    }
+                    None => false,
+                };
+                if !found {
+                    if next_port < MAX_PORT {
+                        let assigned_port = next_port; //FIXME.
+                        next_port += 1;
+                        flow_vec[assigned_port as usize].flow = flow;
+                        flow_vec[assigned_port as usize].used = true;
+                        let mut outgoing_flow = flow.clone();
+                        outgoing_flow.src_ip = ip;
+                        outgoing_flow.src_port = assigned_port;
+                        let rev_flow = outgoing_flow.reverse_flow();
+
+                        port_hash.insert(flow, outgoing_flow);
+                        port_hash.insert(rev_flow, flow.reverse_flow());
+
+                        outgoing_flow.ipv4_stamp_flow(payload);
+                    }
+                }
+            }
         })
         .parse::<IpHeader>()
         .group_by(
@@ -135,44 +171,16 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             flow
         })
         .parse::<TcpHeader>()
-        .transform(box move |_| {
-            let mut sched = JobScheduler::new();
-            let mut iterator = workload.iter();
-            let mut count = 0;
-
-            sched.add(Job::new("1/1 * * * * *".parse().unwrap(), || {
-                let t = iterator.next();
-                count += 1;
-                // println!("count: {:?}", count);
-                match t {
-                    Some(current_work) => {
-                        // println!("current work {:?}", current_work);
-                        for current_user in 1..num_of_users + 1 {
-                            // println!("{:?}", current_work[&current_user]);
-                            // println!("current_user {:?}", current_user);
-                            async {
-                                match user_browse(&browser_list[current_user - 1], current_work[&current_user].clone())
-                                    .await
-                                {
-                                    Ok(_) => {}
-                                    Err(e) => println!("User {} caused an error: {:?}", current_user, e),
-                                }
-
-                            };
-                            // user_browse(&browser_list[current_user], current_work[&current_user].clone());
-                        }
-                    }
-                    None => {
-                        println!("Nothing in the work queue, waiting for 30 seconds");
-                        thread::sleep(std::time::Duration::new(30, 0));
-                    }
-                }
-            }));
-
-            loop {
-                sched.tick();
-
-                std::thread::sleep(Duration::from_millis(500));
+        .transform(box move |pkt| {
+            // Scheduling browsing jobs.
+            //
+            if now.elapsed().as_secs() == pivot {
+                let current_work = match workload.pop() {
+                    Some(t) => t,
+                    None => return,
+                };
+                simple_scheduler(&pivot, &num_of_users, current_work, &browser_list);
+                pivot = job_stack.pop().unwrap() as u64;
             }
 
             pkt_count += 1;
@@ -205,15 +213,18 @@ pub fn rdr_proxy<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     stop_ts_tcp.len(),
                     actual_stop_ts.len()
                 );
-                println!("Latency results start: {:?}", num);
+                println!("Detailed Latency Result start: {:?}", num);
                 for i in 0..num {
                     let stop = actual_stop_ts.get(&i).unwrap();
                     let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
                     // print!("{:?}, ", since_the_epoch1);
                     total_time1 = total_time1 + since_the_epoch1;
                 }
-                println!("\nLatency results end",);
-                println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                println!("\nDetailed Latency Result end",);
+                println!(
+                    "Latency Result: avg processing time 1 is {:?}",
+                    total_time1 / num as u32
+                );
             }
 
             if pkt_count > NUM_TO_IGNORE {

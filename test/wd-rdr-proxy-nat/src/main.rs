@@ -16,15 +16,16 @@ extern crate serde_json;
 extern crate time;
 extern crate tiny_http;
 
-use self::nf::rdr_proxy;
+use self::nf::rdr_nat;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
-use e2d2::utils::{ipv4_extract_flow, Flow};
+// use e2d2::utils::{ipv4_extract_flow, Flow};
 use std::env;
-use std::fs::OpenOptions;
+// use std::fmt::Display;
+// use std::fs::OpenOptions;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 use std::thread;
@@ -49,7 +50,7 @@ fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sch
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| rdr_proxy(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
+        .map(|port| rdr_nat(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());
@@ -107,7 +108,7 @@ fn main() {
             let rx_pkts = pkts.0 - pkts_so_far.0;
             if rx_pkts > 0 || now - last_printed > MAX_PRINT_INTERVAL {
                 println!(
-                    "{:.2} OVERALL RX {:.2} TX {:.2}",
+                    "Tput Result: {:.2} OVERALL RX {:.2} TX {:.2}",
                     now - start,
                     rx_pkts as f64 / (now - start),
                     (pkts.1 - pkts_so_far.1) as f64 / (now - start)

@@ -1,11 +1,11 @@
 use failure::Fallible;
 use headless_chrome::protocol::network::{events, methods, Request};
-use headless_chrome::Browser;
 use headless_chrome::LaunchOptionsBuilder;
+use headless_chrome::{Browser, Tab};
 use serde_json::{from_reader, Value};
-use std::collections::{HashMap, HashSet};
-use std::fs;
+use std::collections::HashMap;
 use std::fs::File;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 
@@ -80,7 +80,7 @@ pub fn load_json(
     Ok(workload)
 }
 
-pub async fn user_browse(current_browser: &Browser, hostname: String) -> Fallible<()> {
+pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
     // println!("Entering user browsing",);
     // Doesn't use incognito mode
     //
@@ -92,9 +92,30 @@ pub async fn user_browse(current_browser: &Browser, hostname: String) -> Fallibl
     // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
 
     let https_hostname = "https://".to_string() + &hostname;
-    let _ = current_tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
+    // let _ = current_tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
+    let _ = current_tab.navigate_to(&https_hostname)?;
 
     Ok(())
+}
+
+pub fn simple_scheduler(
+    pivot: &u64,
+    _num_of_users: &usize,
+    current_work: HashMap<usize, String>,
+    browser_list: &Vec<Browser>,
+) {
+    // println!("\npivot: {:?}", pivot);
+    // println!("current work {:?}", current_work);
+
+    for current_user in 1.._num_of_users + 1 {
+        // for current_user in 1..10 {
+        // println!("{:?}", current_work[&current_user]);
+        // println!("current_user {:?}", current_user);
+        match user_browse(&browser_list[current_user - 1], &current_work[&current_user]) {
+            Ok(_) => {}
+            Err(e) => println!("User {} caused an error: {:?}", current_user, e),
+        }
+    }
 }
 
 pub fn merge_ts(
