@@ -27,6 +27,7 @@ export examples=(
         test/tls-validator-re
         test/wd-rdr-proxy
         test/wd-rdr-proxy-nat
+        test/transcoder-nat
         test/rdr-proxy
         test/p2p
         test/p2p-nat
