@@ -23,15 +23,17 @@ export examples=(
         test/chain-test
         test/packet_test
         # PVN examples
-        test/tls-validator
-        test/tls-validator-re
+        test/tls-validator-filter
+        test/tls-validator-groupby
         test/wd-rdr-proxy
-        test/wd-rdr-proxy-nat
-        test/transcoder-nat
+        test/rdr-nat-filter
+        test/rdr-nat-groupby
+        test/transcoder-nat-filter
+        test/transcoder-nat-groupby
         test/rdr-proxy
         test/p2p
-        test/p2p-nat
-        test/p2p-nat-2
+        test/p2p-nat-filter
+        test/p2p-nat-groupby
         test/pktgen-test
         test/adv-acl
 )
