@@ -77,7 +77,7 @@ fn main() {
 
     let mut pkts_so_far = (0, 0);
     let mut last_printed = 0.;
-    const MAX_PRINT_INTERVAL: f64 = 60.;
+    const MAX_PRINT_INTERVAL: f64 = 30.;
     //const PRINT_DELAY: f64 = 15.;
     const PRINT_DELAY: f64 = 30.;
     let sleep_delay = (PRINT_DELAY / 2.) as u64;

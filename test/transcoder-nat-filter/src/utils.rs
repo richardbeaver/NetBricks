@@ -73,10 +73,10 @@ pub fn merge_ts(
 // }
 
 pub fn run_transcode(pivot: u64) {
-    let infile = "tiny.y4m";
+    let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
-    let outfile = "output_videos/".to_owned() + &pivot.to_string() + ".y4m";
+    let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
     transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
 }
 
