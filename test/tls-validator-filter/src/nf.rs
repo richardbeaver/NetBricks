@@ -94,10 +94,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
             let _payload_size = p.payload_size();
 
             info!("");
-            info!("TCP Headers: {}", _tcph);
+            // eprintln!("TCP Headers: {}", _tcph);
 
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
+                // eprintln!("DEBUE: matchit",);
                 // check if the flow is recognized
                 if payload_cache.contains_key(flow) {
                     info!("Pkt #{} is Occupied!", _seq);
@@ -146,6 +147,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                         debug!("Oops: pkt seq # is even smaller then the expected #");
                     }
                 } else {
+                    // eprintln!("DEBUE: not matchit",);
                     info!("Pkt #{} is Vacant", _seq);
                     info!("And the flow is: {:?}", flow);
 
@@ -153,10 +155,19 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                         Some((handshake, _)) => {
                             match handshake.payload {
                                 ClientHello(_) => {
+                                    let server_name = match get_server_name(&p.get_payload()) {
+                                        Some(n) => n,
+                                        None => {
+                                            // FIXME: tmp hack
+                                            let name_ref =
+                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            webpki::DNSName::from(name_ref)
+                                        }
+                                    };
                                     name_cache
                                         .entry(rev_flow)
-                                        .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
-                                        .or_insert(get_server_name(&p.get_payload()).unwrap());
+                                        .and_modify(|e| *e = server_name.clone())
+                                        .or_insert(server_name);
                                 }
                                 ServerHello(_) => {
                                     // capture the sequence number
@@ -186,6 +197,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                         }
                         None => info!("Get none for matching payload",),
                     }
+                    // eprintln!("DEBUG: Match on_frame done");
                 }
             } else {
                 // Disabled for now, we can enable it when we are finished.

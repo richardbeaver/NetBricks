@@ -168,10 +168,19 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         Some((handshake, _)) => {
                             match handshake.payload {
                                 ClientHello(_) => {
+                                    let server_name = match get_server_name(&p.get_payload()) {
+                                        Some(n) => n,
+                                        None => {
+                                            // FIXME: tmp hack
+                                            let name_ref =
+                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            webpki::DNSName::from(name_ref)
+                                        }
+                                    };
                                     name_cache
                                         .entry(rev_flow)
-                                        .and_modify(|e| *e = get_server_name(&p.get_payload()).unwrap())
-                                        .or_insert(get_server_name(&p.get_payload()).unwrap());
+                                        .and_modify(|e| *e = server_name.clone())
+                                        .or_insert(server_name);
                                 }
                                 ServerHello(_) => {
                                     // capture the sequence number

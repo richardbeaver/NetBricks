@@ -30,7 +30,7 @@ pub fn tlsf_update(_flow: Flow, e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
 }
 
 pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
-    info!("Matching server name");
+    // eprintln!("Matching server name");
 
     match on_frame(&buf) {
         Some((handshake, _)) => {
@@ -107,6 +107,7 @@ pub fn test_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DN
 
 /// Parse a slice of bytes into a TLS frame and the size of payload.
 pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::HandshakeMessagePayload, usize)> {
+    // eprintln!("entering on_frame");
     match TLSMessage::read_bytes(&rest) {
         Some(mut packet) => {
             // info!("\nParsing this TLS frame is \n{:x?}", packet);
