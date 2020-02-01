@@ -77,7 +77,9 @@ pub fn run_transcode(pivot: u64) {
     // let outfile = "out.y4m";
     let width_height = "360x24";
     let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
-    transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
+    for _ in 0..3 {
+        transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
+    }
 }
 
 fn transcode(infile: String, outfile: String, width_height: String) {
