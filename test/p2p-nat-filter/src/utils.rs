@@ -1,8 +1,8 @@
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use transmission::{Client };
-use std::time::{ Instant};
+use transmission::Client;
+use std::time::Instant;
 
 pub fn load_json(file_path: String) -> Vec<String> {
     let file = fs::File::open(file_path).expect("file should open read only");
@@ -16,7 +16,7 @@ pub fn load_json(file_path: String) -> Vec<String> {
     torrents
 }
 
-pub fn merge_ts(
+pub fn merge_ts_ori(
     total_measured_pkt: usize,
     stop_ts_tcp: Vec<Instant>,
     stop_ts_non_tcp: HashMap<usize, Instant>,

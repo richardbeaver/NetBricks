@@ -1,5 +1,6 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
+use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
@@ -9,11 +10,6 @@ use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-
-const EPSILON: usize = 1000;
-const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 400_000_000;
-const MEASURE_TIME: u64 = 60;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -175,15 +171,19 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     stop_ts_tcp.len(),
                     actual_stop_ts.len()
                 );
+
                 println!("Latency results start: {:?}", num);
+                let mut tmp_results = Vec::<u128>::with_capacity(num);
                 for i in 0..num {
                     let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
+                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                     // print!("{:?}, ", since_the_epoch1);
-                    total_time1 = total_time1 + since_the_epoch1;
+                    tmp_results.push(since_the_epoch.as_micros());
+                    // total_time1 = total_time1 + since_the_epoch1;
                 }
+                compute_stat(tmp_results);
                 println!("\nLatency results end",);
-                println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
 
             if pkt_count > NUM_TO_IGNORE {

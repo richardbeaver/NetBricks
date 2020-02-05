@@ -302,7 +302,7 @@ pub fn do_client_key_exchange(
     }
 }
 
-pub fn merge_ts(
+pub fn merge_ts_old(
     total_measured_pkt: usize,
     stop_ts_tcp: Vec<Instant>,
     stop_ts_non_tcp: HashMap<usize, Instant>,

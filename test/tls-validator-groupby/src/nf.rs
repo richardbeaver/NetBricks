@@ -1,5 +1,6 @@
-use self::utils::{do_client_key_exchange, get_server_name, merge_ts, on_frame, tlsf_update};
+use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
+use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
@@ -9,11 +10,6 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 
 use utils;
-
-const EPSILON: usize = 1000;
-const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 300_000_000;
-const MEASURE_TIME: u64 = 60;
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -250,15 +246,19 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     stop_ts_tcp.len(),
                     actual_stop_ts.len()
                 );
+
                 println!("Latency results start: {:?}", num);
+                let mut tmp_results = Vec::<u128>::with_capacity(num);
                 for i in 0..num {
                     let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch1 = stop.checked_duration_since(w1[i]).unwrap();
+                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                     // print!("{:?}, ", since_the_epoch1);
-                    total_time1 = total_time1 + since_the_epoch1;
+                    // total_time1 = total_time1 + since_the_epoch1;
+                    tmp_results.push(since_the_epoch.as_micros());
                 }
+                compute_stat(tmp_results);
                 println!("\nLatency results end",);
-                println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
 
             if pkt_count > NUM_TO_IGNORE {
