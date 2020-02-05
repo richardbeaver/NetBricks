@@ -66,6 +66,8 @@ pub mod operators;
 pub mod state;
 
 #[doc(hidden)]
+pub mod measure;
+#[doc(hidden)]
 pub mod queues;
 #[doc(hidden)]
 pub mod scheduler;
