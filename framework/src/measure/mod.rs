@@ -46,27 +46,33 @@ pub fn merge_ts(
 pub fn compute_stat(mut tmp_results: Vec<u128>) {
     tmp_results.sort();
     let mut results: Vec<f64> = tmp_results.into_iter().map(|item| item as f64).collect();
-    // let results = vec::map(tmp_results, |&e| e as f64);
-    // let results = tmp_results.map(|&e| e as f64);
     println!("sorting and then type casting done",);
 
+    let mut count = 0;
+    let chunk_size = results.len() / 100;
     //generate 100 groups
-    for chunk in results.chunks(100) {
-        println!("mean: {:02?}, std dev: {:02?}", chunk.mean(), chunk.std_dev());
+    for chunk in results.chunks(chunk_size) {
+        println!(
+            "Group {:?}, mean: {:02?}, std dev: {:02?}",
+            count,
+            chunk.mean(),
+            chunk.std_dev()
+        );
+        count += 1;
     }
 
     let min = results.min();
     let max = results.max();
     println!(
-        "min: {:?}, max: {:?}, mean: {:?}, median: {:?}",
+        "Stat, min: {:?}, max: {:?}, mean: {:?}, median: {:?}, std: {:?}",
         min,
         max,
         results.mean(),
         results.median(),
+        results.std_dev(),
     );
-    println!("std: {:?}", results.std_dev());
     println!(
-        "75%iles: {:?}, 90%iles: {:?}, 95%iles: {:?}",
+        "Stat, 75%iles: {:?}, 90%iles: {:?}, 95%iles: {:?}",
         results.percentile(75),
         results.percentile(90),
         results.percentile(95),
