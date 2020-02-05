@@ -1,4 +1,5 @@
 use e2d2::headers::{MacHeader, NullHeader};
+use e2d2::measure::*;
 use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
@@ -9,11 +10,6 @@ use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
-
-const EPSILON: usize = 1000;
-const NUM_TO_IGNORE: usize = 0;
-const TOTAL_MEASURED_PKT: usize = 1_000_000_000;
-const MEASURE_TIME: u64 = 60;
 
 #[derive(Clone, Default)]
 struct Unit;
@@ -104,14 +100,18 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
                 println!("# of start ts: {:?}, # of stop ts: {:?}", start.len(), stop_ts.len());
                 // assert_ge!(w.len(), stop_ts.len());
                 let num = stop_ts.len();
+
                 println!("Latency results start: {:?}", num);
+                let mut tmp_results = Vec::<u128>::with_capacity(num);
                 for i in 0..num {
                     let since_the_epoch = stop_ts[i].duration_since(start[i]);
-                    total_time = total_time + since_the_epoch;
+                    // total_time = total_time + since_the_epoch;
                     // print!("{:?}", since_the_epoch);
+                    tmp_results.push(since_the_epoch.as_micros());
                 }
+                compute_stat(tmp_results);
                 println!("Latency results end",);
-                println!("start to reset: avg processing time is {:?}", total_time / num as u32);
+                // println!("start to reset: avg processing time is {:?}", total_time / num as u32);
             }
 
             if pkt_count > NUM_TO_IGNORE {
