@@ -107,7 +107,7 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
                     let since_the_epoch = stop_ts[i].duration_since(start[i]);
                     // total_time = total_time + since_the_epoch;
                     // print!("{:?}", since_the_epoch);
-                    tmp_results.push(since_the_epoch.as_micros());
+                    tmp_results.push(since_the_epoch.as_nanos());
                 }
                 compute_stat(tmp_results);
                 println!("Latency results end",);

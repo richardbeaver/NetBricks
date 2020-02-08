@@ -145,7 +145,7 @@ pub fn maglev<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     let mut tmp_results = Vec::<u128>::with_capacity(num);
                     for i in 0..num {
                         let since_the_epoch = stop_ts[i].duration_since(start[i]);
-                        tmp_results.push(since_the_epoch.as_micros());
+                        tmp_results.push(since_the_epoch.as_nanos());
                         // total_time = total_time + since_the_epoch;
                         // print!("{:?}, ", since_the_epoch);
                     }
