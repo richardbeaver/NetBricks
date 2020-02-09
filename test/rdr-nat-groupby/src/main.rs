@@ -104,7 +104,7 @@ fn main() {
             let rx_pkts = pkts.0 - pkts_so_far.0;
             if rx_pkts > 0 || now - last_printed > MAX_PRINT_INTERVAL {
                 println!(
-                    "Tput Result: {:.2} OVERALL RX {:.2} TX {:.2}",
+                    "{:.2} OVERALL RX {:.2} TX {:.2}",
                     now - start,
                     rx_pkts as f64 / (now - start),
                     (pkts.1 - pkts_so_far.1) as f64 / (now - start)
