@@ -36,5 +36,6 @@ export examples=(
         test/p2p-nat-groupby
         test/pktgen-test
         test/adv-acl
+        test/lpm-test
 )
 

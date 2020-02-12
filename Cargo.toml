@@ -17,6 +17,7 @@ members=["framework",
         # ZCSI examples
         "test/tcp-reconstruction",
         "test/lpm",
+        "test/lpm-test",
         "test/maglev",
         "test/tcp-check",
         "test/chain-test",
