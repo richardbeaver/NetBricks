@@ -242,7 +242,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                     let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                     // print!("{:?}, ", since_the_epoch1);
                     // total_time1 = total_time1 + since_the_epoch1;
-                    tmp_results.push(since_the_epoch.as_micros());
+                    tmp_results.push(since_the_epoch.as_nanos());
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);

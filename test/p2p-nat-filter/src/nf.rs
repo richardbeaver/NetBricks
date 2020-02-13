@@ -172,7 +172,7 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
                 for i in 0..num {
                     let stop = actual_stop_ts.get(&i).unwrap();
                     let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    tmp_results.push(since_the_epoch.as_micros());
+                    tmp_results.push(since_the_epoch.as_nanos());
                     // print!("{:?}, ", since_the_epoch1);
                     // total_time1 = total_time1 + since_the_epoch1;
                 }
