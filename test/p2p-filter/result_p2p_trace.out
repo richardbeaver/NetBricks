@@ -1,0 +1,166 @@
+Going to start with configuration Configuration: name:  =========== Running ZCSI NAT ============   mempool size: 2047 core cache: 32 primary core: 1
+ Ports:
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 4 ] TXQ_Count: 1 TX_Queues: 4 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 5 ] TXQ_Count: 1 TX_Queues: 5 RXD: 128 TXD: 128 Loopback false
+Cores:
+	4
+	5
+
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Receiving started
+Running on node 0
+Receiving started
+Running 1 pipelines
+Running 1 pipelines
+Starting scheduler on 4
+Starting scheduler on 5
+torrent is : "CentOS-8-ppc64le-1905-boot.torrent"
+torrent is : "CentOS-8-aarch64-1905-dvd1.torrent"
+torrent is : "CentOS-8-aarch64-1905-boot.torrent"
+torrent is : "CentOS-7-x86_64-NetInstall-1908.torrent"
+torrent is : "CentOS-7-x86_64-Minimal-1908.torrent"
+torrent is : "CentOS-7-x86_64-LiveKDE-1908.torrent"
+torrent is : "CentOS-7-x86_64-LiveGNOME-1908.torrent"
+torrent is : "CentOS-7-x86_64-Everything-1908.torrent"
+torrent is : "CentOS-7-x86_64-DVD-1908.torrent"
+torrent is : "CentOS-6.10-x86_64-netinstall.torrent"
+torrent is : "CentOS-6.10-x86_64-minimal.torrent"
+torrent is : "CentOS-6.10-x86_64-LiveDVD.torrent"
+torrent is : "CentOS-6.10-x86_64-bin-DVD1to2.torrent"
+torrent is : "CentOS-6.10-i386-netinstall.torrent"
+torrent is : "CentOS-6.10-i386-minimal.torrent"
+torrent is : "CentOS-6.10-i386-LiveDVD.torrent"
+torrent is : "CentOS-6.10-i386-bin-DVD1to2.torrent"
+torrent is : "blackbuntu-1.0.1-20191001-gnome-amd64.iso.torrent"
+torrent is : "arcolinux-v19.10.1.iso.torrent"
+torrent is : "4MLinux-30.1-32bit.iso.torrent"
+30.00 OVERALL RX 2497723.55 TX 263622.88
+pkt count 159381161
+# of start ts
+ w1 159381184, hashmap 142590433, # of stop ts: 16790727
+30.00 OVERALL RX 2814403.61 TX 296007.03
+30.00 OVERALL RX 0.00 TX 0.00
+30.00 OVERALL RX 0.00 TX 0.00
+merging finished!
+stop ts matched len: 16790727, actual_stop_ts len: 159381160
+Latency results start: 159381160
+30.00 OVERALL RX 0.00 TX 0.00
+sorting and then type casting done
+Group 0, mean: 1642.6932409175138, std dev: 114.36163250100951
+Group 1, mean: 1727.2523944181426, std dev: 36.15736238218664
+Group 2, mean: 1926.8282977090416, std dev: 31.005200499215174
+Group 3, mean: 1992.4852959352993, std dev: 18.31687819400838
+Group 4, mean: 2114.9276620627465, std dev: 50.523911512396275
+Group 5, mean: 2218.671068903239, std dev: 20.133019172968925
+Group 6, mean: 2307.228578545489, std dev: 34.93308656780914
+Group 7, mean: 2425.2819625413763, std dev: 25.399352689812275
+Group 8, mean: 2508.3497516331813, std dev: 25.858804139391566
+Group 9, mean: 2617.5058987546104, std dev: 33.25958117297005
+Group 10, mean: 2708.6507239567477, std dev: 22.065973216970427
+Group 11, mean: 2792.0647335223994, std dev: 28.081725920351115
+Group 12, mean: 2893.419485748389, std dev: 26.68367174309502
+Group 13, mean: 2974.674810877899, std dev: 22.01005533025611
+Group 14, mean: 3059.4182635204056, std dev: 27.43125083547647
+Group 15, mean: 3150.617505463398, std dev: 23.856051886134512
+Group 16, mean: 3229.615436836791, std dev: 22.9936918554111
+Group 17, mean: 3316.148637448248, std dev: 26.427426813885614
+Group 18, mean: 3402.7582574093085, std dev: 23.36573269794778
+Group 19, mean: 3483.4673477596325, std dev: 23.926052432777798
+30.00 OVERALL RX 0.00 TX 0.00
+Group 20, mean: 3568.7867940426418, std dev: 24.72992316013088
+Group 21, mean: 3650.673805112473, std dev: 22.682357510709526
+Group 22, mean: 3729.7794550294348, std dev: 23.355477123259952
+Group 23, mean: 3812.244553463267, std dev: 23.930173883512563
+Group 24, mean: 3893.4648273855782, std dev: 23.06597009517064
+Group 25, mean: 3974.9891706107883, std dev: 24.201972876383454
+Group 26, mean: 4060.0848155771323, std dev: 24.64479187787666
+Group 27, mean: 4143.902930773902, std dev: 23.852168665170122
+Group 28, mean: 4227.512273412354, std dev: 24.56479167569111
+Group 29, mean: 4313.347011032062, std dev: 24.749344532325104
+Group 30, mean: 4397.899826893588, std dev: 24.19488412776238
+Group 31, mean: 4482.344040165131, std dev: 24.62696824319814
+Group 32, mean: 4567.630709663673, std dev: 24.447242088710013
+Group 33, mean: 4651.454368177614, std dev: 24.053266567944604
+Group 34, mean: 4735.330952039011, std dev: 24.378316664804938
+Group 35, mean: 4819.526231779937, std dev: 24.14535057958443
+Group 36, mean: 4902.97781167311, std dev: 24.16843585401207
+Group 37, mean: 4987.706616405435, std dev: 24.727679813826267
+Group 38, mean: 5073.484494083608, std dev: 24.743329933960503
+Group 39, mean: 5159.162848041649, std dev: 24.767408926434307
+Group 40, mean: 5244.909535070431, std dev: 24.66580337600979
+Group 41, mean: 5329.649656703312, std dev: 24.262736753136338
+Group 42, mean: 5413.367131987451, std dev: 24.124960787055414
+Group 43, mean: 5497.014062520509, std dev: 24.137186418755142
+Group 44, mean: 5580.608117273455, std dev: 24.13468520744145
+Group 45, mean: 5664.345906760663, std dev: 24.22764988436361
+Group 46, mean: 5748.343511871871, std dev: 24.27240553998984
+Group 47, mean: 5832.386184435004, std dev: 24.27241125134882
+Group 48, mean: 5916.578596834779, std dev: 24.34176891749404
+Group 49, mean: 6001.040210539426, std dev: 24.419069931746687
+Group 50, mean: 6085.632147099107, std dev: 24.432209307208566
+Group 51, mean: 6170.39141341106, std dev: 24.492900687862047
+Group 52, mean: 6255.300978598006, std dev: 24.512796511301346
+Group 53, mean: 6340.076304530574, std dev: 24.428346049544526
+Group 54, mean: 6424.62033453143, std dev: 24.411721078075196
+Group 55, mean: 6509.228446158383, std dev: 24.432523330707948
+Group 56, mean: 6593.853682776813, std dev: 24.43505432091919
+Group 57, mean: 6678.843113769492, std dev: 24.685877312279892
+Group 58, mean: 6764.7869897997225, std dev: 24.948487488802733
+Group 59, mean: 6851.180990719863, std dev: 24.88826012535718
+Group 60, mean: 6937.225847983586, std dev: 24.77671182170381
+Group 61, mean: 7022.5739425815, std dev: 24.514712954749996
+Group 62, mean: 7106.991453189727, std dev: 24.295750921197005
+Group 63, mean: 7191.285497464747, std dev: 24.376937082064956
+Group 64, mean: 7275.891753162742, std dev: 24.500159816935987
+Group 65, mean: 7360.91497109747, std dev: 24.611179736340915
+Group 66, mean: 7446.4643430116985, std dev: 24.743264851497088
+Group 67, mean: 7532.3486574005665, std dev: 24.835406620598466
+Group 68, mean: 7618.4518798029885, std dev: 24.909080595845985
+Group 69, mean: 7704.955335356986, std dev: 25.05330964143689
+Group 70, mean: 7791.812235578527, std dev: 25.078148471164553
+Group 71, mean: 7878.73751467373, std dev: 25.110964793305588
+Group 72, mean: 7965.775282640034, std dev: 25.101480519980917
+Group 73, mean: 8052.72182272565, std dev: 25.07359665139286
+Group 74, mean: 8139.64935491091, std dev: 25.154433912216827
+Group 75, mean: 8226.848500230395, std dev: 25.2039016757075
+Group 76, mean: 8314.222365136682, std dev: 25.277974372277264
+Group 77, mean: 8402.30674904371, std dev: 25.59401593263232
+Group 78, mean: 8491.49689392309, std dev: 25.875815910553055
+Group 79, mean: 8581.308449997916, std dev: 25.961441451282244
+Group 80, mean: 8671.096177025187, std dev: 25.872113417737847
+Group 81, mean: 8760.356932534753, std dev: 25.696080443746915
+Group 82, mean: 8849.439023196695, std dev: 25.747757459470442
+Group 83, mean: 8939.16604164475, std dev: 26.08518913466342
+Group 84, mean: 9030.347576343946, std dev: 26.576526432672537
+Group 85, mean: 9123.47451611278, std dev: 27.207681316873007
+Group 86, mean: 9219.042893416768, std dev: 27.97958041109108
+Group 87, mean: 9317.555134831315, std dev: 28.946095169280127
+Group 88, mean: 9420.017274318863, std dev: 30.281491467709603
+Group 89, mean: 9528.073445345663, std dev: 32.1635978166362
+Group 90, mean: 9643.643468390717, std dev: 34.74195206326406
+Group 91, mean: 9770.611005319717, std dev: 38.70713822170435
+Group 92, mean: 9914.217088475285, std dev: 44.69189865173595
+Group 93, mean: 10085.17187420556, std dev: 54.48790389666404
+Group 94, mean: 10300.082281399367, std dev: 70.887417223473
+Group 95, mean: 10590.884827624655, std dev: 100.01887635198528
+Group 96, mean: 11061.636808253974, std dev: 189.9661148247704
+Group 97, mean: 12319.068650548572, std dev: 620.6848209403216
+Group 98, mean: 15861.70983447833, std dev: 1515.745604029827
+Group 99, mean: 25678.57868279333, std dev: 5556.424176335789
+Group 100, mean: 387020.7333333334, std dev: 1323794.4654408756
+Stat, min: 126.0, max: 6109458.0, mean: 6316.87008423223, median: 6043.0, std: 3468.18837647601
+Stat, 75%iles: 8183.0, 90%iles: 9584.0, 95%iles: 10429.0
+
+Latency results end

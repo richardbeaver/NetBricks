@@ -13,7 +13,7 @@ sudo rm -rf /data/config/*
 sudo mkdir -p /data/config /data/downloads
 
 
-NF_NAME=pvn-p2p-nat-filter
+NF_NAME=pvn-p2p-filter
 M_CORE=0
 
 PORT_ONE="0000:01:00.0"
