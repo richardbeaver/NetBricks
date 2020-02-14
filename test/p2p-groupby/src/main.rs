@@ -49,7 +49,7 @@ fn p2p_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &m
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| p2p(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
+        .map(|port| p2p(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());

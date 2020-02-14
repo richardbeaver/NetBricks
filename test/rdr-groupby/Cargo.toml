@@ -1,7 +1,7 @@
 [package]
-name = "pvn-p2p-nat-groupby"
+name = "pvn-rdr-groupby"
 version = "0.2.0"
-authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
+authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
 
 [dependencies]
@@ -18,10 +18,6 @@ rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn" }
 rustc-serialize = "*"
 serde_json = "*"
-sha1 = "0.2.0"
-hyper = "0.10"
-libevent-sys = { git = "https://github.com/jethrosun/libevent-sys", branch = "pvn" }
-transmission = { git = "https://github.com/jethrosun/transmission-rs", branch = "pvn" }
 
 [features]
 default = []

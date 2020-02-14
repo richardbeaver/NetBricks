@@ -23,10 +23,9 @@ struct FlowUsed {
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 
-pub fn rdr_nat<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
-    nat_ip: &Ipv4Addr,
 ) -> CompositionBatch {
     // Measurement code
 
@@ -44,14 +43,6 @@ pub fn rdr_nat<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t1_2 = Arc::clone(&start_ts_1);
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
-
-    // NAT
-    let ip = u32::from(*nat_ip);
-    let mut port_hash = HashMap::<Flow, Flow, FnvHash>::with_capacity_and_hasher(65536, Default::default());
-    let mut flow_vec: Vec<FlowUsed> = (MIN_PORT..65535).map(|_| Default::default()).collect();
-    let mut next_port = 1024;
-    const MIN_PORT: u16 = 1024;
-    const MAX_PORT: u16 = 65535;
 
     // States that this NF needs to maintain.
     //
@@ -107,39 +98,6 @@ pub fn rdr_nat<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             }
         })
         .parse::<MacHeader>()
-        .transform(box move |pkt| {
-            pkt_count += 1;
-            // println!("pkt count {:?}", pkt_count);
-
-            // let hdr = pkt.get_mut_header();
-            let payload = pkt.get_mut_payload();
-            if let Some(flow) = ipv4_extract_flow(payload) {
-                let found = match port_hash.get(&flow) {
-                    Some(s) => {
-                        s.ipv4_stamp_flow(payload);
-                        true
-                    }
-                    None => false,
-                };
-                if !found {
-                    if next_port < MAX_PORT {
-                        let assigned_port = next_port; //FIXME.
-                        next_port += 1;
-                        flow_vec[assigned_port as usize].flow = flow;
-                        flow_vec[assigned_port as usize].used = true;
-                        let mut outgoing_flow = flow.clone();
-                        outgoing_flow.src_ip = ip;
-                        outgoing_flow.src_port = assigned_port;
-                        let rev_flow = outgoing_flow.reverse_flow();
-
-                        port_hash.insert(flow, outgoing_flow);
-                        port_hash.insert(rev_flow, flow.reverse_flow());
-
-                        outgoing_flow.ipv4_stamp_flow(payload);
-                    }
-                }
-            }
-        })
         .parse::<IpHeader>()
         .group_by(
             2,

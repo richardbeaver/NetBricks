@@ -15,7 +15,7 @@ extern crate serde_json;
 extern crate time;
 extern crate transmission;
 
-use self::nf::nat;
+use self::nf::p2p;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::{PacketRx, PacketTx};
 use e2d2::operators::{Batch, ReceiveBatch};
@@ -33,7 +33,7 @@ mod utils;
 
 const CONVERSION_FACTOR: f64 = 1000000000.;
 
-fn test<T, S>(ports: Vec<T>, sched: &mut S)
+fn p2p_test<T, S>(ports: Vec<T>, sched: &mut S)
 where
     T: PacketRx + PacketTx + Display + Clone + 'static,
     S: Scheduler + Sized,
@@ -42,7 +42,7 @@ where
 
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| nat(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
+        .map(|port| p2p(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
 
@@ -66,7 +66,7 @@ fn main() {
     match initialize_system(&configuration) {
         Ok(mut context) => {
             context.start_schedulers();
-            context.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| test(p, s)));
+            context.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| p2p_test(p, s)));
             context.execute();
 
             let mut pkts_so_far = (0, 0);

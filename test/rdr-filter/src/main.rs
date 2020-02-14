@@ -7,14 +7,15 @@ extern crate e2d2;
 extern crate failure;
 extern crate fnv;
 extern crate getopts;
+extern crate headless_chrome;
 extern crate rand;
-extern crate resize;
+extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate time;
-extern crate y4m;
+extern crate tiny_http;
 
-use self::nf::*;
+use self::nf::rdr;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
@@ -32,7 +33,7 @@ mod utils;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the rdr proxy network function to schedule pipelines.
-fn transcoder_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
+fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
     for port in &ports {
         println!(
             "Receiving port {} rxq {} txq {}",
@@ -45,7 +46,7 @@ fn transcoder_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sc
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| transcoder(ReceiveBatch::new(port.clone()), sched, &Ipv4Addr::new(10, 0, 0, 1)).send(port.clone()))
+        .map(|port| rdr(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());
@@ -72,7 +73,7 @@ fn main() {
     let duration = configuration.duration;
 
     config.start_schedulers();
-    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| transcoder_test(p, s)));
+    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| rdr_proxy_test(p, s)));
     config.execute();
 
     let mut pkts_so_far = (0, 0);

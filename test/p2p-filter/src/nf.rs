@@ -1,15 +1,15 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::measure::*;
-use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
 use fnv::FnvHasher;
 use std::collections::HashMap;
+use std::convert::From;
 use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
 
@@ -25,16 +25,9 @@ struct FlowUsed {
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
 
-pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
-    parent: T,
-    sched: &mut S,
-    nat_ip: &Ipv4Addr,
-) -> CompositionBatch {
+pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // Measurement code
-
-    // pkt count
-    let mut pkt_count = 0;
-
+    //
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
     let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
@@ -47,17 +40,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
 
-    // NAT
-    let ip = u32::from(*nat_ip);
-    let mut port_hash = HashMap::<Flow, Flow, FnvHash>::with_capacity_and_hasher(65536, Default::default());
-    let mut flow_vec: Vec<FlowUsed> = (MIN_PORT..65535).map(|_| Default::default()).collect();
-    let mut next_port = 1024;
-    const MIN_PORT: u16 = 1024;
-    const MAX_PORT: u16 = 65535;
+    // pkt count
+    let mut pkt_count = 0;
 
-    // Workload
+    // Workload and States for P2P NF
     let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
-    // let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/1_workload.json";
     let mut workload = load_json(workload.to_string());
 
     // Fixed transmission setup
@@ -68,8 +55,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let config_dir = "/data/config";
     let download_dir = "/data/downloads";
 
-    // let config_dir = "config";
-    // let download_dir = "downloads";
     let config = ClientConfig::new()
         .app_name("testing")
         .config_dir(config_dir)
@@ -79,81 +64,35 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     let now = Instant::now();
 
-    // States that this NF needs to maintain.
-    //
-    // The RDR proxy network function needs to maintain a list of active headless browsers. This is
-    // for the purpose of simulating multi-container extension in Firefox and multiple users. We
-    // also need to maintain a content cache for the bulk HTTP request and response pairs.
-
-    // group packets into MAC, TCP and UDP packet.
-    let mut groups = parent
-        .transform(box move |p| {
+    let pipeline = parent
+        .transform(box move |_| {
+            // first time access start_ts, need to insert timestamp
             pkt_count += 1;
-
+            // println!("pkt_count {:?}", pkt_count);
             if pkt_count > NUM_TO_IGNORE {
+                let now = Instant::now();
                 let mut w = t1_1.lock().unwrap();
-                w.push(Instant::now());
+                // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
+                w.push(now);
             }
         })
         .parse::<MacHeader>()
-        .transform(box move |pkt| {
-            pkt_count += 1;
-            // println!("pkt count {:?}", pkt_count);
-
-            // let hdr = pkt.get_mut_header();
-            let payload = pkt.get_mut_payload();
-            if let Some(flow) = ipv4_extract_flow(payload) {
-                let found = match port_hash.get(&flow) {
-                    Some(s) => {
-                        s.ipv4_stamp_flow(payload);
-                        true
-                    }
-                    None => false,
-                };
-                if !found {
-                    if next_port < MAX_PORT {
-                        let assigned_port = next_port; //FIXME.
-                        next_port += 1;
-                        flow_vec[assigned_port as usize].flow = flow;
-                        flow_vec[assigned_port as usize].used = true;
-                        let mut outgoing_flow = flow.clone();
-                        outgoing_flow.src_ip = ip;
-                        outgoing_flow.src_port = assigned_port;
-                        let rev_flow = outgoing_flow.reverse_flow();
-
-                        port_hash.insert(flow, outgoing_flow);
-                        port_hash.insert(rev_flow, flow.reverse_flow());
-
-                        outgoing_flow.ipv4_stamp_flow(payload);
-                    }
-                }
-            }
-        })
         .parse::<IpHeader>()
-        .group_by(
-            2,
-            box move |p| {
-                pkt_count += 1;
-                if p.get_header().protocol() == 6 {
-                    0
-                } else {
-                    if pkt_count > NUM_TO_IGNORE {
-                        let mut w = t2_1.lock().unwrap();
-                        w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
-                    }
-                    1
-                }
-            },
-            sched,
-        );
+        .filter(box move |p| {
+            pkt_count += 1;
 
-    // Create the pipeline--we perform the actual packet processing here.
-    let pipe = groups
-        .get_group(0)
-        .unwrap()
-        .metadata(box move |p| p.get_header().flow().unwrap())
+            if pkt_count > NUM_TO_IGNORE && p.get_header().protocol() != 6 {
+                let mut w = t2_1.lock().unwrap();
+                w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+            }
+            p.get_header().protocol() == 6
+        })
+        .metadata(box move |p| {
+            let flow = p.get_header().flow().unwrap();
+            flow
+        })
         .parse::<TcpHeader>()
-        .transform(box move |_| {
+        .transform(box move |p| {
             // let workload = load_json("small_workload.json".to_string());
             // println!("DEBUG: workload parsing done",);
             let torrents_dir = &torrents_dir.to_string();
@@ -164,16 +103,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             // Non-async version
             run_torrents(&mut workload, torrents_dir, &c);
 
+            // println!("pkt_count {:?}", pkt_count);
             pkt_count += 1;
-            // println!("pkt count {:?}", pkt_count);
-
-            if pkt_count == NUM_TO_IGNORE {
-                println!("\nMeasurement started ",);
-                println!(
-                    "NUM_TO_IGNORE: {:#?}, TOTAL_MEASURED_PKT: {:#?}, pkt_count: {:#?}",
-                    NUM_TO_IGNORE, TOTAL_MEASURED_PKT, pkt_count
-                );
-            }
 
             if now.elapsed().as_secs() == MEASURE_TIME {
                 println!("pkt count {:?}", pkt_count);
@@ -194,7 +125,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     stop_ts_tcp.len(),
                     actual_stop_ts.len()
                 );
-
                 println!("Latency results start: {:?}", num);
                 let mut tmp_results = Vec::<u128>::with_capacity(num);
                 for i in 0..num {
@@ -213,8 +143,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let end = Instant::now();
                 stop_ts_tcp.push(end);
             }
-        })
-        .reset()
-        .compose();
-    merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
+        });
+    pipeline.compose()
 }

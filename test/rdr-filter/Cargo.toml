@@ -1,5 +1,5 @@
 [package]
-name = "pvn-rdr-nat-filter"
+name = "pvn-rdr-filter"
 version = "0.2.0"
 authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
