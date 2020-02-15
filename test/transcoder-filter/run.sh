@@ -13,7 +13,7 @@ sudo rm -rf output_videos/*
 # sudo mkdir -p /data/config /data/downloads
 
 export RUST_BACKTRACE=full
-NF_NAME=pvn-transcoder-nat-filter
+NF_NAME=pvn-transcoder-filter
 
 M_CORE=1
 
