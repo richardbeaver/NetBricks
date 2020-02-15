@@ -104,7 +104,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // replaying
                 let match_ip = 180907852 as u32;
                 // https://wiki.wireshark.org/BitTorrent
-                let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
+                let match_port = 443;
 
                 let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
                     Some((src, dst, p)) => {
@@ -120,11 +120,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // println!("src: {:?} dst: {:}", src_port, dst_port); //
 
                 if *proto == 6 {
-                    if *src_ip == match_ip && match_port.contains(&dst_port) {
+                    if *src_ip == match_ip && dst_port == match_port {
                         // println!("pkt count: {:?}", pkt_count);
                         // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
                         matched = true
-                    } else if *dst_ip == match_ip && match_port.contains(&src_port) {
+                    } else if *dst_ip == match_ip && src_port == match_port {
                         // println!("pkt count: {:?}", pkt_count);
                         // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
                         matched = true
