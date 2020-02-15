@@ -13,7 +13,7 @@ sudo rm -rf /data/config/*
 sudo mkdir -p /data/config /data/downloads
 
 export RUST_BACKTRACE=full
-NF_NAME=pvn-p2p-nat-groupby
+NF_NAME=pvn-p2p-groupby
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"
