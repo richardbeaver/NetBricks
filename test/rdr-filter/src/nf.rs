@@ -12,37 +12,21 @@ use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Default)]
-struct Unit;
-#[derive(Clone, Copy, Default)]
-struct FlowUsed {
-    pub flow: Flow,
-    pub time: u64,
-    pub used: bool,
-}
-
-type FnvHash = BuildHasherDefault<FnvHasher>;
-
-pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
-    parent: T,
-    sched: &mut S,
-) -> CompositionBatch {
+pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // Measurement code
+    //
+    // start timestamps will be a vec protected with arc and mutex.
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+
+    let t1_1 = Arc::clone(&start_ts);
+    let t1_2 = Arc::clone(&start_ts);
+    let t2_1 = Arc::clone(&stop_ts_matched);
+    let t2_2 = Arc::clone(&stop_ts_matched);
 
     // pkt count
     let mut pkt_count = 0;
-
-    // start timestamps will be a vec protected with arc and mutex.
-    let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
-    let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
-        TOTAL_MEASURED_PKT + EPSILON,
-    )));
-    let mut stop_ts_tcp: Vec<Instant> = Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
-
-    let t1_1 = Arc::clone(&start_ts_1);
-    let t1_2 = Arc::clone(&start_ts_1);
-    let t2_1 = Arc::clone(&stop_ts_non_tcp);
-    let t2_2 = Arc::clone(&stop_ts_non_tcp);
 
     // States that this NF needs to maintain.
     //
@@ -56,7 +40,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // let num_of_users = 140;
     // let num_of_secs = 2000;
 
-    let workload_path = "/home/jethros/dev/netbricks/test/rdr-nat-filter/workloads/simple_workload.json";
+    let workload_path = "/home/jethros/dev/netbricks/test/rdr-filter/workloads/simple_workload.json";
     let num_of_users = 20;
     let num_of_secs = 100;
 
@@ -87,8 +71,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     let now = Instant::now();
 
-    // group packets into MAC, TCP and UDP packet.
-    let mut groups = parent
+    let pipeline = parent
         .transform(box move |_| {
             pkt_count += 1;
 
@@ -99,32 +82,85 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
-        .group_by(
-            2,
-            box move |p| {
-                pkt_count += 1;
-                if p.get_header().protocol() == 6 {
-                    0
-                } else {
-                    if pkt_count > NUM_TO_IGNORE {
-                        let mut w = t2_1.lock().unwrap();
-                        w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
-                    }
-                    1
-                }
-            },
-            sched,
-        );
-
-    // Create the pipeline--we perform the actual packet processing here.
-    let pipe = groups
-        .get_group(0)
-        .unwrap()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let src_ip = p.get_header().src();
+            let dst_ip = p.get_header().dst();
+            let proto = p.get_header().protocol();
+
+            Some((src_ip, dst_ip, proto))
         })
         .parse::<TcpHeader>()
+        .filter(box move |p| {
+            pkt_count += 1;
+
+            let mut matched = false;
+            // NOTE: the following ip addr and port are hardcode based on the trace we are
+            // replaying
+            let match_ip = 180907852 as u32;
+            // https://wiki.wireshark.org/BitTorrent
+            let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
+
+            let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
+                Some((src, dst, p)) => {
+                    // println!("src: {:?} dst: {:}", src, dst); //
+                    (src, dst, p)
+                }
+                None => (&0, &0, &0),
+            };
+
+            let src_port = p.get_header().src_port();
+            let dst_port = p.get_header().dst_port();
+
+            // println!("src: {:?} dst: {:}", src_port, dst_port); //
+
+            if *proto == 6 {
+                if *src_ip == match_ip && match_port.contains(&dst_port) {
+                    // println!("pkt count: {:?}", pkt_count);
+                    // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
+                    matched = true
+                } else if *dst_ip == match_ip && match_port.contains(&src_port) {
+                    // println!("pkt count: {:?}", pkt_count);
+                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
+                    matched = true
+                }
+            }
+            if now.elapsed().as_secs() == MEASURE_TIME {
+                println!("pkt count {:?}", pkt_count);
+                let w1 = t1_2.lock().unwrap();
+                let w2 = t2_2.lock().unwrap();
+                println!(
+                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                    w1.len(),
+                    stop_ts_not_matched.len(),
+                    w2.len(),
+                );
+                let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
+                let num = actual_stop_ts.len();
+                println!(
+                    "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
+                    w2.len(),
+                    actual_stop_ts.len()
+                );
+                println!("Latency results start: {:?}", num);
+                let mut tmp_results = Vec::<u128>::with_capacity(num);
+                for i in 0..num {
+                    let stop = actual_stop_ts.get(&i).unwrap();
+                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                    tmp_results.push(since_the_epoch.as_nanos());
+                    // print!("{:?}, ", since_the_epoch1);
+                    // total_time1 = total_time1 + since_the_epoch1;
+                }
+                compute_stat(tmp_results);
+                println!("\nLatency results end",);
+                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+            }
+
+            if pkt_count > NUM_TO_IGNORE && !matched {
+                stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+            }
+            // println!("{:?}", matched);
+            matched
+        })
         .transform(box move |pkt| {
             // Scheduling browsing jobs.
             //
@@ -140,57 +176,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             pkt_count += 1;
             // println!("pkt count {:?}", pkt_count);
 
-            if pkt_count == NUM_TO_IGNORE {
-                println!("\nMeasurement started ",);
-                println!(
-                    "NUM_TO_IGNORE: {:#?}, TOTAL_MEASURED_PKT: {:#?}, pkt_count: {:#?}",
-                    NUM_TO_IGNORE, TOTAL_MEASURED_PKT, pkt_count
-                );
-            }
-
-            if now.elapsed().as_secs() == MEASURE_TIME {
-                println!("pkt count {:?}", pkt_count);
-                // let mut total_duration = Duration::new(0, 0);
-                let mut total_time1 = Duration::new(0, 0);
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    w2.len(),
-                    stop_ts_tcp.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
-                    stop_ts_tcp.len(),
-                    actual_stop_ts.len()
-                );
-
-                println!("Detailed Latency Result start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
-                    tmp_results.push(since_the_epoch.as_nanos());
-                }
-                compute_stat(tmp_results);
-                println!("\nDetailed Latency Result end",);
-                // println!(
-                //     "Latency Result: avg processing time 1 is {:?}",
-                //     total_time1 / num as u32
-                // );
-            }
-
             if pkt_count > NUM_TO_IGNORE {
-                let end = Instant::now();
-                stop_ts_tcp.push(end);
+                let mut w = t2_1.lock().unwrap();
+                w.push(Instant::now());
             }
-        })
-        .reset()
-        .compose();
-    merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
+        });
+    pipeline.compose()
 }

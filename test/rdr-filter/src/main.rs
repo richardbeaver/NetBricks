@@ -22,6 +22,7 @@ use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
+use std::fmt::Display;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 use std::thread;
@@ -33,22 +34,18 @@ mod utils;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the rdr proxy network function to schedule pipelines.
-fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
-    for port in &ports {
-        println!(
-            "Receiving port {} rxq {} txq {}",
-            port.port.mac_address(),
-            port.rxq(),
-            port.txq()
-        );
-    }
 
-    // create a pipeline for each port
+fn rdr_proxy_test<T, S>(ports: Vec<T>, sched: &mut S)
+where
+    T: PacketRx + PacketTx + Display + Clone + 'static,
+    S: Scheduler + Sized,
+{
+    println!("Receiving started");
+
     let pipelines: Vec<_> = ports
         .iter()
         .map(|port| rdr(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
-
     println!("Running {} pipelines", pipelines.len());
 
     // schedule pipelines
