@@ -15,31 +15,30 @@ pub const MEASURE_TIME: u64 = 60;
 
 pub fn merge_ts(
     total_measured_pkt: usize,
-    stop_ts_tcp: Vec<Instant>,
-    stop_ts_non_tcp: HashMap<usize, Instant>,
+    stop_ts_matched: Vec<Instant>,
+    stop_ts_not_matched: HashMap<usize, Instant>,
 ) -> HashMap<usize, Instant> {
     let mut actual_ts = HashMap::<usize, Instant>::with_capacity(total_measured_pkt);
-    let mut non_tcp_c = 0;
+    let mut not_matched_c = 0;
 
     for pivot in 1..total_measured_pkt + 1 {
-        if stop_ts_non_tcp.contains_key(&pivot) {
+        if stop_ts_not_matched.contains_key(&pivot) {
             // non tcp ts
-            let item = stop_ts_non_tcp.get(&pivot).unwrap();
+            let item = stop_ts_not_matched.get(&pivot).unwrap();
             actual_ts.insert(pivot - 1, *item);
             // println!("INSERT: pivot: {:?} is {:?}", pivot - 1, *item);
-            non_tcp_c += 1;
+            not_matched_c += 1;
         } else {
-            // tcp ts
-            // println!(
-            //     "INSERT: pivot: {:?} is {:?}",
-            //     pivot - 1,
-            //     stop_ts_tcp[pivot - non_tcp_c - 1]
-            // );
-            actual_ts.insert(pivot - 1, stop_ts_tcp[pivot - non_tcp_c - 1]);
+            // NOTE: we need this early stop because of the drifting behavior in groupby operations
+            if pivot - not_matched_c - 1 == stop_ts_matched.len() {
+                println!("merging finished!",);
+                return actual_ts;
+            }
+            actual_ts.insert(pivot - 1, stop_ts_matched[pivot - not_matched_c - 1]);
         }
     }
 
-    println!("merging finished!",);
+    println!("This should never be reached!",);
     actual_ts
 }
 
