@@ -1,5 +1,5 @@
 use crate::utils::*;
-use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
+use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
 use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
@@ -58,16 +58,17 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             Some((src_ip, dst_ip, proto))
         })
-        .parse::<TcpHeader>()
+        .parse::<UdpHeader>()
         .filter(box move |p| {
             pkt_count += 1;
 
             let mut matched = false;
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying
-            let match_ip = 180907852 as u32;
-            // https://wiki.wireshark.org/BitTorrent
-            let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
+            let match_src_ip = 3232235524 as u32;
+            let match_src_port = 58111;
+            let match_dst_ip = 2457012302 as u32;
+            let match_dst_port = 443;
 
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
                 Some((src, dst, p)) => {
@@ -82,12 +83,20 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             // println!("src: {:?} dst: {:}", src_port, dst_port); //
 
-            if *proto == 6 {
-                if *src_ip == match_ip && match_port.contains(&dst_port) {
+            if *proto == 17 {
+                if *src_ip == match_src_ip
+                    && src_port == match_src_port
+                    && *dst_ip == match_dst_ip
+                    && dst_port == match_dst_port
+                {
                     // println!("pkt count: {:?}", pkt_count);
                     // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
                     matched = true
-                } else if *dst_ip == match_ip && match_port.contains(&src_port) {
+                } else if *src_ip == match_dst_ip
+                    && src_port == match_dst_port
+                    && *dst_ip == match_src_ip
+                    && dst_port == match_src_port
+                {
                     // println!("pkt count: {:?}", pkt_count);
                     // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
                     matched = true
