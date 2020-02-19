@@ -52,8 +52,9 @@ pub fn compute_stat(mut tmp_results: Vec<u128>) {
     //generate 100 groups
     for chunk in results.chunks(chunk_size) {
         println!(
-            "Group {:?}, mean: {:02?}, std dev: {:02?}",
+            "Group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
             count,
+            chunk.median(),
             chunk.mean(),
             chunk.std_dev()
         );
@@ -63,17 +64,19 @@ pub fn compute_stat(mut tmp_results: Vec<u128>) {
     let min = results.min();
     let max = results.max();
     println!(
-        "Stat, min: {:?}, max: {:?}, mean: {:?}, median: {:?}, std: {:?}",
-        min,
-        max,
+        "Stat_extra, mean: {:?}, median: {:?}, std: {:?}, 90%iles: {:?}, 95%iles: {:?}, ",
         results.mean(),
         results.median(),
         results.std_dev(),
-    );
-    println!(
-        "Stat, 75%iles: {:?}, 90%iles: {:?}, 95%iles: {:?}",
-        results.percentile(75),
         results.percentile(90),
         results.percentile(95),
+    );
+    println!(
+        "Stat, min: {:?}, 25%iles: {:?}, 50%iles: {:?}, 75%iles: {:?}, max: {:?}",
+        min,
+        results.percentile(25),
+        results.percentile(50),
+        results.percentile(75),
+        max,
     );
 }
