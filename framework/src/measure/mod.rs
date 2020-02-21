@@ -45,8 +45,26 @@ pub fn merge_ts(
 pub fn compute_stat(mut tmp_results: Vec<u128>) {
     tmp_results.sort();
     let mut results: Vec<f64> = tmp_results.into_iter().map(|item| item as f64).collect();
+    let bar = results.percentile(99);
+    let (rest, mut results): (_, Vec<_>) = results.into_iter().partition(|x| x >= &bar);
     println!("sorting and then type casting done",);
 
+    println!("Details of the results in rest",);
+    let mut count1 = 0;
+    let chunk_size1 = rest.len() / 100;
+    //generate 100 groups
+    for chunk in rest.chunks(chunk_size1) {
+        println!(
+            "Rest_group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
+            count1,
+            chunk.median(),
+            chunk.mean(),
+            chunk.std_dev()
+        );
+        count1 += 1;
+    }
+
+    println!("Details of the results in main",);
     let mut count = 0;
     let chunk_size = results.len() / 100;
     //generate 100 groups
