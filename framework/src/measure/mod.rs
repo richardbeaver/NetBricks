@@ -51,7 +51,7 @@ pub fn compute_stat(mut tmp_results: Vec<u128>) {
 
     println!("Details of the results in rest",);
     let mut count1 = 0;
-    let chunk_size1 = rest.len() / 100;
+    let chunk_size1 = rest.len() / 100 + 1;
     //generate 100 groups
     for chunk in rest.chunks(chunk_size1) {
         println!(
@@ -66,7 +66,7 @@ pub fn compute_stat(mut tmp_results: Vec<u128>) {
 
     println!("Details of the results in main",);
     let mut count = 0;
-    let chunk_size = results.len() / 100;
+    let chunk_size = results.len() / 100 + 1;
     //generate 100 groups
     for chunk in results.chunks(chunk_size) {
         println!(
