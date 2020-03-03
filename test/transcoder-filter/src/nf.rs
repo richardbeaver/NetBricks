@@ -30,7 +30,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as u128;
     let now = Instant::now();
 
     // States that this NF needs to maintain.
@@ -140,10 +140,12 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             matched
         })
         .transform(box move |_| {
-            if now.elapsed().as_secs() == pivot {
+            if now.elapsed().as_millis() == pivot {
                 run_transcode(pivot);
-                pivot = pivot + 1;
+                // println!("pivot: {:?}", pivot);
+                pivot = now.elapsed().as_millis() + 1;
             }
+            // println!("{:?} and {:?}", now.elapsed().as_millis(), pivot);
 
             pkt_count += 1;
             // println!("pkt count {:?}", pkt_count);

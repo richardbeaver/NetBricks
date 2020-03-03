@@ -30,7 +30,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as u128;
     let now = Instant::now();
 
     // States that this NF needs to maintain.
@@ -154,23 +154,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            // from p2p nat
-            //
-            // let workload = load_json("small_workload.json".to_string());
-            // println!("DEBUG: workload parsing done",);
-            // let torrents_dir = &torrents_dir.to_string();
-
-            // Async version
-            // let fut = async_run_torrents(&mut workload, torrents_dir, &c);
-
-            // Non-async version
-            // run_torrents(&mut workload, torrents_dir, &c);
-
-            // from rdr nat
-            //
-            if now.elapsed().as_secs() == pivot {
+            if now.elapsed().as_millis() == pivot {
                 run_transcode(pivot);
-                pivot = pivot + 1;
+                // println!("pivot: {:?}", pivot);
+                pivot = now.elapsed().as_millis() + 1;
             }
 
             pkt_count += 1;

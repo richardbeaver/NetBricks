@@ -1,2 +1,67 @@
+Going to start with configuration Configuration: name:  =========== Running TLS Validator ============   mempool size: 2047 core cache: 32 primary core: 1
+ Ports:
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 5 ] TXQ_Count: 1 TX_Queues: 5 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 4 ] TXQ_Count: 1 TX_Queues: 4 RXD: 128 TXD: 128 Loopback false
+Cores:
+	4
+	5
 
-
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Running on node 0
+Receiving started
+Receiving started
+Generating permutations
+Generating permutations
+Generating LUT
+Generating LUT
+Done Generating LUT
+Done Generating LUT
+Running 1 pipelines
+Running 1 pipelines
+START insert for pkt count 1: Instant { tv_sec: 991106, tv_nsec: 698271398 }
+START insert for pkt count 2: Instant { tv_sec: 991106, tv_nsec: 698274285 }
+Starting scheduler on 5
+START insert for pkt count 3: Instant { tv_sec: 991106, tv_nsec: 698275264 }
+START insert for pkt count 4: Instant { tv_sec: 991106, tv_nsec: 698280912 }
+START insert for pkt count 5: Instant { tv_sec: 991106, tv_nsec: 698281827 }
+START insert for pkt count 6: Instant { tv_sec: 991106, tv_nsec: 698283620 }
+START insert for pkt count 7: Instant { tv_sec: 991106, tv_nsec: 698284464 }
+START insert for pkt count 8: Instant { tv_sec: 991106, tv_nsec: 698286218 }
+START insert for pkt count 9: Instant { tv_sec: 991106, tv_nsec: 698287013 }
+START insert for pkt count 10: Instant { tv_sec: 991106, tv_nsec: 698288770 }
+START insert for pkt count 11: Instant { tv_sec: 991106, tv_nsec: 698289612 }
+START insert for pkt count 12: Instant { tv_sec: 991106, tv_nsec: 698291335 }
+Starting scheduler on 4
+0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
+START insert for pkt count 13: Instant { tv_sec: 991106, tv_nsec: 698292713 }
+START insert for pkt count 14: Instant { tv_sec: 991106, tv_nsec: 698300088 }
+START insert for pkt count 15: Instant { tv_sec: 991106, tv_nsec: 698300948 }
+START insert for pkt count 16: Instant { tv_sec: 991106, tv_nsec: 698301790 }
+START insert for pkt count 17: Instant { tv_sec: 991106, tv_nsec: 698302583 }
+START insert for pkt count 18: Instant { tv_sec: 991106, tv_nsec: 698303363 }
+START insert for pkt count 19: Instant { tv_sec: 991106, tv_nsec: 698304148 }
+START insert for pkt count 20: Instant { tv_sec: 991106, tv_nsec: 698305166 }
+START insert for pkt count 21: Instant { tv_sec: 991106, tv_nsec: 698305976 }
+START insert for pkt count 22: Instant { tv_sec: 991106, tv_nsec: 698306757 }
+START insert for pkt count 23: Instant { tv_sec: 991106, tv_nsec: 698307545 }
+START insert for pkt count 24: Instant { tv_sec: 991106, tv_nsec: 698308337 }
+START insert for pkt count 25: Instant { tv_sec: 991106, tv_nsec: 698309119 }
+START insert for pkt count 26: Instant { tv_sec: 991106, tv_nsec: 698309916 }
+START insert for pkt count 27: Instant { tv_sec: 991106, tv_nsec: 698310745 }
+START insert for pkt count 28: Instant { tv_sec: 991106, tv_nsec: 698311521 }
+START insert for pkt count 29: Instant { tv_sec: 991106, tv_nsec: 698312318 }
+START insert for pkt count 30: Instant { tv_sec: 991106, tv_nsec: 698313097 }
+START insert for pkt count 31: Instant { tv_sec: 991106, tv_nsec: 698313876 }
+START insert for pkt count 32: Instant { tv_sec: 991106, tv_nsec: 698314650 }
