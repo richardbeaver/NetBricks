@@ -70,10 +70,10 @@ pub fn run_torrents_old(workload: &mut Vec<String>, torrents_dir: &str, c: &Clie
 }
 
 pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-    println!("run torrents {:?}", pivot);
+    // println!("run torrents {:?}", pivot);
     match workload.pop(){
         Some(torrent) => {
-            println!("torrent is : {:?}", torrent);
+            println!("{:?} torrent is : {:?}",pivot, torrent);
             let torrent = torrents_dir.clone().to_owned() + &torrent;
             // println!("torrent dir is : {:?}", torrent_dir);
             let t = c.add_torrent_file(&torrent).unwrap();
