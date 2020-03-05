@@ -28,6 +28,7 @@ export examples=(
         test/wd-rdr-proxy
         test/rdr-filter
         test/rdr-groupby
+        test/transcoder-transform
         test/transcoder-filter
         test/transcoder-groupby
         test/rdr-proxy
