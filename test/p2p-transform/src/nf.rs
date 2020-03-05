@@ -49,6 +49,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
         .download_dir(download_dir);
     let c = Client::new(config);
 
+    let mut pivot = 0 as u64;
     let now = Instant::now();
 
     let pipeline = parent
@@ -73,10 +74,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             Some((src_ip, dst_ip, proto))
         })
         .parse::<TcpHeader>()
-        .filter(box move |p| {
-            pkt_count += 1;
-
+        .transform(box move |p| {
             let mut matched = false;
+
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying
             let match_ip = 180907852 as u32;
@@ -93,20 +93,42 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             let src_port = p.get_header().src_port();
             let dst_port = p.get_header().dst_port();
-
             // println!("src: {:?} dst: {:}", src_port, dst_port); //
 
             if *proto == 6 {
                 if *src_ip == match_ip && match_port.contains(&dst_port) {
                     // println!("pkt count: {:?}", pkt_count);
                     // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
-                    matched = true
+                    matched = true;
                 } else if *dst_ip == match_ip && match_port.contains(&src_port) {
                     // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
-                    matched = true
+                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port);
+                    matched = true;
                 }
             }
+
+            if matched {
+                if now.elapsed().as_secs() == pivot {
+                    // run_transcode(pivot);
+                    run_torrent(pivot, &mut workload, torrents_dir, &c);
+                    // println!("pivot: {:?}", pivot);
+                    pivot = now.elapsed().as_secs() + 1;
+                }
+
+                if pkt_count > NUM_TO_IGNORE {
+                    let mut w = t2_1.lock().unwrap();
+                    let end = Instant::now();
+                    w.push(Instant::now());
+                }
+            } else {
+                if pkt_count > NUM_TO_IGNORE {
+                    // Insert the timestamp as
+                    stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                }
+            }
+
+            pkt_count += 1;
+
             if now.elapsed().as_secs() == MEASURE_TIME {
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
@@ -136,35 +158,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
-            }
-
-            if pkt_count > NUM_TO_IGNORE && !matched {
-                stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
-            }
-            // println!("{:?}", matched);
-            matched
-        })
-        .transform(box move |p| {
-            // let flow = p.read_metadata();
-            // println!("{:?}", flow);
-
-            // let workload = load_json("small_workload.json".to_string());
-            // println!("DEBUG: workload parsing done",);
-            let torrents_dir = &torrents_dir.to_string();
-
-            // Async version
-            // let fut = async_run_torrents(&mut workload, torrents_dir, &c);
-
-            // Non-async version
-            run_torrents(&mut workload, torrents_dir, &c);
-
-            // println!("pkt_count {:?}", pkt_count);
-            pkt_count += 1;
-
-            if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
-                let end = Instant::now();
-                w.push(Instant::now());
             }
         });
     pipeline.compose()

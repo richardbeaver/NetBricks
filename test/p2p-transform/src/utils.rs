@@ -58,7 +58,7 @@ pub async fn async_run_torrents(workload: &mut Vec<String>, torrents_dir: &str, 
     }
 }
 
-pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+pub fn run_torrents_old(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
     // println!("exec run torrents");
     while let Some(torrent) = workload.pop() {
         println!("torrent is : {:?}", torrent);
@@ -66,5 +66,21 @@ pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) 
         // println!("torrent dir is : {:?}", torrent_dir);
         let t = c.add_torrent_file(&torrent).unwrap();
         t.start();
+    }
+}
+
+pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+    println!("run torrents {:?}", pivot);
+    match workload.pop(){
+        Some(torrent) => {
+            println!("torrent is : {:?}", torrent);
+            let torrent = torrents_dir.clone().to_owned() + &torrent;
+            // println!("torrent dir is : {:?}", torrent_dir);
+            let t = c.add_torrent_file(&torrent).unwrap();
+            t.start();
+        }
+        None => {
+            println!("no torrent");
+        }
     }
 }
