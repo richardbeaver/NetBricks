@@ -67,6 +67,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .download_dir(download_dir);
     let c = Client::new(config);
 
+    let mut pivot = 0 as u64;
     let now = Instant::now();
 
     // States that this NF needs to maintain.
@@ -103,7 +104,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_ip = 180907852 as u32;
+                let match_ip = 180_907_852 as u32;
                 // https://wiki.wireshark.org/BitTorrent
                 let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
@@ -181,15 +182,12 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            // let workload = load_json("small_workload.json".to_string());
-            // println!("DEBUG: workload parsing done",);
-            let torrents_dir = &torrents_dir.to_string();
-
-            // Async version
-            // let fut = async_run_torrents(&mut workload, torrents_dir, &c);
-
-            // Non-async version
-            run_torrents(&mut workload, torrents_dir, &c);
+            if now.elapsed().as_secs() == pivot {
+                // run_transcode(pivot);
+                run_torrent(pivot, &mut workload, torrents_dir, &c);
+                // println!("pivot: {:?}", pivot);
+                pivot = now.elapsed().as_secs() + 1;
+            }
 
             pkt_count += 1;
             // println!("pkt count {:?}", pkt_count);
