@@ -62,7 +62,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     // Jobs stack.
     let mut job_stack = Vec::new();
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as u128;
     for i in (1..num_of_secs).rev() {
         job_stack.push(i);
     }
@@ -102,7 +102,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_ip = 180907852 as u32;
+                let match_ip = 180_907_852 as u32;
                 // https://wiki.wireshark.org/BitTorrent
                 let match_port = 443;
 
@@ -182,13 +182,14 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .transform(box move |pkt| {
             // Scheduling browsing jobs.
             //
-            if now.elapsed().as_secs() == pivot {
-                let current_work = match workload.pop() {
-                    Some(t) => t,
-                    None => return,
+            if now.elapsed().as_millis() == pivot {
+                match workload.pop() {
+                    Some(t) => {
+                        simple_scheduler(&pivot, &num_of_users, t, &browser_list);
+                        pivot = job_stack.pop().unwrap() as u128;
+                    }
+                    None => println!("No task to execute"),
                 };
-                simple_scheduler(&pivot, &num_of_users, current_work, &browser_list);
-                pivot = job_stack.pop().unwrap() as u64;
             }
 
             pkt_count += 1;
@@ -196,7 +197,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
-                let end = Instant::now();
                 w.push(Instant::now());
             }
         })
