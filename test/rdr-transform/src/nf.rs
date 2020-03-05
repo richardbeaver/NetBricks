@@ -69,7 +69,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // log msg are printed twice
     // FIXME
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as u128;
     let now = Instant::now();
     println!("Timer started");
     // FIXME: we want to wait the nf to be stable and then start the inst
@@ -131,11 +131,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             //
 
             if matched {
-                if now.elapsed().as_secs() == pivot {
+                if now.elapsed().as_millis() == pivot {
                     match workload.pop() {
                         Some(t) => {
                             simple_scheduler(&pivot, &num_of_users, t, &browser_list);
-                            pivot = job_stack.pop().unwrap() as u64;
+                            pivot = job_stack.pop().unwrap() as u128;
                         }
                         None => println!("No task to execute"),
                     };

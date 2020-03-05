@@ -99,7 +99,7 @@ pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()>
 }
 
 pub fn simple_scheduler(
-    pivot: &u64,
+    pivot: &u128,
     _num_of_users: &usize,
     current_work: HashMap<usize, String>,
     browser_list: &Vec<Browser>,
