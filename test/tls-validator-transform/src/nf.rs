@@ -70,29 +70,31 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
         .parse::<IpHeader>()
         .metadata(box move |p| {
             let proto = p.get_header().protocol();
-            let flow = p.get_header().flow().unwrap();
+            let flow = p.get_header().flow();
             (proto, flow)
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
 
+            let (proto, f) = p.read_metadata();
+
             if *proto == 6 {
                 matched = true;
             }
 
             if matched {
-                let (proto, flow) = p.read_metadata();
+                let flow = f.unwrap();
                 let rev_flow = flow.reverse_flow();
                 let _seq = p.get_header().seq_num();
                 let _tcph = p.get_header();
                 let _payload_size = p.payload_size();
 
                 // FIXME: The else part should be written as a filter and it should exec before all these..
-                if !unsafe_connection.contains(flow) {
+                if !unsafe_connection.contains(&flow) {
                     // eprintln!("DEBUE: matchit",);
                     // check if the flow is recognized
-                    if payload_cache.contains_key(flow) {
+                    if payload_cache.contains_key(&flow) {
                         info!("Pkt #{} is Occupied!", _seq);
                         info!("And the flow is: {:?}", flow);
 
@@ -101,30 +103,30 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                         debug!(
                             "Pkt seq # is {}, the expected seq # is {} ",
                             _seq,
-                            seqnum_map.get(flow).unwrap()
+                            seqnum_map.get(&flow).unwrap()
                         );
                         // Check if this packet is not expected, ie, is a out of order segment.
-                        if _seq == *seqnum_map.get(flow).unwrap() {
+                        if _seq == *seqnum_map.get(&flow).unwrap() {
                             // We received an expected packet
                             debug!("Pkt match expected seq #, update the flow entry...");
                             //debug!("{:?}", p.get_payload());
-                            tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
-                            seqnum_map.entry(*flow).and_modify(|e| {
+                            tlsf_update(flow, payload_cache.entry(flow), &p.get_payload());
+                            seqnum_map.entry(flow).and_modify(|e| {
                                 *e = *e + _payload_size as u32;
                                 ()
                             });
-                        } else if _seq > *seqnum_map.get(flow).unwrap() {
+                        } else if _seq > *seqnum_map.get(&flow).unwrap() {
                             // We received a out-of-order TLS segment
                             debug!("OOO: pkt seq # is larger then expected seq #\n");
                             // We need to check if we should update the entry in the tmp payload cache
-                            if tmp_payload_cache.contains_key(flow) {
+                            if tmp_payload_cache.contains_key(&flow) {
                                 debug!("OOO: we already have entry in the tmp payload cache");
                                 // Check if we should update the entry in the tmp payload cache
-                                let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
+                                let (_, entry_expected_seqno) = *tmp_seqnum_map.get(&flow).unwrap();
                                 if _seq == entry_expected_seqno {
                                     debug!("OOO: seq # of current pkt matches the expected seq # of the entry in tpc");
-                                    tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
-                                    tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
+                                    tlsf_update(flow, tmp_payload_cache.entry(flow), &p.get_payload());
+                                    tmp_seqnum_map.entry(flow).and_modify(|(_, entry_expected_seqno)| {
                                         *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
                                     });
                                 } else {
@@ -132,8 +134,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                                 }
                             } else {
                                 debug!("OOO: We are adding an entry in the tpc!");
-                                tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
-                                tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
+                                tmp_seqnum_map.insert(flow, (_seq, _seq + _payload_size as u32));
+                                tmp_payload_cache.insert(flow, p.get_payload().to_vec());
                             }
                         } else {
                             debug!("Oops: pkt seq # is even smaller then the expected #");
@@ -164,15 +166,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                                     ServerHello(_) => {
                                         // capture the sequence number
                                         debug!("Got ServerHello, insert the flow entry");
-                                        seqnum_map.insert(*flow, _seq + _payload_size as u32);
-                                        payload_cache.insert(*flow, p.get_payload().to_vec());
+                                        seqnum_map.insert(flow, _seq + _payload_size as u32);
+                                        payload_cache.insert(flow, p.get_payload().to_vec());
                                     }
                                     ClientKeyExchange(_) => {
                                         let dns_name = name_cache.remove(&rev_flow);
                                         match dns_name {
                                             Some(name) => do_client_key_exchange(
                                                 name,
-                                                flow,
+                                                &flow,
                                                 &rev_flow,
                                                 &mut cert_count,
                                                 &mut unsafe_connection,
@@ -206,7 +208,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                     stop_ts_tcp.push(end);
                 }
             } else {
-                if pkt_count > NUM_TO_IGNORE && p.get_header().protocol() != 6 {
+                if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
                 }

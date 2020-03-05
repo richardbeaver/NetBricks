@@ -23,6 +23,7 @@ export examples=(
         test/chain-test
         test/packet_test
         # PVN examples
+        test/tls-validator-transform
         test/tls-validator-filter
         test/tls-validator-groupby
         test/wd-rdr-proxy
