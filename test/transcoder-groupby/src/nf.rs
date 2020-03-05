@@ -67,9 +67,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_src_ip = 3232235524 as u32;
+                let match_src_ip = 3_232_235_524 as u32;
                 let match_src_port = 58111;
-                let match_dst_ip = 2457012302 as u32;
+                let match_dst_ip = 2_457_012_302 as u32;
                 let match_dst_port = 443;
 
                 let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
@@ -165,7 +165,6 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
-                let end = Instant::now();
                 w.push(Instant::now());
             }
         })
