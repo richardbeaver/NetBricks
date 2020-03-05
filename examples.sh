@@ -26,6 +26,7 @@ export examples=(
         test/tls-validator-filter
         test/tls-validator-groupby
         test/wd-rdr-proxy
+        test/rdr-transform
         test/rdr-filter
         test/rdr-groupby
         test/transcoder-transform
