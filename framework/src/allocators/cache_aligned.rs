@@ -12,10 +12,10 @@ use std::ptr::{self, NonNull, Unique};
 
 const CACHE_LINE_SIZE: usize = 64;
 unsafe fn allocate_cache_line(size: usize) -> *mut u8 {
-    alloc::Global
+    let (res, _) = alloc::Global
         .alloc_zeroed(Layout::from_size_align(size, CACHE_LINE_SIZE).unwrap())
-        .unwrap()
-        .as_ptr() as *mut u8
+        .unwrap();
+    res.as_ptr() as *mut u8
 }
 
 /// Data structure that uses Unique Types.
