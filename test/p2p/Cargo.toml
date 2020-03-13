@@ -5,7 +5,7 @@ authors = ["Domantas Jadenkus <djadenkus@gmail.com>", "Shuwen Jethro Sun <jethro
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-time = ">=0.1.0"
+time = "0.1.42"
 getopts = "*"
 rand = "0.6.5"
 fnv = "*"
