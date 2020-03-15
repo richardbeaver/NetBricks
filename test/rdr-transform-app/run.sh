@@ -4,7 +4,7 @@
 set -euo pipefail
 
 export RUST_BACKTRACE=full
-NF_NAME=pvn-rdr-transform
+NF_NAME=pvn-rdr-transform-app
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"
