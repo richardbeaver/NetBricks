@@ -14,7 +14,7 @@ sudo rm -rf ~/dev/pvn-utils/data/output_videos/*
 # sudo mkdir -p /data/config /data/downloads
 
 export RUST_BACKTRACE=full
-NF_NAME=pvn-transcoder-transform
+NF_NAME=pvn-transcoder-transform-app
 
 M_CORE=1
 
