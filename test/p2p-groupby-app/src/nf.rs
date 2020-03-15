@@ -30,20 +30,22 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     sched: &mut S,
 ) -> CompositionBatch {
     // Measurement code
+    //
+    // NOTE: Store timestamps and calculate the delta to get the processing time for individual
+    // packet is disabled here (TOTAL_MEASURED_PKT removed)
+
+    // start timestamps will be a vec protected with arc and mutex.
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
+    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
+    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
+
+    let t1_2 = Arc::clone(&start_ts);
+    let t1_1 = Arc::clone(&start_ts);
+    let t2_1 = Arc::clone(&stop_ts_matched);
+    let t2_2 = Arc::clone(&stop_ts_matched);
 
     // pkt count
     let mut pkt_count = 0;
-
-    //
-    // start timestamps will be a vec protected with arc and mutex.
-    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
-    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
-    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
-
-    let t1_1 = Arc::clone(&start_ts);
-    let t1_2 = Arc::clone(&start_ts);
-    let t2_1 = Arc::clone(&stop_ts_matched);
-    let t2_2 = Arc::clone(&stop_ts_matched);
 
     // Workload
     let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
@@ -83,7 +85,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                w.push(Instant::now());
+                let start = Instant::now();
+                // w.push(start);
             }
         })
         .parse::<MacHeader>()
@@ -164,6 +167,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 }
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
+                    let stop = Instant::now();
                     stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
                 }
                 // println!("{:?}", matched);
@@ -195,7 +199,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
                 let end = Instant::now();
-                w.push(Instant::now());
+                // w.push(end);
             }
         })
         .reset()

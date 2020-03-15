@@ -1,0 +1,34 @@
+Going to start with configuration Configuration: name:  =========== Running ZCSI NAT ============   mempool size: 2047 core cache: 32 primary core: 1
+ Ports:
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 4 ] TXQ_Count: 1 TX_Queues: 4 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 5 ] TXQ_Count: 1 TX_Queues: 5 RXD: 128 TXD: 128 Loopback false
+Cores:
+	4
+	5
+
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Receiving port f8:f2:1e:2e:9c:50 rxq 0 txq 0
+Running on node 0
+Receiving port f8:f2:1e:2e:9c:51 rxq 0 txq 0
+Running 1 pipelines
+Running 1 pipelines
+Starting scheduler on 4
+Starting scheduler on 5
+0 OVERALL RX 0.00 TX 0.00 CYCLE_PER_DELAY 0 0 0
+1.00 OVERALL RX 0.00 TX 0.00
+1.00 OVERALL RX 0.00 TX 0.00
+1.00 OVERALL RX 0.00 TX 0.00
+1.00 OVERALL RX 0.00 TX 0.00
+1.00 OVERALL RX 0.00 TX 0.00

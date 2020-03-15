@@ -16,10 +16,13 @@ use transmission::{Client, ClientConfig};
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // Measurement code
     //
+    // NOTE: Store timestamps and calculate the delta to get the processing time for individual
+    // packet is disabled here (TOTAL_MEASURED_PKT removed)
+
     // start timestamps will be a vec protected with arc and mutex.
-    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
-    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
-    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
+    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
+    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
 
     let t1_1 = Arc::clone(&start_ts);
     let t1_2 = Arc::clone(&start_ts);
@@ -58,10 +61,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             pkt_count += 1;
             // println!("pkt_count {:?}", pkt_count);
             if pkt_count > NUM_TO_IGNORE {
-                let now = Instant::now();
                 let mut w = t1_1.lock().unwrap();
-                // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
-                w.push(now);
+                let now = Instant::now();
+                // w.push(now);
             }
         })
         .parse::<MacHeader>()
@@ -118,12 +120,13 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    w.push(Instant::now());
+                    // w.push(end);
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
-                    stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    let end = Instant::now();
+                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end;
                 }
             }
 
