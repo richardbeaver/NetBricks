@@ -4,10 +4,7 @@ use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
-use fnv::FnvHasher;
 use std::collections::HashMap;
-use std::hash::BuildHasherDefault;
-use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -33,7 +30,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot = 0 as u128;
+    let mut pivot = 0 as u64;
     let now = Instant::now();
 
     // States that this NF needs to maintain.
@@ -107,10 +104,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             }
 
             if matched {
-                if now.elapsed().as_millis() == pivot {
+                if now.elapsed().as_secs() == pivot {
                     run_transcode(pivot);
                     // println!("pivot: {:?}", pivot);
-                    pivot = now.elapsed().as_millis() + 1;
+                    pivot = now.elapsed().as_secs() + 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

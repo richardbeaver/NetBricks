@@ -1,11 +1,11 @@
+use core_affinity::{self, CoreId};
 use resize::Pixel::Gray8;
 use resize::Type::Triangle;
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
-use std::env;
-use std::fs;
 use std::fs::File;
 use std::io;
+use std::thread;
 use std::time::{Duration, Instant};
 
 // pub fn load_json(file_path: String) -> Vec<String> {
@@ -72,7 +72,43 @@ pub fn merge_ts_old(
 //     }
 // }
 
-pub fn run_transcode(pivot: u128) {
+pub fn run_transcode(pivot: u64) {
+    // Retrieve the IDs of all active CPU cores.
+    let core_ids = core_affinity::get_core_ids().unwrap();
+
+    // Create a thread for each active CPU core.
+    let handles = core_ids
+        .into_iter()
+        .map(|id| {
+            thread::spawn(move || {
+                // Pin this thread to a single CPU core.
+                core_affinity::set_for_current(id);
+                // Do more work after this.
+                //
+                if id.id == 5 as usize {
+                    println!("Working in core {:?}", id);
+                    let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
+                    // let outfile = "out.y4m";
+                    let width_height = "360x24";
+                    for i in 0..10 {
+                        let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned()
+                            + &pivot.to_string()
+                            + "_"
+                            + &i.to_string()
+                            + ".y4m";
+                        transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
+                    }
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+
+    for handle in handles.into_iter() {
+        handle.join().unwrap();
+    }
+}
+
+pub fn run_transcode_test(pivot: u128) {
     let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
