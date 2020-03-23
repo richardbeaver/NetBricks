@@ -1,8 +1,10 @@
+use core_affinity::{self, CoreId};
+use crossbeam::thread;
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use transmission::Client;
 use std::time::Instant;
+use transmission::{Client, ClientConfig};
 
 pub fn load_json(file_path: String) -> Vec<String> {
     let file = fs::File::open(file_path).expect("file should open read only");
@@ -46,34 +48,11 @@ pub fn merge_ts_ori(
     actual_ts
 }
 
-
-pub async fn async_run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-    // println!("exec run torrents");
-    while let Some(torrent) = workload.pop() {
-        // println!("torrent is : {:?}", torrent);
-        let torrent = torrents_dir.clone().to_owned() + &torrent;
-        // println!("torrent dir is : {:?}", torrent_dir);
-        let t = c.add_torrent_file(&torrent).unwrap();
-        t.start();
-    }
-}
-
-pub fn run_torrents_old(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-    // println!("exec run torrents");
-    while let Some(torrent) = workload.pop() {
-        println!("torrent is : {:?}", torrent);
-        let torrent = torrents_dir.clone().to_owned() + &torrent;
-        // println!("torrent dir is : {:?}", torrent_dir);
-        let t = c.add_torrent_file(&torrent).unwrap();
-        t.start();
-    }
-}
-
-pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+pub fn run_torrent_test(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
     // println!("run torrents {:?}", pivot);
-    match workload.pop(){
+    match workload.pop() {
         Some(torrent) => {
-            println!("{:?} torrent is : {:?}",pivot, torrent);
+            println!("{:?} torrent is : {:?}", pivot, torrent);
             let torrent = torrents_dir.clone().to_owned() + &torrent;
             // println!("torrent dir is : {:?}", torrent_dir);
             let t = c.add_torrent_file(&torrent).unwrap();
@@ -83,4 +62,59 @@ pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c
             println!("no torrent");
         }
     }
+}
+
+pub fn task_scheduler(
+    pivot: u64,
+    workload: &mut Vec<String>,
+    torrents_dir: &str,
+    config_dir: &str,
+    download_dir: &str,
+) {
+    // println!("run torrents {:?}", pivot);
+    match workload.pop() {
+        Some(torrent) => {
+            println!("{:?} torrent is : {:?}", pivot, torrent);
+            let torrent = torrents_dir.clone().to_owned() + &torrent;
+            // println!("torrent dir is : {:?}", torrent_dir);
+            run_torrent(&torrent, &config_dir.to_string(), &download_dir.to_string());
+        }
+        None => {
+            println!("no torrent");
+        }
+    }
+}
+
+pub fn run_torrent(torrent: &str, config_dir: &str, download_dir: &str) {
+    thread::scope(|s| {
+        let core_ids = core_affinity::get_core_ids().unwrap();
+        let handles = core_ids
+            .into_iter()
+            .map(|id| {
+                s.spawn(move |_| {
+                    // Pin this thread to a single CPU core.
+                    core_affinity::set_for_current(id);
+                    // Do more work after this.
+                    //
+                    if id.id == 5 as usize {
+                        println!("Working in core {:?}", id);
+                        let config = ClientConfig::new()
+                            .app_name("testing")
+                            .config_dir(config_dir)
+                            .use_utp(false)
+                            .download_dir(download_dir);
+                        let c = Client::new(config);
+
+                        let t = c.add_torrent_file(torrent).unwrap();
+                        t.start();
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
+
+        for handle in handles.into_iter() {
+            handle.join().unwrap();
+        }
+    })
+    .unwrap();
 }

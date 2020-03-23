@@ -14,11 +14,11 @@ sudo mkdir -p /data/config /data/downloads
 
 
 NF_NAME=pvn-p2p-transform-app
-M_CORE=0
+M_CORE=4
 
 PORT_ONE="0000:01:00.0"
 PORT_TWO="0000:01:00.1"
 
 ../../build.sh run $NF_NAME -n "NATing" -m $M_CORE \
-  -c 4 -c 5 \
+  -c 1 -c 2 -c 3  \
   -p $PORT_ONE -p $PORT_TWO
