@@ -66,6 +66,7 @@ pub fn run_torrent_test(pivot: u64, workload: &mut Vec<String>, torrents_dir: &s
 
 pub fn task_scheduler(
     pivot: u64,
+    c: &Client,
     workload: &mut Vec<String>,
     torrents_dir: &str,
     config_dir: &str,
@@ -77,7 +78,7 @@ pub fn task_scheduler(
             println!("{:?} torrent is : {:?}", pivot, torrent);
             let torrent = torrents_dir.clone().to_owned() + &torrent;
             // println!("torrent dir is : {:?}", torrent_dir);
-            run_torrent(&torrent, &config_dir.to_string(), &download_dir.to_string());
+            run_torrent(c, &torrent, &config_dir.to_string(), &download_dir.to_string());
         }
         None => {
             println!("no torrent");
@@ -85,7 +86,7 @@ pub fn task_scheduler(
     }
 }
 
-pub fn run_torrent(torrent: &str, config_dir: &str, download_dir: &str) {
+pub fn run_torrent(c: &Client, torrent: &str, config_dir: &str, download_dir: &str) {
     thread::scope(|s| {
         let core_ids = core_affinity::get_core_ids().unwrap();
         let handles = core_ids
@@ -98,13 +99,6 @@ pub fn run_torrent(torrent: &str, config_dir: &str, download_dir: &str) {
                     //
                     if id.id == 5 as usize {
                         println!("Working in core {:?}", id);
-                        let config = ClientConfig::new()
-                            .app_name("testing")
-                            .config_dir(config_dir)
-                            .use_utp(false)
-                            .download_dir(download_dir);
-                        let c = Client::new(config);
-
                         let t = c.add_torrent_file(torrent).unwrap();
                         t.start();
                     }

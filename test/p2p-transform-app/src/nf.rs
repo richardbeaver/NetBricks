@@ -11,6 +11,7 @@ use std::hash::BuildHasherDefault;
 use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
+use transmission::{Client, ClientConfig};
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // Measurement code
@@ -43,6 +44,13 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     let config_dir = "/data/config";
     let download_dir = "/data/downloads";
+
+    let config = ClientConfig::new()
+        .app_name("testing")
+        .config_dir(config_dir)
+        .use_utp(false)
+        .download_dir(download_dir);
+    let c = Client::new(config);
 
     let mut pivot = 0 as u64;
     let now = Instant::now();
@@ -104,7 +112,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             if matched {
                 if now.elapsed().as_secs() == pivot {
                     // run_transcode(pivot);
-                    task_scheduler(pivot, &mut workload, &torrents_dir, &config_dir, &download_dir);
+                    task_scheduler(pivot, &c, &mut workload, &torrents_dir, &config_dir, &download_dir);
                     // println!("pivot: {:?}", pivot);
                     pivot = now.elapsed().as_secs() + 1;
                 }
