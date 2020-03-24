@@ -97,7 +97,7 @@ pub fn run_transcode_crossbeam(pivot: u64) {
                     core_affinity::set_for_current(id);
 
                     if id.id == 5 as usize {
-                        println!("Working in core {:?}", id);
+                        println!("Working in core {:?} as 0-5", id);
                         let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
                         // let outfile = "out.y4m";
                         let width_height = "360x24";
@@ -121,7 +121,7 @@ pub fn run_transcode_crossbeam(pivot: u64) {
     .unwrap();
 }
 
-pub fn run_transcode_native(pivot: u64) {
+pub fn run_transcode_native(pivot: u128) {
     let core_ids = core_affinity::get_core_ids().unwrap();
 
     let handles = core_ids
@@ -129,9 +129,10 @@ pub fn run_transcode_native(pivot: u64) {
         .map(|id| {
             std::thread::spawn(move || {
                 core_affinity::set_for_current(id);
+                // println!("id {:?}", id);
 
                 if id.id == 5 as usize {
-                    println!("Working in core {:?}", id);
+                    println!("Working in core {:?} as from 0-5", id);
                     let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
                     // let outfile = "out.y4m";
                     let width_height = "360x24";

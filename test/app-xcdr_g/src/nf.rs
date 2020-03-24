@@ -157,7 +157,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .unwrap()
         .transform(box move |_| {
             if now.elapsed().as_millis() == pivot {
-                run_transcode(pivot);
+                run_transcode_crossbeam(pivot);
                 // println!("pivot: {:?}", pivot);
                 pivot = now.elapsed().as_millis() + 1;
             }

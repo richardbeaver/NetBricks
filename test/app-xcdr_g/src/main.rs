@@ -3,6 +3,8 @@
 //! in `nf.rs`.
 #![feature(box_syntax)]
 #![feature(asm)]
+extern crate core_affinity;
+extern crate crossbeam;
 extern crate e2d2;
 extern crate failure;
 extern crate fnv;
@@ -21,7 +23,6 @@ use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
-use std::net::Ipv4Addr;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};

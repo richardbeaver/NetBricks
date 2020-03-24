@@ -105,8 +105,8 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             if matched {
                 if now.elapsed().as_secs() == pivot {
-                    // run_transcode_crossbeam(pivot);
-                    run_transcode_native(pivot);
+                    run_transcode_crossbeam(pivot);
+                    // run_transcode_native(pivot);
                     // println!("pivot: {:?}", pivot);
                     pivot = now.elapsed().as_secs() + 1;
                 }

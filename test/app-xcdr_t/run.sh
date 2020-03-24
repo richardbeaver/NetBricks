@@ -4,10 +4,11 @@
 set -euo pipefail
 
 # clean the states of transmission
-sudo rm -rf output_videos/*
-sudo rm -rf ~/dev/pvn-utils/data/output_videos/*
+sudo rm -rf output_videos/
+sudo rm -rf ~/dev/pvn-utils/data/output_videos/
 # sudo rm -rf config/*
-# mkdir -p config downloads
+mkdir -p output_videos
+mkdir -p ~/dev/pvn-utils/data/output_videos/
 #
 # sudo rm -rf /data/downloads/*
 # sudo rm -rf /data/config/*

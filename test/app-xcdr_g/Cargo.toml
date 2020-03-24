@@ -13,11 +13,12 @@ fnv = "*"
 twox-hash = "*"
 log = "0.4"
 failure = "*"
-# base64 = "0.10"
 rustc-serialize = "*"
 serde_json = "*"
 y4m = "0.5"
 resize = "0.3"
+core_affinity = "0.5.10"
+crossbeam = "0.7.3"
 
 
 [features]
