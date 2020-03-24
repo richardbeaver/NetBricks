@@ -1,4 +1,6 @@
 use serde_json::{from_reader, Value};
+use core_affinity::{self, CoreId};
+use crossbeam::thread;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::time::{Duration, Instant};
@@ -58,7 +60,7 @@ pub async fn async_run_torrents(workload: &mut Vec<String>, torrents_dir: &str, 
     }
 }
 
-pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+pub fn run_torrents_old(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
     // println!("exec run torrents");
     while let Some(torrent) = workload.pop() {
         println!("torrent is : {:?}", torrent);
@@ -69,7 +71,7 @@ pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) 
     }
 }
 
-pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+pub fn run_torrent_old(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
     // println!("run torrents {:?}", pivot);
     match workload.pop(){
         Some(torrent) => {
@@ -86,3 +88,52 @@ pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c
 }
 
 
+
+pub fn task_scheduler(
+    pivot: u64,
+    c: &Client,
+    workload: &mut Vec<String>,
+    torrents_dir: &str,
+    config_dir: &str,
+    download_dir: &str,
+) {
+    // println!("run torrents {:?}", pivot);
+    match workload.pop() {
+        Some(torrent) => {
+            println!("{:?} torrent is : {:?}", pivot, torrent);
+            let torrent = torrents_dir.clone().to_owned() + &torrent;
+            // println!("torrent dir is : {:?}", torrent_dir);
+            run_torrent(c, &torrent, &config_dir.to_string(), &download_dir.to_string());
+        }
+        None => {
+            println!("no torrent");
+        }
+    }
+}
+
+pub fn run_torrent(c: &Client, torrent: &str, config_dir: &str, download_dir: &str) {
+    thread::scope(|s| {
+        let core_ids = core_affinity::get_core_ids().unwrap();
+        let handles = core_ids
+            .into_iter()
+            .map(|id| {
+                s.spawn(move |_| {
+                    // Pin this thread to a single CPU core.
+                    core_affinity::set_for_current(id);
+                    // Do more work after this.
+                    //
+                    if id.id == 5 as usize {
+                        println!("Working in core {:?}", id);
+                        let t = c.add_torrent_file(torrent).unwrap();
+                        t.start();
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
+
+        for handle in handles.into_iter() {
+            handle.join().unwrap();
+        }
+    })
+    .unwrap();
+}

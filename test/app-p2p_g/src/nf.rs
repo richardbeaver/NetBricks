@@ -188,7 +188,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .transform(box move |_| {
             if now.elapsed().as_secs() == pivot {
                 // run_transcode(pivot);
-                run_torrent(pivot, &mut workload, torrents_dir, &c);
+                // run_torrent(pivot, &mut workload, torrents_dir, &c);
+                task_scheduler(pivot, &c, &mut workload, &torrents_dir, &config_dir, &download_dir);
                 // println!("pivot: {:?}", pivot);
                 pivot = now.elapsed().as_secs() + 1;
             }
