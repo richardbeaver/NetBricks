@@ -40,3 +40,5 @@ test/*/output
 
 torrent_files/*
 experiments
+trace.out
+output.out

@@ -22,32 +22,24 @@ export examples=(
         test/maglev
         test/chain-test
         test/packet_test
-        # PVN examples
-        test/tls-validator-transform
-        test/tls-validator-filter
-        test/tls-validator-groupby
-        test/tls-validator-transform-app
-        test/tls-validator-groupby-app
-        test/wd-rdr-proxy
-        test/rdr-transform
-        test/rdr-filter
-        test/rdr-groupby
-        test/rdr-transform-app
-        test/rdr-groupby-app
-        test/transcoder-transform
-        test/transcoder-filter
-        test/transcoder-groupby
-        test/transcoder-transform-app
-        test/transcoder-groupby-app
-        test/rdr-proxy
-        test/p2p
-        test/p2p-transform
-        test/p2p-filter
-        test/p2p-groupby
-        test/p2p-transform-app
-        test/p2p-groupby-app
-        test/pktgen-test
-        test/adv-acl
         test/lpm-test
+        # PVN examples (in application format)
+	test/app-tlsv_g
+	test/app-tlsv_t
+	test/app-rdr_g
+	test/app-rdr_t
+	test/app-p2p_g
+	test/app-p2p_t
+        test/app-xcdr_g
+        test/app-xcdr_t
+	# PVN examples (for latency measurement)
+        test/tls-validator-groupby
+        test/tls-validator-transform
+        test/rdr-groupby
+        test/rdr-transform
+        test/p2p-groupby
+	test/p2p-transform
+        test/transcoder-groupby
+        test/transcoder-transform
 )
 
