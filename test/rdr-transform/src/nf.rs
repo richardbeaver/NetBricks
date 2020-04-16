@@ -36,13 +36,13 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     // Workloads:
 
-    // let workload_path = "workloads/current_workload.json";
-    // let num_of_users = 140;
-    // let num_of_secs = 2000;
+    let workload_path = "workloads/current_workload.json";
+    let num_of_users = 150;
+    let num_of_secs = 2000;
 
-    let workload_path = "/home/jethros/dev/netbricks/test/rdr-filter/workloads/simple_workload.json";
-    let num_of_users = 20;
-    let num_of_secs = 100;
+    // let workload_path = "/home/jethros/dev/netbricks/test/rdr-filter/workloads/simple_workload.json";
+    // let num_of_users = 20;
+    // let num_of_secs = 100;
 
     // println!("DEBUG: workload path {:?}", workload_path);
     let mut workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
@@ -51,7 +51,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
 
-    for _ in 0..num_of_users {
+    for x in 0..num_of_users {
+        println!("x: {:?}", x);
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }

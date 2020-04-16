@@ -3,7 +3,7 @@
 #set -x
 set -euo pipefail
 
-NF_NAME=pvn-rdr-wd-nat
+NF_NAME=pvn-rdr-transform-app
 M_CORE=1
 
 PORT_ONE="0000:01:00.0"
