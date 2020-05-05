@@ -13,9 +13,15 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     sched: &mut S,
 ) -> CompositionBatch {
     // job queue
-    let queue_len = 1_000_000_000;
+    let queue_len = 1_000_000;
     let job_queue = Arc::new(RwLock::new(Vec::<(String, String, String)>::with_capacity(queue_len)));
     let queue_1 = Arc::clone(&job_queue);
+
+    // setup of this run
+    // NOTE: this should be read from expr because it is hardcoded
+
+    // time span when we assume a video has been received
+    let time_span = 100 as u128;
 
     // Measurement code
     //
@@ -44,7 +50,8 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot = 0 as u64;
+    let mut pivot_1 = 0 as u128;
+    let mut pivot_2 = 0 as u128;
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
@@ -107,19 +114,23 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     && dst_port == match_src_port
                 {
                     // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
+                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port);
                     matched = true
                 }
             }
 
             if matched {
+                // println!("matched");
                 // if we hit a new micro second/millisecond/second
-                if now.elapsed().as_secs() == pivot {
-                    append_job(pivot, &job_queue);
-                    run_transcode_crossbeam(&queue_1);
+                if now.elapsed().as_millis() % time_span == 0 {
+                    // we append a job to the job queue every *time_span*
+                    append_job(pivot_1, &job_queue);
+                    pivot_1 += 1;
+                    // but we run this transcode job every millisecond
+                    run_transcode_crossbeam(pivot_2 as usize, &queue_1);
+                    pivot_2 += 1;
                     // run_transcode_native(pivot);
-                    // println!("pivot: {:?}", pivot);
-                    pivot = now.elapsed().as_secs() + 1;
+                    // println!("current time: {:?}", now.elapsed().as_millis());
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
@@ -128,6 +139,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     // w.push(end);
                 }
             } else {
+                // println!("notmatched");
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();

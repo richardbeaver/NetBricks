@@ -11,11 +11,12 @@ use std::io;
 // use std::time::{Duration, Instant};
 
 // only append job
-pub fn append_job(pivot: u64, job_queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
+pub fn append_job(pivot: u128, job_queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
+    // println!("enter append with pivot: {}", pivot);
     let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
-    for i in 0..10 {
+    for i in 0..1 {
         let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned()
             + &pivot.to_string()
             + "_"
@@ -24,13 +25,18 @@ pub fn append_job(pivot: u64, job_queue: &Arc<RwLock<Vec<(String, String, String
 
         let mut w = job_queue.write().unwrap();
         w.push((infile.to_string(), outfile.to_string(), width_height.to_string()));
+        // println!(
+        //     "appending: {:?} {:?} {:?}",
+        //     infile.to_string(),
+        //     outfile.to_string(),
+        //     width_height.to_string()
+        // );
     }
 }
 
 /// Run the transcoding job using threading in crossbeam.
-pub fn run_transcode_crossbeam(queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
+pub fn run_transcode_crossbeam(pivot: usize, queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
     thread::scope(|s| {
-        let mut pivot = 0;
         let core_ids = core_affinity::get_core_ids().unwrap();
         let handles = core_ids
             .into_iter()
@@ -39,18 +45,16 @@ pub fn run_transcode_crossbeam(queue: &Arc<RwLock<Vec<(String, String, String)>>
                     core_affinity::set_for_current(id);
 
                     if id.id == 5 as usize {
-                        println!("Working in core {:?} as 0-5", id);
+                        // println!("Working in core {:?} as 0-5", id);
                         let r = queue.read().unwrap();
                         let (infile_str, outfile_str, width_height_str) = &r[pivot];
-                        println!("r len: {:?}", r.len());
 
-                        // println!("pivot: {:?}", pivot);
+                        // println!("transcode job {:?} in the queue {:?}", pivot, r.len());
                         transcode(
                             infile_str.to_string(),
                             outfile_str.to_string(),
                             width_height_str.to_string(),
                         );
-                        pivot += 1;
                     }
                 })
             })
