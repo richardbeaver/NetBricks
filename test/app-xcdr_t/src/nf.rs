@@ -1,26 +1,40 @@
 use crate::utils::*;
-use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
+use e2d2::headers::{IpHeader, MacHeader, NullHeader, UdpHeader};
 use e2d2::measure::*;
-use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::{ipv4_extract_flow, Flow};
 use std::collections::HashMap;
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    // job queue
+    let queue_len = 1_000_000_000;
+    let job_queue = Arc::new(RwLock::new(Vec::<(String, String, String)>::with_capacity(queue_len)));
+    let queue_1 = Arc::clone(&job_queue);
+
     // Measurement code
+    //
+    // States that this NF needs to maintain.
+    //
+    // The RDR proxy network function needs to maintain a list of active headless browsers. This is
+    // for the purpose of simulating multi-container extension in Firefox and multiple users. We
+    // also need to maintain a content cache for the bulk HTTP request and response pairs.
+
+    // start timestamps will be a vec protected with arc and mutex.
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
-
-    // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
+
+    // stop timestamps that didn't match
     let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
 
+    // stop timestamps will be a vec protected with arc and mutex.
     let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
     let t1_1 = Arc::clone(&start_ts);
     let t1_2 = Arc::clone(&start_ts);
@@ -32,12 +46,6 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     let mut pivot = 0 as u64;
     let now = Instant::now();
-
-    // States that this NF needs to maintain.
-    //
-    // The RDR proxy network function needs to maintain a list of active headless browsers. This is
-    // for the purpose of simulating multi-container extension in Firefox and multiple users. We
-    // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
     // group packets into MAC, TCP and UDP packet.
     let pipeline = parent
@@ -61,9 +69,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         })
         .parse::<UdpHeader>()
         .transform(box move |p| {
+            // matched to determine if the incoming packet is from the expected traffic
             let mut matched = false;
 
-            // NOTE: the following ip addr and port are hardcode based on the trace we are
+            // NOTE: the following ip addr and port are hardcoded based on the trace we are
             // replaying
             let match_src_ip = 3232235524 as u32;
             let match_src_port = 58111;
@@ -104,8 +113,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             }
 
             if matched {
+                // if we hit a new micro second/millisecond/second
                 if now.elapsed().as_secs() == pivot {
-                    run_transcode_crossbeam(pivot);
+                    append_job(pivot, &job_queue);
+                    run_transcode_crossbeam(&queue_1);
                     // run_transcode_native(pivot);
                     // println!("pivot: {:?}", pivot);
                     pivot = now.elapsed().as_secs() + 1;

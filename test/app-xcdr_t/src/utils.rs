@@ -2,56 +2,16 @@ use core_affinity::{self, CoreId};
 use crossbeam::thread;
 use resize::Pixel::Gray8;
 use resize::Type::Triangle;
-use serde_json::{from_reader, Value};
-use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, RwLock};
+// use serde_json::{from_reader, Value};
+// use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io;
 // use std::thread;
-use std::time::{Duration, Instant};
+// use std::time::{Duration, Instant};
 
-// pub fn load_json(file_path: String) -> Vec<String> {
-//     let file = fs::File::open(file_path).expect("file should open read only");
-//     let json: Value = from_reader(file).expect("file should be proper JSON");
-//
-//     let torrent_files = json.get("torrents_files").expect("file should have time key").clone();
-//     // println!("\ntorrent_files {:?}", torrent_files);
-//
-//     let torrents: Vec<String> = serde_json::from_value(torrent_files).unwrap();
-//     // println!("\ntorrents {:?}", torrents);
-//     torrents
-// }
-
-pub fn merge_ts_old(
-    total_measured_pkt: usize,
-    stop_ts_tcp: Vec<Instant>,
-    stop_ts_non_tcp: HashMap<usize, Instant>,
-) -> HashMap<usize, Instant> {
-    let mut actual_ts = HashMap::<usize, Instant>::with_capacity(total_measured_pkt);
-    let mut non_tcp_c = 0;
-
-    for pivot in 1..total_measured_pkt + 1 {
-        if stop_ts_non_tcp.contains_key(&pivot) {
-            // non tcp ts
-            let item = stop_ts_non_tcp.get(&pivot).unwrap();
-            actual_ts.insert(pivot - 1, *item);
-            // println!("INSERT: pivot: {:?} is {:?}", pivot - 1, *item);
-            non_tcp_c += 1;
-        } else {
-            // tcp ts
-            // println!(
-            //     "INSERT: pivot: {:?} is {:?}",
-            //     pivot - 1,
-            //     stop_ts_tcp[pivot - non_tcp_c - 1]
-            // );
-            actual_ts.insert(pivot - 1, stop_ts_tcp[pivot - non_tcp_c - 1]);
-        }
-    }
-
-    println!("merging finished!",);
-    actual_ts
-}
-
-pub fn run_transcode_test(pivot: u128) {
+// only append job
+pub fn append_job(pivot: u64, job_queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
     let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
@@ -61,34 +21,16 @@ pub fn run_transcode_test(pivot: u128) {
             + "_"
             + &i.to_string()
             + ".y4m";
-        transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
+
+        let mut w = job_queue.write().unwrap();
+        w.push((infile.to_string(), outfile.to_string(), width_height.to_string()));
     }
 }
 
-// pub fn async_run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-//     // println!("exec run torrents");
-//     while let Some(torrent) = workload.pop() {
-//         // println!("torrent is : {:?}", torrent);
-//         let torrent = torrents_dir.clone().to_owned() + &torrent;
-//         // println!("torrent dir is : {:?}", torrent_dir);
-//         let t = c.add_torrent_file(&torrent).unwrap();
-//         t.start();
-//     }
-// }
-//
-// pub fn run_torrents(workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-//     // println!("exec run torrents");
-//     while let Some(torrent) = workload.pop() {
-//         println!("torrent is : {:?}", torrent);
-//         let torrent = torrents_dir.clone().to_owned() + &torrent;
-//         // println!("torrent dir is : {:?}", torrent_dir);
-//         let t = c.add_torrent_file(&torrent).unwrap();
-//         t.start();
-//     }
-// }
-
-pub fn run_transcode_crossbeam(pivot: u64) {
+/// Run the transcoding job using threading in crossbeam.
+pub fn run_transcode_crossbeam(queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
     thread::scope(|s| {
+        let mut pivot = 0;
         let core_ids = core_affinity::get_core_ids().unwrap();
         let handles = core_ids
             .into_iter()
@@ -98,17 +40,17 @@ pub fn run_transcode_crossbeam(pivot: u64) {
 
                     if id.id == 5 as usize {
                         println!("Working in core {:?} as 0-5", id);
-                        let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
-                        // let outfile = "out.y4m";
-                        let width_height = "360x24";
-                        for i in 0..10 {
-                            let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned()
-                                + &pivot.to_string()
-                                + "_"
-                                + &i.to_string()
-                                + ".y4m";
-                            transcode(infile.to_string(), outfile.to_string(), width_height.to_string());
-                        }
+                        let r = queue.read().unwrap();
+                        let (infile_str, outfile_str, width_height_str) = &r[pivot];
+                        println!("r len: {:?}", r.len());
+
+                        // println!("pivot: {:?}", pivot);
+                        transcode(
+                            infile_str.to_string(),
+                            outfile_str.to_string(),
+                            width_height_str.to_string(),
+                        );
+                        pivot += 1;
                     }
                 })
             })
@@ -121,6 +63,7 @@ pub fn run_transcode_crossbeam(pivot: u64) {
     .unwrap();
 }
 
+/// Run the transcoding job using native threading.
 pub fn run_transcode_native(pivot: u128) {
     let core_ids = core_affinity::get_core_ids().unwrap();
 
@@ -154,6 +97,9 @@ pub fn run_transcode_native(pivot: u128) {
     }
 }
 
+/// Actual video transcoding.
+///
+/// We set up all the parameters for the transcoding job to happen.
 fn transcode(infile: String, outfile: String, width_height: String) {
     let mut infh: Box<dyn io::Read> = Box::new(File::open(&infile).unwrap());
     let mut outfh: Box<dyn io::Write> = Box::new(File::create(&outfile).unwrap());
