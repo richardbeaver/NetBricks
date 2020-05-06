@@ -14,6 +14,10 @@ use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
+    // setup for this run
+    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
+    let p2p_param = p2p_retrieve_param(setup_val).unwrap();
+
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
@@ -52,7 +56,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
         .download_dir(download_dir);
     let c = Client::new(config);
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as usize;
     let now = Instant::now();
 
     let pipeline = parent
@@ -110,11 +114,16 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             }
 
             if matched {
-                if now.elapsed().as_secs() == pivot {
-                    // run_transcode(pivot);
-                    task_scheduler(pivot, &c, &mut workload, &torrents_dir, &config_dir, &download_dir);
-                    // println!("pivot: {:?}", pivot);
-                    pivot = now.elapsed().as_secs() + 1;
+                while let Some(torrent) = workload.pop() {
+                    if pivot >= p2p_param {
+                        break;
+                    }
+                    println!("torrent is : {:?}", torrent);
+                    let torrent = torrents_dir.to_owned() + &torrent;
+                    // println!("torrent dir is : {:?}", torrent_dir);
+                    let t = c.add_torrent_file(&torrent).unwrap();
+                    t.start();
+                    pivot += 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

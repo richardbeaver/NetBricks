@@ -1,3 +1,4 @@
+use serde_json::{from_reader, Value};
 /// Hard code page size.
 ///
 /// This is different from hugepage/TLB.
@@ -5,6 +6,7 @@ use statrs::statistics::OrderStatistics;
 use statrs::statistics::Variance;
 use statrs::statistics::{Max, Mean, Median, Min};
 use std::collections::HashMap;
+use std::fs::File;
 use std::time::{Duration, Instant};
 use std::vec;
 
@@ -12,6 +14,28 @@ pub const EPSILON: usize = 1000;
 pub const NUM_TO_IGNORE: usize = 0;
 pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
 pub const MEASURE_TIME: u64 = 60;
+
+/// Read setup for NF only.
+pub fn read_setup(file_path: String) -> Option<usize> {
+    let file = File::open(file_path).expect("file should open read only");
+    let json: Value = from_reader(file).expect("file should be proper JSON");
+
+    let setup: Option<usize> = match serde_json::from_value(json.get("setup").expect("file should have setup").clone())
+    {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+
+    if setup.is_some() {
+        return setup;
+    } else {
+        println!("Setup: {:?} is None", setup);
+        return None;
+    }
+}
 
 pub fn merge_ts(
     total_measured_pkt: usize,

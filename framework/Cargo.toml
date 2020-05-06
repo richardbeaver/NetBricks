@@ -27,6 +27,7 @@ uuid= { version = "*", features=["v4"] }
 error-chain = "*"
 clippy = { version = "*", optional = true }
 statrs = "0.12"
+serde_json = "*"
 
 [features]
 default = []

@@ -3,32 +3,19 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::{ipv4_extract_flow, Flow};
-use fnv::FnvHasher;
 use std::collections::HashMap;
-use std::hash::BuildHasherDefault;
-use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::{Duration, Instant};
 use transmission::{Client, ClientConfig};
-
-#[derive(Clone, Default)]
-struct Unit;
-
-#[derive(Clone, Copy, Default)]
-struct FlowUsed {
-    pub flow: Flow,
-    pub time: u64,
-    pub used: bool,
-}
-
-type FnvHash = BuildHasherDefault<FnvHasher>;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    // setup for this run
+    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
+    let p2p_param = p2p_retrieve_param(setup_val).unwrap();
+
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
@@ -69,7 +56,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .download_dir(download_dir);
     let c = Client::new(config);
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as usize;
     let now = Instant::now();
 
     // States that this NF needs to maintain.
@@ -186,12 +173,16 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            if now.elapsed().as_secs() == pivot {
-                // run_transcode(pivot);
-                // run_torrent(pivot, &mut workload, torrents_dir, &c);
-                task_scheduler(pivot, &c, &mut workload, &torrents_dir, &config_dir, &download_dir);
-                // println!("pivot: {:?}", pivot);
-                pivot = now.elapsed().as_secs() + 1;
+            while let Some(torrent) = workload.pop() {
+                if pivot >= p2p_param {
+                    break;
+                }
+                println!("torrent is : {:?}", torrent);
+                let torrent = torrents_dir.to_owned() + &torrent;
+                // println!("torrent dir is : {:?}", torrent_dir);
+                let t = c.add_torrent_file(&torrent).unwrap();
+                t.start();
+                pivot += 1;
             }
 
             pkt_count += 1;

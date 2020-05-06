@@ -4,7 +4,6 @@ use e2d2::measure::*;
 use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
-use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
@@ -12,16 +11,16 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // job queue
-    let queue_len = 1_000_000;
-    let job_queue = Arc::new(RwLock::new(Vec::<(String, String, String)>::with_capacity(queue_len)));
-    let queue_1 = Arc::clone(&job_queue);
+    // Specific setup config for this run
 
-    // setup of this run
-    // NOTE: this should be read from expr because it is hardcoded
+    // setup for this run
+    let (setup, port) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (xcdr_param, num_of_vid) = xcdr_retrieve_param(setup).unwrap();
+    let time_span = 1000 / xcdr_param as u128;
+    println!("Setup for this run is {:?}, param is {:?}", setup, xcdr_param);
 
-    // time span when we assume a video has been received
-    let time_span = 100 as u128;
+    // faktory job queue
+    let default_faktory_conn = "tcp://:some_password@localhost:".to_string() + &port;
 
     // Measurement code
     //
@@ -50,8 +49,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot_1 = 0 as u128;
-    let mut pivot_2 = 0 as u128;
+    // pivot for registering jobs
+    let mut pivot = 0 as u128;
+
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
@@ -123,14 +123,11 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 // println!("matched");
                 // if we hit a new micro second/millisecond/second
                 if now.elapsed().as_millis() % time_span == 0 {
+                    // append job
+                    //
                     // we append a job to the job queue every *time_span*
-                    append_job(pivot_1, &job_queue);
-                    pivot_1 += 1;
-                    // but we run this transcode job every millisecond
-                    run_transcode_crossbeam(pivot_2 as usize, &queue_1);
-                    pivot_2 += 1;
-                    // run_transcode_native(pivot);
-                    // println!("current time: {:?}", now.elapsed().as_millis());
+                    append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn));
+                    pivot += 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

@@ -3,15 +3,32 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
 use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::Flow;
+// use e2d2::utils::Flow;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    // self maintained job queue (deprecated)
+    //
+    // let queue_len = 1_000_000;
+    // let job_queue = Arc::new(RwLock::new(Vec::<(String, String, String)>::with_capacity(queue_len)));
+    // let queue_1 = Arc::clone(&job_queue);
+
+    // Specific setup config for this run
+
+    // setup for this run
+    let (setup, port) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (xcdr_param, num_of_vid) = xcdr_retrieve_param(setup).unwrap();
+    let time_span = 1000 / xcdr_param as u128;
+    println!("Setup for this run is {:?}, param is {:?}", setup, xcdr_param);
+
+    // faktory job queue
+    let default_faktory_conn = "tcp://:some_password@localhost:".to_string() + &port;
+
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
@@ -156,10 +173,12 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            if now.elapsed().as_millis() == pivot {
-                run_transcode_crossbeam(pivot);
-                // println!("pivot: {:?}", pivot);
-                pivot = now.elapsed().as_millis() + 1;
+            if now.elapsed().as_millis() % time_span == 0 {
+                // append job
+                //
+                // we append a job to the job queue every *time_span*
+                append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn));
+                pivot += 1;
             }
 
             pkt_count += 1;
