@@ -36,17 +36,12 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     // Workloads:
 
-    let workload_path = "workloads/current_workload.json";
-    let num_of_users = 150;
-    let num_of_secs = 2000;
+    let workload_path = "/home/jethros/dev/silver-octo-spoon/workload_tempaltes/rdr_workload.json";
+    let num_of_users = 100;
+    let num_of_secs = 600;
 
-    // let workload_path = "/home/jethros/dev/netbricks/test/rdr-filter/workloads/simple_workload.json";
-    // let num_of_users = 20;
-    // let num_of_secs = 100;
-
-    // println!("DEBUG: workload path {:?}", workload_path);
-    let mut workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
-    // println!("DEBUG: json to workload is done",);
+    let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, num_of_users).unwrap();
+    println!("Workload is generated",);
 
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
@@ -58,22 +53,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     }
     println!("All browsers are created ",);
 
-    // Jobs stack.
-    let mut job_stack = Vec::new();
     let mut pivot = 0 as u64;
-    for i in (1..num_of_secs).rev() {
-        job_stack.push(i);
-    }
-    // println!("job stack: {:?}", job_stack);
-    // println!("Job stack is created",);
-
-    // log msg are printed twice
-    // FIXME
-
-    let mut pivot = 0 as u128;
     let now = Instant::now();
     println!("Timer started");
-    // FIXME: we want to wait the nf to be stable and then start the inst
 
     let pipeline = parent
         .transform(box move |_| {
@@ -105,42 +87,27 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             let match_port = 443;
 
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                Some((src, dst, p)) => {
-                    // println!("src: {:?} dst: {:}", src, dst); //
-                    (src, dst, p)
-                }
+                Some((src, dst, p)) => (src, dst, p),
                 None => (&0, &0, &0),
             };
 
             let src_port = p.get_header().src_port();
             let dst_port = p.get_header().dst_port();
 
-            // println!("src: {:?} dst: {:}", src_port, dst_port); //
-
             if *proto == 6 {
                 if *src_ip == match_ip && dst_port == match_port {
-                    // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
                     matched = true
                 } else if *dst_ip == match_ip && src_port == match_port {
-                    // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
                     matched = true
                 }
             }
 
             // Scheduling browsing jobs.
-            //
-
             if matched {
-                if now.elapsed().as_millis() == pivot {
-                    match workload.pop() {
-                        Some(t) => {
-                            simple_scheduler(&pivot, &num_of_users, t, &browser_list);
-                            pivot = job_stack.pop().unwrap() as u128;
-                        }
-                        None => println!("No task to execute"),
-                    };
+                if now.elapsed().as_secs() == pivot {
+                    println!("Second: {:?}", pivot);
+                    let mut sec_workload = rdr_workload.remove(&pivot).unwrap();
+                    rdr_scheduler(&pivot, &num_of_users, sec_workload, &browser_list);
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

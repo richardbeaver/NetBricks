@@ -8,7 +8,6 @@ edition = "2018"
 e2d2 = { path = "../../framework", features = ["performance"] }
 time = "0.1.42"
 getopts = "*"
-rand = "0.6.5"
 fnv = "*"
 twox-hash = "*"
 log = "0.4"
@@ -17,7 +16,9 @@ tiny_http = "0.6"
 rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn" }
 rustc-serialize = "*"
-serde_json = "*"
+serde = "1.0"
+serde_json = "1.0"
+rand = "0.7"
 
 [features]
 default = []

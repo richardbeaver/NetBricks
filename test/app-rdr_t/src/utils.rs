@@ -1,23 +1,63 @@
 use failure::Fallible;
-use headless_chrome::protocol::network::{events, methods, Request};
 use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
-use serde_json::{from_reader, Value};
+use rand::Rng;
+use serde_json::{from_reader, Result, Value};
 use std::collections::HashMap;
 use std::fs::File;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 
-// TODO: move to failure crate!
-#[derive(Debug, Clone)]
-pub struct HttpRequestNotExtractedError;
+/// Handy function to get the random number
+fn get_magic_num(range: usize) -> usize {
+    let num = rand::thread_rng().gen_range(0, range);
+    num
+}
 
-#[derive(Debug, Clone)]
-pub struct RequestResponsePair {
-    request: Request,
-    response_params: events::ResponseReceivedEventParams,
-    response_body: methods::GetResponseBodyReturnObject,
+/// Construct the workload from the session file.
+///
+/// https://kbknapp.github.io/doapi-rs/docs/serde/json/index.html
+pub fn rdr_load_workload(
+    file_path: String,
+    num_of_secs: usize,
+    num_of_user: usize,
+) -> Result<HashMap<u64, HashMap<usize, Vec<(i32, String)>>>> {
+    // time in second, workload in that second
+    let mut workload = HashMap::<u64, HashMap<usize, Vec<(i32, String)>>>::with_capacity(num_of_secs);
+
+    let file = File::open(file_path).expect("file should open read only");
+    let json_data: Value = from_reader(file).expect("file should be proper JSON");
+
+    for sec in 0..num_of_secs {
+        // user, workload for that user
+        let mut sec_wd = HashMap::<usize, Vec<(i32, String)>>::with_capacity(100);
+
+        let urls_now = match json_data.get(sec.to_string()) {
+            Some(val) => val.as_array(),
+            None => continue,
+        };
+        let all_seq = match urls_now {
+            Some(v) => v,
+            None => continue,
+        };
+
+        for seq in all_seq {
+            let visits = seq.as_array().unwrap();
+            // println!("\n sec {:?}, break: {:?}", sec, visits);
+
+            let mut vec_wd = Vec::new();
+            for idx in 0..visits.len() {
+                let time_url = visits[idx].as_str().unwrap().to_string();
+                let v: Vec<&str> = time_url.split(':').collect();
+                let wait_time: i32 = v[1].parse().unwrap();
+                vec_wd.push((wait_time, v[0].to_string()));
+            }
+            let magic = get_magic_num(num_of_user);
+            sec_wd.insert(magic, vec_wd);
+        }
+        workload.insert(sec as u64, sec_wd);
+    }
+    Ok(workload)
 }
 
 pub fn browser_create() -> Fallible<Browser> {
@@ -32,52 +72,6 @@ pub fn browser_create() -> Fallible<Browser> {
 
     // println!("Browser created",);
     Ok(browser)
-}
-
-pub fn load_json(
-    file_path: String,
-    _num_of_users: usize,
-    num_of_secs: usize,
-) -> Result<Vec<HashMap<usize, String>>, HttpRequestNotExtractedError> {
-    let file = File::open(file_path).expect("file should open read only");
-    let json: Value = from_reader(file).expect("file should be proper JSON");
-
-    let mut workload: Vec<HashMap<usize, String>> = Vec::new();
-
-    for mut current_time in 0..num_of_secs {
-        current_time += 1;
-        let mut current_map: HashMap<usize, String> = HashMap::new();
-        // println!("current time is {:?}", current_time);
-        // println!("last thing before panic",);
-
-        // Get all browsing records for that second
-        let all = json.get(current_time.to_string());
-        let all_users = match all {
-            Some(a) => a.clone(),
-            None => continue,
-        };
-        // println!("DEBUG: all {:?}", all_users);
-
-        // Get the browsing url for all users
-        for i in 1..201 {
-            // println!("DEBUG: i is {:?}", i);
-            let cur_user = all_users.get(i.to_string());
-            let c = match cur_user {
-                Some(current_url) => current_url.clone(),
-                None => continue,
-            };
-
-            let cur_url: String = serde_json::from_value(c).unwrap();
-            current_map.insert(i, cur_url);
-        }
-        // println!("map of the time {:?} is {:?}\n", current_time, current_map);
-        workload.push(current_map);
-    }
-
-    // println!("\nthe whole workload is {:?}", workload);
-
-    // println!("\nFinish\n",);
-    Ok(workload)
 }
 
 pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
@@ -118,32 +112,32 @@ pub fn simple_scheduler(
     }
 }
 
-pub fn merge_ts_old(
-    total_measured_pkt: usize,
-    stop_ts_tcp: Vec<Instant>,
-    stop_ts_non_tcp: HashMap<usize, Instant>,
-) -> HashMap<usize, Instant> {
-    let mut actual_ts = HashMap::<usize, Instant>::with_capacity(total_measured_pkt);
-    let mut non_tcp_c = 0;
+/// RDR proxy browsing scheduler.
+///
+///
+// 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
+pub fn rdr_scheduler(
+    pivot: &u64,
+    _num_of_users: &usize,
+    current_work: HashMap<usize, Vec<(i32, String)>>,
+    browser_list: &Vec<Browser>,
+) {
+    let now = Instant::now();
 
-    for pivot in 1..total_measured_pkt + 1 {
-        if stop_ts_non_tcp.contains_key(&pivot) {
-            // non tcp ts
-            let item = stop_ts_non_tcp.get(&pivot).unwrap();
-            actual_ts.insert(pivot - 1, *item);
-            // println!("INSERT: pivot: {:?} is {:?}", pivot - 1, *item);
-            non_tcp_c += 1;
-        } else {
-            // tcp ts
-            // println!(
-            //     "INSERT: pivot: {:?} is {:?}",
-            //     pivot - 1,
-            //     stop_ts_tcp[pivot - non_tcp_c - 1]
-            // );
-            actual_ts.insert(pivot - 1, stop_ts_tcp[pivot - non_tcp_c - 1]);
-        }
+    println!("\npivot: {:?}", pivot);
+    // println!("current work {:?}", current_work);
+
+    for (key, value) in current_work.into_iter() {
+        println!("{:?} {:?}", key, value);
     }
 
-    println!("merging finished!",);
-    actual_ts
+    // for current_user in 1.._num_of_users + 1 {
+    //     // for current_user in 1..10 {
+    //     // println!("{:?}", current_work[&current_user]);
+    //     // println!("current_user {:?}", current_user);
+    //     match user_browse(&browser_list[current_user - 1], &current_work[&current_user]) {
+    //         Ok(_) => {}
+    //         Err(e) => println!("User {} caused an error: {:?}", current_user, e),
+    //     }
+    // }
 }
