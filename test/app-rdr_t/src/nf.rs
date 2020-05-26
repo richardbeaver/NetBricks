@@ -36,24 +36,25 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     // Workloads:
 
-    let workload_path = "/home/jethros/dev/silver-octo-spoon/workload_tempaltes/rdr_workload.json";
+    let workload_path = "/home/jethros/dev/pvn-utils/workload/rdr_pvn_workload.json";
     let num_of_users = 100;
     let num_of_secs = 600;
 
     let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, num_of_users).unwrap();
     println!("Workload is generated",);
+    // println!("{:?}", rdr_workload);
 
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
 
     for x in 0..num_of_users {
-        println!("x: {:?}", x);
+        // println!("x: {:?}", x);
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
     println!("All browsers are created ",);
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as usize;
     let now = Instant::now();
     println!("Timer started");
 
@@ -104,10 +105,15 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             // Scheduling browsing jobs.
             if matched {
-                if now.elapsed().as_secs() == pivot {
-                    println!("Second: {:?}", pivot);
-                    let mut sec_workload = rdr_workload.remove(&pivot).unwrap();
-                    rdr_scheduler(&pivot, &num_of_users, sec_workload, &browser_list);
+                if now.elapsed().as_secs() == pivot as u64 {
+                    let min = pivot / 60;
+                    let rest_sec = pivot % 60;
+                    println!("{:?} min, {:?} second", min, rest_sec);
+                    match rdr_workload.remove(&pivot) {
+                        Some(wd) => rdr_scheduler(&pivot, &num_of_users, wd, &browser_list),
+                        None => println!("No workload for second {:?}", pivot),
+                    }
+                    pivot += 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
@@ -125,7 +131,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == MEASURE_TIME {
+            if now.elapsed().as_secs() == APP_MEASURE_TIME {
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();

@@ -35,14 +35,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut pkt_count = 0;
 
     // Workload
-    let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/20_workload.json";
-    // let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/1_workload.json";
+    let workload = "/home/jethros/dev/pvn-utils/workload/p2p-workload.json";
     let mut workload = load_json(workload.to_string());
 
     // Fixed transmission setup
-    let torrents_dir = "/home/jethros/dev/netbricks/test/p2p/torrent_files/";
-    // let workload = "p2p-workload.json";
-    // 1, 10, 20, 40, 50, 75, 100, 150, 200
+    let torrents_dir = "/home/jethros/dev/pvn-utils/workload/torrent_files/";
 
     let config_dir = "/data/config";
     let download_dir = "/data/downloads";
@@ -122,7 +119,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() == MEASURE_TIME {
+                if now.elapsed().as_secs() == APP_MEASURE_TIME {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();

@@ -60,7 +60,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                w.push(Instant::now());
+                // w.push(Instant::now());
             }
 
             // p.get_mut_header().swap_addresses();
@@ -205,12 +205,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
 
                 if pkt_count > NUM_TO_IGNORE {
                     let end = Instant::now();
-                    stop_ts_tcp.push(end);
+                    // stop_ts_tcp.push(end);
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
-                    w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    // w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
                 }
             }
 
@@ -224,7 +224,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 );
             }
 
-            if now.elapsed().as_secs() == MEASURE_TIME {
+            if now.elapsed().as_secs() == APP_MEASURE_TIME {
                 println!("pkt count {:?}", pkt_count);
                 // let mut total_duration = Duration::new(0, 0);
                 let mut total_time1 = Duration::new(0, 0);

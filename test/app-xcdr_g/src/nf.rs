@@ -122,7 +122,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() == MEASURE_TIME {
+                if now.elapsed().as_secs() == APP_MEASURE_TIME {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();

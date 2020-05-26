@@ -39,17 +39,12 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     // Workloads:
 
-    // let workload_path = "workloads/current_workload.json";
-    // let num_of_users = 140;
-    // let num_of_secs = 2000;
+    let workload_path = "/home/jethros/dev/pvn-utils/workload/rdr_pvn_workload.json";
+    let num_of_users = 100;
+    let num_of_secs = 600;
 
-    let workload_path = "/home/jethros/dev/netbricks/test/rdr-groupby/workloads/simple_workload.json";
-    let num_of_users = 20;
-    let num_of_secs = 100;
-
-    // println!("DEBUG: workload path {:?}", workload_path);
-    let mut workload = load_json(workload_path.to_string(), num_of_users, num_of_secs).unwrap();
-    // println!("DEBUG: json to workload is done",);
+    let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, num_of_users).unwrap();
+    println!("Workload is generated",);
 
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
@@ -58,19 +53,14 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
-    // println!("All browsers are created ",);
+    println!("All browsers are created ",);
 
     // Jobs stack.
     let mut job_stack = Vec::new();
-    let mut pivot = 0 as u128;
+    let mut pivot = 0 as usize;
     for i in (1..num_of_secs).rev() {
         job_stack.push(i);
     }
-    // println!("job stack: {:?}", job_stack);
-    // println!("Job stack is created",);
-
-    // log msg are printed twice
-    // FIXME
 
     let now = Instant::now();
 
@@ -122,16 +112,12 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                 if *proto == 6 {
                     if *src_ip == match_ip && dst_port == match_port {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
                         matched = true
                     } else if *dst_ip == match_ip && src_port == match_port {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() == MEASURE_TIME {
+                if now.elapsed().as_secs() == APP_MEASURE_TIME {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -154,12 +140,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         let stop = actual_stop_ts.get(&i).unwrap();
                         let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                         tmp_results.push(since_the_epoch.as_nanos());
-                        // print!("{:?}, ", since_the_epoch1);
-                        // total_time1 = total_time1 + since_the_epoch1;
                     }
                     compute_stat(tmp_results);
                     println!("\nLatency results end",);
-                    // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
                 }
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
@@ -183,15 +166,15 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .unwrap()
         .transform(box move |pkt| {
             // Scheduling browsing jobs.
-            //
-            if now.elapsed().as_millis() == pivot {
-                match workload.pop() {
-                    Some(t) => {
-                        simple_scheduler(&pivot, &num_of_users, t, &browser_list);
-                        pivot = job_stack.pop().unwrap() as u128;
-                    }
-                    None => println!("No task to execute"),
-                };
+            if now.elapsed().as_secs() == pivot as u64 {
+                let min = pivot / 60;
+                let rest_sec = pivot % 60;
+                println!("{:?} min, {:?} second", min, rest_sec);
+                match rdr_workload.remove(&pivot) {
+                    Some(wd) => rdr_scheduler(&pivot, &num_of_users, wd, &browser_list),
+                    None => println!("No workload for second {:?}", pivot),
+                }
+                pivot += 1;
             }
 
             pkt_count += 1;

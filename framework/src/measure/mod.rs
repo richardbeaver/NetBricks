@@ -14,11 +14,13 @@ pub const EPSILON: usize = 1000;
 pub const NUM_TO_IGNORE: usize = 0;
 pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
 pub const MEASURE_TIME: u64 = 60;
+pub const APP_MEASURE_TIME: u64 = 600;
 
 /// Read setup for NF only.
 pub fn read_setup(file_path: String) -> Option<usize> {
-    let file = File::open(file_path).expect("file should open read only");
-    let json: Value = from_reader(file).expect("file should be proper JSON");
+    let file = File::open(file_path.clone()).expect("file should open read only");
+    let read_json = file_path + "should be proper JSON";
+    let json: Value = from_reader(file).expect(&read_json);
 
     let setup: Option<usize> = match serde_json::from_value(json.get("setup").expect("file should have setup").clone())
     {

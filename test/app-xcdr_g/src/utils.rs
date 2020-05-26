@@ -16,7 +16,7 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
     let file = File::open(file_path).expect("file should open read only");
     let json: Value = from_reader(file).expect("file should be proper JSON");
 
-    let setup: Option<usize> = match serde_json::from_value(json.get("setup").expect("file should have setup").clone())
+    let setup: Option<String> = match serde_json::from_value(json.get("setup").expect("file should have setup").clone())
     {
         Ok(val) => Some(val),
         Err(e) => {
@@ -25,7 +25,7 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
         }
     };
 
-    let port: Option<usize> = match serde_json::from_value(json.get("port").expect("file should have port").clone()) {
+    let port: Option<String> = match serde_json::from_value(json.get("port").expect("file should have port").clone()) {
         Ok(val) => Some(val),
         Err(e) => {
             println!("Malformed JSON response: {}", e);
@@ -34,7 +34,7 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
     };
 
     if port.is_some() || setup.is_some() {
-        return Some((setup.unwrap(), port.unwrap().to_string()));
+        return Some((setup.unwrap().parse::<usize>().unwrap(), port.unwrap().to_string()));
     } else {
         println!("Setup: {:?} and Port: {:?} have None values", setup, port);
         return None;
