@@ -74,12 +74,17 @@ fn main() {
             let mut pkts_so_far = (0, 0);
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
             let sleep_time = Duration::from_millis(500);
+
+            // Print interval
+            // const PRINT_INTERVAL: f64 =1.;
+            const PRINT_INTERVAL: f64 = 30.;
+
             let begining = Instant::now();
 
             loop {
                 thread::sleep(sleep_time); // Sleep for a bit
                 let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
-                if now - start > 1.0 {
+                if now - start > PRINT_INTERVAL {
                     let mut rx = 0;
                     let mut tx = 0;
                     for port in context.ports.values() {

@@ -49,7 +49,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // Browser list.
     let mut browser_list: Vec<Browser> = Vec::new();
 
-    for _ in 0..num_of_users {
+    for x in 0..num_of_users {
+        // println!("{:?}",x );
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
@@ -57,7 +58,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     // Jobs stack.
     let mut job_stack = Vec::new();
-    let mut pivot = 0 as usize;
+    let mut pivot = 1 as usize;
     for i in (1..num_of_secs).rev() {
         job_stack.push(i);
     }

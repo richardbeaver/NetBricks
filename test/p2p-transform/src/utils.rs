@@ -69,15 +69,19 @@ pub fn run_torrents_old(workload: &mut Vec<String>, torrents_dir: &str, c: &Clie
     }
 }
 
-pub fn run_torrent(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
+pub fn run_torrent(pivot: u128, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
     // println!("run torrents {:?}", pivot);
     match workload.pop(){
         Some(torrent) => {
             println!("{:?} torrent is : {:?}",pivot, torrent);
             let torrent = torrents_dir.clone().to_owned() + &torrent;
             // println!("torrent dir is : {:?}", torrent_dir);
-            let t = c.add_torrent_file(&torrent).unwrap();
-            t.start();
+
+            // let t = c.add_torrent_file(&torrent).unwrap();
+            match c.add_torrent_file(&torrent) {
+                Ok(t) => t.start(),
+                Err(e) => println!("{:?}",e),
+            }
         }
         None => {
             println!("no torrent");

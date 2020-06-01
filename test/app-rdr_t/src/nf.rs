@@ -54,7 +54,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     }
     println!("All browsers are created ",);
 
-    let mut pivot = 0 as usize;
+    let mut pivot = 1 as usize;
     let now = Instant::now();
     println!("Timer started");
 

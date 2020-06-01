@@ -21,4 +21,5 @@ PORT_TWO="0000:01:00.1"
 
 ../../build.sh run $NF_NAME -n "NATing" -m $M_CORE \
   -c 1 -c 2 -c 3  \
-  -p $PORT_ONE -p $PORT_TWO
+  -p $PORT_ONE -p $PORT_TWO | tee output.log
+

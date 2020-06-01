@@ -115,7 +115,7 @@ pub fn browser_create() -> Fallible<Browser> {
 
     let browser = Browser::new(options)?;
     let tab = browser.wait_for_initial_tab()?;
-    tab.set_default_timeout(std::time::Duration::from_secs(100));
+    tab.set_default_timeout(std::time::Duration::from_secs(800));
 
     // println!("Browser created",);
     Ok(browser)
@@ -133,6 +133,7 @@ pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()>
     // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
 
     let https_hostname = "https://".to_string() + &hostname;
+
     // let _ = current_tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
     let _ = current_tab.navigate_to(&https_hostname)?;
 

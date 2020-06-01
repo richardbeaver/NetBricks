@@ -32,7 +32,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // Workload and States for P2P NF
     //
     // 1, 10, 20, 40, 50, 75, 100, 150, 200
-    let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/200_workload.json";
+    let workload = "/home/jethros/dev/netbricks/test/p2p/workloads/p2p-workload.json";
     // let workload = "p2p-workload.json";
     let mut workload = load_json(workload.to_string());
 
@@ -49,7 +49,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
         .download_dir(download_dir);
     let c = Client::new(config);
 
-    let mut pivot = 0 as u64;
+    let mut pivot = 0 as u128;
     let now = Instant::now();
 
     let pipeline = parent
@@ -108,11 +108,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             }
 
             if matched {
-                if now.elapsed().as_secs() == pivot {
+                if now.elapsed().as_millis() == pivot {
                     // run_transcode(pivot);
                     run_torrent(pivot, &mut workload, torrents_dir, &c);
                     // println!("pivot: {:?}", pivot);
-                    pivot = now.elapsed().as_secs() + 1;
+                    pivot = now.elapsed().as_millis() + 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

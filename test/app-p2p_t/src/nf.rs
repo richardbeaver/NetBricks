@@ -66,7 +66,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             // println!("pkt_count {:?}", pkt_count);
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let now = Instant::now();
+                // let now = Instant::now();
                 // w.push(now);
             }
         })
@@ -115,7 +115,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             if matched {
                 while let Some(torrent) = workload.pop() {
-                    if pivot >= p2p_param {
+                    if pivot >= p2p_param*10 {
                         break;
                     }
                     println!("torrent is : {:?}", torrent);
