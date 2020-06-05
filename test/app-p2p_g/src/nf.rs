@@ -26,8 +26,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
     let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
 
-    let t1_2 = Arc::clone(&start_ts);
     let t1_1 = Arc::clone(&start_ts);
+    let t1_2 = Arc::clone(&start_ts);
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
 
@@ -152,7 +152,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
                     let stop = Instant::now();
-                    stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, stop);
                 }
                 // println!("{:?}", matched);
 

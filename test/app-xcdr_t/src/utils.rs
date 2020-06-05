@@ -104,11 +104,11 @@ pub fn append_job_faktory(pivot: u128, num_of_vid: usize, faktory_conn: Option<&
             vec![infile.to_string(), outfile.to_string(), width_height.to_string()],
         ))
         .unwrap();
-        println!(
-            "appending: {:?} {:?} {:?}",
-            infile.to_string(),
-            outfile.to_string(),
-            width_height.to_string()
-        );
+        // println!(
+        //     "appending: {:?} {:?} {:?}",
+        //     infile.to_string(),
+        //     outfile.to_string(),
+        //     width_height.to_string()
+        // );
     }
 }
