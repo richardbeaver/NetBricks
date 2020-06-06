@@ -1,7 +1,7 @@
 //! A New NFV framework that tries to provide optimization to developers and isolation between NFs.
 
 #![recursion_limit = "1024"]
-#![feature(asm)]
+#![feature(llvm_asm)]
 #![feature(log_syntax)]
 #![feature(box_syntax)]
 #![feature(specialization)]
