@@ -58,6 +58,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     let mut pivot = 0 as usize;
     let now = Instant::now();
+    let mut start = Instant::now();
+
+    let mut torrent_list = Vec::new();
 
     let pipeline = parent
         .transform(box move |_| {
@@ -82,6 +85,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
+            const APP_MEASURE_TIME: u64 = 600;
 
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying
@@ -115,7 +119,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             if matched {
                 while let Some(torrent) = workload.pop() {
-                    if pivot >= p2p_param*10 {
+                    if pivot >= p2p_param {
                         break;
                     }
                     println!("torrent is : {:?}", torrent);
@@ -123,7 +127,40 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                     // println!("torrent dir is : {:?}", torrent_dir);
                     let t = c.add_torrent_file(&torrent).unwrap();
                     t.start();
+                    torrent_list.push(t);
                     pivot += 1;
+
+                    if pivot == p2p_param {
+                        // let end = Instant::now();
+                        // println!(
+                        //     "start {:?}, elapsed: {:?}, duration: {:?}",
+                        //     start,
+                        //     start.elapsed().as_secs(),
+                        //     end.duration_since(start)
+                        // );
+                        // println!("init start");
+                        start = Instant::now();
+                    }
+                }
+
+                if start.elapsed().as_secs() >= 1 as u64 {
+                    let tlist = torrent_list.clone();
+                    // let tlist2 = torrent_list.clone();
+                    // for t in tlist {
+                    //     println!(
+                    //         "state: {:?}, percent complete: {:?}, percent done: {:?}, finished: {:?}, is stalled: {:?}",
+                    //         t.stats().state,
+                    //         t.stats().percent_complete,
+                    //         t.stats().percent_done,
+                    //         t.stats().finished,
+                    //         t.stats().is_stalled
+                    //     );
+                    // }
+                    if tlist.into_iter().all(|x| x.stats().percent_done == 1.0) {
+                        println!("All Done!!!!!");
+                    }
+                    // println!("1 second");
+                    start = Instant::now();
                 }
 
                 if pkt_count > NUM_TO_IGNORE {

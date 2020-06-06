@@ -55,6 +55,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     let mut pivot = 0 as usize;
     let now = Instant::now();
+    let mut start = Instant::now();
+
+    let mut torrent_list = Vec::new();
 
     // States that this NF needs to maintain.
     //
@@ -179,7 +182,39 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // println!("torrent dir is : {:?}", torrent_dir);
                 let t = c.add_torrent_file(&torrent).unwrap();
                 t.start();
+                torrent_list.push(t);
                 pivot += 1;
+
+                if pivot == p2p_param {
+                    let end = Instant::now();
+                    // println!(
+                    //     "start {:?}, elapsed: {:?}, duration: {:?}",
+                    //     start,
+                    //     start.elapsed().as_secs(),
+                    //     end.duration_since(start)
+                    // );
+                    // println!("init start");
+                    start = Instant::now();
+                }
+            }
+
+            if start.elapsed().as_secs() >= 1 as u64 {
+                let tlist = torrent_list.clone();
+                // for t in tlist {
+                //     println!(
+                //         "state: {:?}, percent complete: {:?}, percent done: {:?}, finished: {:?}, is stalled: {:?}",
+                //         t.stats().state,
+                //         t.stats().percent_complete,
+                //         t.stats().percent_done,
+                //         t.stats().finished,
+                //         t.stats().is_stalled
+                //     );
+                // }
+                if tlist.into_iter().all(|x| x.stats().percent_done == 1.0) {
+                    println!("All Done!!!!!");
+                }
+                // println!("1 second");
+                start = Instant::now();
             }
 
             pkt_count += 1;

@@ -50,9 +50,7 @@ pub fn rdr_load_workload(
             if urls.unwrap()[1].as_str().unwrap().to_string() == "32.wcmcs.net" {
                 // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string()
-                == "provider-directory.anthem.com"
-            {
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "provider-directory.anthem.com" {
                 // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
@@ -119,9 +117,6 @@ pub fn browser_create() -> Fallible<Browser> {
     // println!("Browser created",);
     Ok(browser)
 }
-
-
-
 
 pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
     // println!("Entering user browsing",);

@@ -76,8 +76,7 @@ fn main() {
             let sleep_time = Duration::from_millis(500);
 
             // Print interval
-            // const PRINT_INTERVAL: f64 =1.;
-            const PRINT_INTERVAL: f64 = 30.;
+            const PRINT_INTERVAL: f64 = 1.;
 
             let begining = Instant::now();
 

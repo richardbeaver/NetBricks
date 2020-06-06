@@ -28,9 +28,9 @@ use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
 use std::net::Ipv4Addr;
+use std::process;
 use std::sync::Arc;
 use std::thread;
-use std::process;
 use std::time::{Duration, Instant};
 
 mod nf;
@@ -85,8 +85,7 @@ fn main() {
             let sleep_time = Duration::from_millis(500);
 
             // Print interval
-            // const PRINT_INTERVAL: f64 =1.;
-            const PRINT_INTERVAL: f64 = 30.;
+            const PRINT_INTERVAL: f64 = 1.;
 
             let begining = Instant::now();
 
