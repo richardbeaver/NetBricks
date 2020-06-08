@@ -12,7 +12,7 @@ use serde_json::{from_reader, Value};
 /// Read setup for transcoder NF only.
 ///
 /// We need to get the port number for faktory queue besides the setup value.
-pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
+pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String)> {
     let file = File::open(file_path).expect("file should open read only");
     let json: Value = from_reader(file).expect("file should be proper JSON");
 
@@ -33,8 +33,21 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
         }
     };
 
-    if port.is_some() || setup.is_some() {
-        return Some((setup.unwrap().parse::<usize>().unwrap(), port.unwrap().to_string()));
+    let expr_num: Option<String> =
+        match serde_json::from_value(json.get("expr_num").expect("file should have expr_num").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response: {}", e);
+                None
+            }
+        };
+
+    if port.is_some() || setup.is_some() || expr_num.is_some() {
+        return Some((
+            setup.unwrap().parse::<usize>().unwrap(),
+            port.unwrap().to_string(),
+            expr_num.unwrap().to_string(),
+        ));
     } else {
         println!("Setup: {:?} and Port: {:?} have None values", setup, port);
         return None;
@@ -49,7 +62,19 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String)> {
 /// 1000 videos per second -- 20% pktgen sending rate
 /// 2000 videos per second -- 40% pktgen sending rate
 /// 5000 videos per second -- 100% pktgen sending rate
-pub fn xcdr_retrieve_param(setup_val: usize) -> Option<(usize, usize)> {
+pub fn xcdr_retrieve_param(setup_val: usize) -> Option<usize> {
+    let mut map = HashMap::new();
+    map.insert(1, 50);
+    map.insert(2, 100);
+    map.insert(3, 500);
+    map.insert(4, 1000);
+    map.insert(5, 2500);
+    map.insert(6, 5000);
+
+    map.remove(&setup_val)
+}
+
+pub fn old_xcdr_retrieve_param(setup_val: usize) -> Option<(usize, usize)> {
     let mut map = HashMap::new();
     map.insert(1, (50, 1));
     map.insert(2, (100, 1));
@@ -86,7 +111,15 @@ pub fn append_job(pivot: u128, job_queue: &Arc<RwLock<Vec<(String, String, Strin
 }
 
 // Append job to a faktory queue.
-pub fn append_job_faktory(pivot: u128, num_of_vid: usize, faktory_conn: Option<&str>) {
+pub fn append_job_faktory(pivot: u64, num_of_vid: usize, faktory_conn: Option<&str>, expr_num: &str) {
+    let mut p = match Producer::connect(faktory_conn) {
+        Ok(tcpstream) => tcpstream,
+        Err(e) => {
+            println!("{:?}", e);
+            Producer::connect(faktory_conn).unwrap()
+        }
+    };
+
     // println!("enter append with pivot: {}", pivot);
     let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
     // let outfile = "out.y4m";
@@ -98,9 +131,8 @@ pub fn append_job_faktory(pivot: u128, num_of_vid: usize, faktory_conn: Option<&
             + &i.to_string()
             + ".y4m";
 
-        let mut p = Producer::connect(faktory_conn).unwrap();
         p.enqueue(Job::new(
-            "app-xcdr_t",
+            "app-xcdr_t-".to_owned() + expr_num,
             vec![infile.to_string(), outfile.to_string(), width_height.to_string()],
         ))
         .unwrap();

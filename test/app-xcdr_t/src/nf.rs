@@ -14,13 +14,19 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // Specific setup config for this run
 
     // setup for this run
-    let (setup, port) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let (xcdr_param, num_of_vid) = xcdr_retrieve_param(setup).unwrap();
-    let time_span = 1000 / xcdr_param as u128;
-    println!("Setup for this run is {:?}, param is {:?}", setup, xcdr_param);
+    let (setup, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    // let (xcdr_param, num_of_vid) = xcdr_retrieve_param(setup).unwrap();
+    let num_of_vid = xcdr_retrieve_param(setup).unwrap();
+    // let time_span = 1000 / xcdr_param as u128;
+    // println!(
+    //     "Setup: {:?} port: {:?}, xcdr param: {:?}, num_of_vid: {:?}, time_span: {:?}",
+    //     setup, port, xcdr_param, num_of_vid, time_span
+    // );
+    println!("Setup: {:?} port: {:?},  num_of_vid: {:?}", setup, port, num_of_vid,);
 
     // faktory job queue
-    let default_faktory_conn = "tcp://:some_password@localhost:".to_string() + &port;
+    // let default_faktory_conn = "tcp://localhost:".to_string() + &port;
+    let default_faktory_conn = "tcp://localhost:7419".to_string();
 
     // Measurement code
     //
@@ -50,7 +56,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     let mut pkt_count = 0;
 
     // pivot for registering jobs
-    let mut pivot = 0 as u128;
+    let mut pivot = 1 as u64;
 
     let now = Instant::now();
 
@@ -81,9 +87,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             // NOTE: the following ip addr and port are hardcoded based on the trace we are
             // replaying
-            let match_src_ip = 3232235524 as u32;
-            let match_src_port = 58111;
-            let match_dst_ip = 2457012302 as u32;
+            let match_src_ip = 3_232_235_524 as u32;
+            let match_src_port = 58_111;
+            let match_dst_ip = 2_457_012_302 as u32;
             let match_dst_port = 443;
 
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
@@ -121,12 +127,16 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             if matched {
                 // println!("matched");
+                // let time_in_millis = now.elapsed().as_millis();
+                let time_in_secs = now.elapsed().as_secs();
+                // println!("{:?}", time_in_secs);
+
                 // if we hit a new micro second/millisecond/second
-                if now.elapsed().as_millis() % time_span == 0 {
+                if time_in_secs == pivot {
                     // append job
                     //
                     // we append a job to the job queue every *time_span*
-                    append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn));
+                    append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn), &expr_num);
                     pivot += 1;
                 }
 
