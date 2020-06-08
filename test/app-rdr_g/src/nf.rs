@@ -94,8 +94,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_ip = 180_907_852 as u32;
-                // https://wiki.wireshark.org/BitTorrent
+                let match_ip = 3_232_235_524 as u32;
                 let match_port = 443;
 
                 let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
