@@ -35,7 +35,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut pkt_count = 0;
 
     // Workload
-    let workload = "/home/jethros/dev/pvn-utils/workload/p2p-workload.json";
+    let workload = p2p_fetch_workload(setup_val).unwrap();
     let mut workload = load_json(workload.to_string());
 
     // Fixed transmission setup

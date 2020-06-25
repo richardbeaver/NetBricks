@@ -15,12 +15,46 @@ use transmission::{Client, ClientConfig};
 /// 40 torrent job in total -- 100% pktgen sending rate
 pub fn p2p_retrieve_param(setup_val: usize) -> Option<usize> {
     let mut map = HashMap::new();
-    map.insert(1, 1);
     map.insert(2, 5);
+    map.insert(1, 1);
     map.insert(3, 10);
     map.insert(4, 20);
     map.insert(5, 30);
     map.insert(6, 40);
+
+    map.insert(11, 1);
+    map.insert(12, 1);
+    map.insert(13, 1);
+    map.insert(14, 1);
+    map.insert(15, 1);
+    map.insert(16, 1);
+    map.insert(17, 1);
+    map.insert(18, 1);
+    map.insert(19, 1);
+    map.insert(20, 1);
+
+    map.remove(&setup_val)
+}
+
+pub fn p2p_fetch_workload(setup_val: usize) -> Option<&'static str> {
+    let mut map = HashMap::new();
+    map.insert(1, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+    map.insert(2, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+    map.insert(3, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+    map.insert(4, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+    map.insert(5, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+    map.insert(6, "/home/jethros/dev/pvn-utils/workload/p2p-workload.json");
+
+    map.insert(11, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-1.json");
+    map.insert(12, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-2.json");
+    map.insert(13, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-3.json");
+    map.insert(14, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-4.json");
+    map.insert(15, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-5.json");
+    map.insert(16, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-6.json");
+    map.insert(17, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-7.json");
+    map.insert(18, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-8.json");
+    map.insert(19, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-9.json");
+    map.insert(20, "/home/jethros/dev/pvn-utils/workload/p2p-single-workload-10.json");
 
     map.remove(&setup_val)
 }

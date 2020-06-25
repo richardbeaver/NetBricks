@@ -32,7 +32,7 @@ else
     DPDK="${DPDK_HOME}/build/lib/libdpdk.a"
 fi
 
-CARGO_PATH="/home/jethros/.cargo/bin/cargo"
+CARGO_PATH="$HOME/.cargo/bin/cargo"
 CARGO_LOC=`which cargo || true`
 export CARGO=${CARGO_PATH-"${CARGO_LOC}"}
 if [ -z ${CARGO} ] || [ ! -e ${CARGO} ]; then

@@ -39,7 +39,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // Workload and States for P2P NF
     //
     // 1, 10, 20, 40, 50, 75, 100, 150, 200
-    let workload = "/home/jethros/dev/pvn-utils/workload/p2p-workload.json";
+    let workload = p2p_fetch_workload(setup_val).unwrap();
     println!("{:?}", workload);
     let mut workload = load_json(workload.to_string());
 
