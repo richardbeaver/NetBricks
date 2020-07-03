@@ -1,4 +1,4 @@
-use failure::Fallible;
+use failure::{Error, Fallible};
 use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
 use rand::Rng;
@@ -50,9 +50,7 @@ pub fn rdr_load_workload(
             if urls.unwrap()[1].as_str().unwrap().to_string() == "32.wcmcs.net" {
                 // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string()
-                == "provider-directory.anthem.com"
-            {
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "provider-directory.anthem.com" {
                 // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
@@ -121,11 +119,18 @@ pub fn browser_create() -> Fallible<Browser> {
     Ok(browser)
 }
 
-pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
+pub fn user_browse(
+    current_browser: &Browser,
+    hostname: &String,
+) -> std::result::Result<(u128), (u128, failure::Error)> {
+    let now = Instant::now();
     // println!("Entering user browsing",);
     // Doesn't use incognito mode
     //
-    let current_tab = current_browser.new_tab()?;
+    let current_tab = match current_browser.new_tab() {
+        Ok(tab) => tab,
+        Err(e) => return Err((now.elapsed().as_micros(), e)),
+    };
 
     // Incogeneto mode
     //
@@ -134,10 +139,20 @@ pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()>
 
     let https_hostname = "https://".to_string() + &hostname;
 
-    // let _ = current_tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
-    let _ = current_tab.navigate_to(&https_hostname)?;
+    // wait until navigated or not
+    let navigate_to = match current_tab.navigate_to(&https_hostname) {
+        Ok(tab) => tab,
+        Err(e) => {
+            return Err((now.elapsed().as_micros(), e));
+        }
+    };
+    // let _ = current_tab.navigate_to(&https_hostname)?;
+    let result = match navigate_to.wait_until_navigated() {
+        Ok(_) => Ok((now.elapsed().as_micros())),
+        Err(e) => Err((now.elapsed().as_micros(), e)),
+    };
 
-    Ok(())
+    result
 }
 
 /// RDR proxy browsing scheduler.
