@@ -330,6 +330,35 @@ case $TASK in
             fi
         done
         ;;
+	miri)
+        deps
+
+        native
+
+        find_sctp
+
+        pushd $BASE_DIR/framework
+        if [ ${SCTP_PRESENT} -eq 1 ]; then
+            ${CARGO} miri test --features "sctp"
+        else
+            ${CARGO} miri test
+        fi
+        popd
+
+        for example in ${examples[@]}; do
+            if [[ ${example} == *sctp* ]]; then
+                if [ ${SCTP_PRESENT} -eq 1 ]; then
+                    pushd ${BASE_DIR}/${example}
+                    ${CARGO} miri test
+                    popd
+                fi
+            else
+                pushd ${BASE_DIR}/${example}
+                ${CARGO} miri test
+                popd
+            fi
+        done
+        ;;
     ovs_create) # FIXME: create vswtch container????
         clean
         clean_deps
