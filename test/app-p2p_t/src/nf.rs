@@ -16,7 +16,7 @@ use transmission::{Client, ClientConfig};
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // setup for this run
     let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let p2p_param = p2p_retrieve_param(setup_val).unwrap();
+    let p2p_param = p2p_retrieve_param(setup_val.parse::<usize>().unwrap()).unwrap();
 
     // Measurement code
     //
@@ -39,7 +39,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // Workload and States for P2P NF
     //
     // 1, 10, 20, 40, 50, 75, 100, 150, 200
-    let workload = p2p_fetch_workload(setup_val).unwrap();
+    let workload = p2p_fetch_workload(setup_val.parse::<usize>().unwrap()).unwrap();
     println!("{:?}", workload);
     let mut workload = load_json(workload.to_string());
 

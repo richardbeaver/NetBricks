@@ -6,6 +6,7 @@ use rand::Rng;
 use serde_json::{from_reader, Result, Value};
 use std::collections::HashMap;
 use std::fs::File;
+use std::thread;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 
@@ -17,6 +18,7 @@ pub fn rdr_load_workload(
     num_of_secs: usize,
     num_of_user: usize,
 ) -> Result<HashMap<usize, Vec<(u64, String, usize)>>> {
+    println!("{:?}", file_path);
     // time in second, workload in that second
     // let mut workload = HashMap::<usize, HashMap<usize, Vec<(u64, String)>>>::with_capacity(num_of_secs);
     let mut workload = HashMap::<usize, Vec<(u64, String, usize)>>::with_capacity(num_of_secs);
@@ -49,13 +51,26 @@ pub fn rdr_load_workload(
             // println!("{:?}", urls.unwrap());
 
             if urls.unwrap()[1].as_str().unwrap().to_string() == "32.wcmcs.net" {
-                // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "provider-directory.anthem.com" {
-                // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
-                // println!("match {:?}", urls.unwrap()[1].as_str().unwrap().to_string(),);
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "msn.foxsports.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "reviews.samsclub.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "womenofyoutube.mevio.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ads.veldev.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ad.doubleclick.net" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "search.ovguide.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "livejasmin.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "video.od.visablemeasures.com" {
                 continue;
             } else {
                 millis.push((
@@ -148,7 +163,7 @@ pub fn user_browse(
     };
     // let _ = current_tab.navigate_to(&https_hostname)?;
     let result = match navigate_to.wait_until_navigated() {
-        Ok(_) => Ok((now.elapsed().as_micros())),
+        Ok(_) => Ok(now.elapsed().as_micros()),
         Err(e) => Err((now.elapsed().as_micros(), e)),
     };
 
@@ -185,6 +200,10 @@ pub fn rdr_scheduler(
     current_work: Vec<(u64, String, usize)>,
     browser_list: &Vec<Browser>,
 ) {
+    let mut num_of_ok = 0;
+    let mut num_of_err = 0;
+    let mut elapsed_time: Vec<u128> = Vec::new();
+
     let now = Instant::now();
 
     // println!("\npivot: {:?}", pivot);
@@ -192,17 +211,28 @@ pub fn rdr_scheduler(
 
     for (milli, url, user) in current_work.into_iter() {
         println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
+        println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
 
-        if now.elapsed().as_millis() == milli as u128 {
+        if now.elapsed().as_millis() < milli as u128 {
+            println!("DEBUG: waiting");
+            let one_millis = Duration::from_millis(1);
+            thread::sleep(one_millis);
+        } else {
+            println!("DEBUG: matched");
             match user_browse(&browser_list[user], &url) {
-                Ok(_) => {}
-                Err(e) => println!("User {} caused an error: {:?}", user, e),
+                Ok(elapsed) => {
+                    num_of_ok += 1;
+                    elapsed_time.push(elapsed);
+                }
+                Err((elapsed, e)) => {
+                    num_of_err += 1;
+                    elapsed_time.push(elapsed);
+                    println!("User {} caused an error: {:?}", user, e);
+                }
             }
         }
     }
 
-    // for current_user in 1.._num_of_users + 1 {
-    //     // for current_user in 1..10 {
-    //     // println!("{:?}", current_work[&current_user]);
-    //     // println!("current_user {:?}", current_user);
+    println!("RDR Scheduling: {:?} {:?}", num_of_ok, num_of_err);
+    println!("RDR Elapsed Time: {:?}", elapsed_time);
 }

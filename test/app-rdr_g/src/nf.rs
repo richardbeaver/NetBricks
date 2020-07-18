@@ -13,6 +13,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
+
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
@@ -38,8 +40,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
     // Workloads:
-
-    let workload_path = "/home/jethros/dev/pvn-utils/workload/rdr_pvn_workload.json";
+    let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_".to_owned()
+        + &iter_val.to_string()
+        + ".json";
     let num_of_users = 100;
     let num_of_secs = 600;
 
@@ -95,6 +98,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
                 let match_ip = 3_232_235_524 as u32;
+                // https://wiki.wireshark.org/BitTorrent
                 let match_port = 443;
 
                 let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {

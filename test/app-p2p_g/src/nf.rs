@@ -14,7 +14,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 ) -> CompositionBatch {
     // setup for this run
     let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let p2p_param = p2p_retrieve_param(setup_val).unwrap();
+    let p2p_param = p2p_retrieve_param(setup_val.parse::<usize>().unwrap()).unwrap();
 
     // Measurement code
     //
@@ -35,7 +35,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut pkt_count = 0;
 
     // Workload
-    let workload = p2p_fetch_workload(setup_val).unwrap();
+    let workload = p2p_fetch_workload(setup_val.parse::<usize>().unwrap()).unwrap();
     let mut workload = load_json(workload.to_string());
 
     // Fixed transmission setup

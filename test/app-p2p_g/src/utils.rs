@@ -16,8 +16,8 @@ use transmission::{Client, ClientConfig};
 /// 40 torrent job in total -- 100% pktgen sending rate
 pub fn p2p_retrieve_param(setup_val: usize) -> Option<usize> {
     let mut map = HashMap::new();
-    map.insert(2, 5);
     map.insert(1, 1);
+    map.insert(2, 5);
     map.insert(3, 10);
     map.insert(4, 20);
     map.insert(5, 30);

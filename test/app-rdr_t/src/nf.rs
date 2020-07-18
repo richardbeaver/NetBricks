@@ -10,6 +10,10 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
+    println!("/home/jethros/setup");
+    let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
+    println!("after");
+
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
@@ -35,8 +39,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
     // Workloads:
-
-    let workload_path = "/home/jethros/dev/pvn-utils/workload/rdr_pvn_workload.json";
+    let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_".to_owned()
+        + &iter_val.to_string()
+        + ".json";
+    println!("{:?}", workload_path);
     let num_of_users = 100;
     let num_of_secs = 600;
 
