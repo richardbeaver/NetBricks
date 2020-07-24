@@ -59,13 +59,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     }
     println!("All browsers are created ",);
 
-    // Jobs stack.
-    let mut job_stack = Vec::new();
-    let mut pivot = 1 as usize;
-    for i in (1..num_of_secs).rev() {
-        job_stack.push(i);
-    }
+    let mut num_of_ok = 0;
+    let mut num_of_err = 0;
+    let mut elapsed_time: Vec<u128> = Vec::new();
 
+    let mut pivot = 1;
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
@@ -175,7 +173,15 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let rest_sec = pivot % 60;
                 println!("{:?} min, {:?} second", min, rest_sec);
                 match rdr_workload.remove(&pivot) {
-                    Some(wd) => rdr_scheduler(&pivot, &num_of_users, wd, &browser_list),
+                    Some(wd) => rdr_scheduler(
+                        &pivot,
+                        &mut num_of_ok,
+                        &mut num_of_err,
+                        &mut elapsed_time,
+                        &num_of_users,
+                        wd,
+                        &browser_list,
+                    ),
                     None => println!("No workload for second {:?}", pivot),
                 }
                 pivot += 1;

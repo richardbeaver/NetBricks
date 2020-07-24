@@ -196,14 +196,13 @@ pub fn simple_scheduler(
 // 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
 pub fn rdr_scheduler(
     pivot: &usize,
+    num_of_ok: &mut usize,
+    num_of_err: &mut usize,
+    elapsed_time: &mut Vec<u128>,
     _num_of_users: &usize,
     current_work: Vec<(u64, String, usize)>,
     browser_list: &Vec<Browser>,
 ) {
-    let mut num_of_ok = 0;
-    let mut num_of_err = 0;
-    let mut elapsed_time: Vec<u128> = Vec::new();
-
     let now = Instant::now();
 
     // println!("\npivot: {:?}", pivot);
@@ -221,18 +220,15 @@ pub fn rdr_scheduler(
             println!("DEBUG: matched");
             match user_browse(&browser_list[user], &url) {
                 Ok(elapsed) => {
-                    num_of_ok += 1;
+                    *num_of_ok += 1;
                     elapsed_time.push(elapsed);
                 }
                 Err((elapsed, e)) => {
-                    num_of_err += 1;
+                    *num_of_err += 1;
                     elapsed_time.push(elapsed);
                     println!("User {} caused an error: {:?}", user, e);
                 }
             }
         }
     }
-
-    println!("RDR Scheduling: {:?} {:?}", num_of_ok, num_of_err);
-    println!("RDR Elapsed Time: {:?}", elapsed_time);
 }

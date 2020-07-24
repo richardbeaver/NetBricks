@@ -61,6 +61,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     println!("All browsers are created ",);
 
     let mut pivot = 1 as usize;
+
+    let mut num_of_ok = 0;
+    let mut num_of_err = 0;
+    let mut elapsed_time: Vec<u128> = Vec::new();
+
     let now = Instant::now();
     println!("Timer started");
 
@@ -115,7 +120,15 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                     let rest_sec = pivot % 60;
                     println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&pivot) {
-                        Some(wd) => rdr_scheduler(&pivot, &num_of_users, wd, &browser_list),
+                        Some(wd) => rdr_scheduler(
+                            &pivot,
+                            &mut num_of_ok,
+                            &mut num_of_err,
+                            &mut elapsed_time,
+                            &num_of_users,
+                            wd,
+                            &browser_list,
+                        ),
                         None => println!("No workload for second {:?}", pivot),
                     }
                     pivot += 1;
@@ -138,6 +151,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             if now.elapsed().as_secs() == APP_MEASURE_TIME {
                 println!("pkt count {:?}", pkt_count);
+
+                println!("RDR Scheduling: {:?} {:?}", num_of_ok, num_of_err);
+                println!("RDR Elapsed Time: {:?}", elapsed_time);
+
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();
                 println!(
