@@ -89,11 +89,11 @@ pub fn old_xcdr_retrieve_param(setup_val: usize) -> Option<(usize, usize)> {
 // Append job to local queue. (deprecated)
 pub fn append_job(pivot: u128, job_queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
     // println!("enter append with pivot: {}", pivot);
-    let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
+    let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
     for i in 0..1 {
-        let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned()
+        let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned()
             + &pivot.to_string()
             + "_"
             + &i.to_string()
@@ -121,11 +121,11 @@ pub fn append_job_faktory(pivot: u64, num_of_vid: usize, faktory_conn: Option<&s
     };
 
     // println!("enter append with pivot: {}", pivot);
-    let infile = "/home/jethros/dev/pvn-utils/data/tiny.y4m";
+    let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
     // let outfile = "out.y4m";
     let width_height = "360x24";
     for i in 0..num_of_vid {
-        let outfile = "/home/jethros/dev/pvn-utils/data/output_videos/".to_owned()
+        let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned()
             + &pivot.to_string()
             + "_"
             + &i.to_string()
