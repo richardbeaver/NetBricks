@@ -1,11 +1,12 @@
 use failure::Error;
 use failure::Fallible;
-use headless_chrome::LaunchOptionsBuilder;
+use headless_chrome::LaunchOptions;
 use headless_chrome::{Browser, Tab};
 use rand::Rng;
 use serde_json::{from_reader, Result, Value};
 use std::collections::HashMap;
 use std::fs::File;
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
@@ -56,6 +57,46 @@ pub fn rdr_load_workload(
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
                 continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "desktopfw.weather.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "arienh4.net.nyud.net" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "hv3.webstat.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "rs.mail.ru" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "arienh4.net.nyud.net" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "apps.facebook.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ads.adultadvertising.net" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "reuters.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "pn1.adserver.yahoo.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "bbc.co.uk" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ad.yieldmanager.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "wikipedia.org" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "collegehumor.com" {
+                continue;
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "blog.naver.com" {
+                millis.push((
+                    urls.unwrap()[0].as_u64().unwrap(),
+                    "section.blog.naver.com".to_string(),
+                    user,
+                ));
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "l.qq.com" {
+                millis.push((urls.unwrap()[0].as_u64().unwrap(), "www.qq.com".to_string(), user));
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "llbean.com" {
+                millis.push((urls.unwrap()[0].as_u64().unwrap(), "google.com".to_string(), user));
+            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "womenofyoutube.mevio.com" {
+                millis.push((urls.unwrap()[0].as_u64().unwrap(), "google.com".to_string(), user));
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "msn.foxsports.com" {
                 continue;
             } else if urls.unwrap()[1].as_str().unwrap().to_string() == "reviews.samsclub.com" {
@@ -120,21 +161,101 @@ pub fn rdr_load_workload(
     }
     Ok(workload)
 }
-pub fn browser_create() -> Fallible<Browser> {
-    // println!("try to create a browser",);
-    let options = LaunchOptionsBuilder::default()
-        .build()
-        .expect("Couldn't find appropriate Chrome binary.");
 
-    let browser = Browser::new(options)?;
-    let tab = browser.wait_for_initial_tab()?;
-    tab.set_default_timeout(std::time::Duration::from_secs(800));
+pub fn browser_create() -> Fallible<Browser> {
+    let browser = Browser::new(
+        LaunchOptions::default_builder()
+            .build()
+            .expect("Could not find chrome-executable"),
+    )?;
+    // let tab = browser.wait_for_initial_tab()?;
+    // tab.set_default_timeout(std::time::Duration::from_secs(100));
 
     // println!("Browser created",);
     Ok(browser)
 }
 
-pub fn user_browse(
+pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
+    // std::result::Result<(u128), (u128, failure::Error)> {
+    let now = Instant::now();
+
+    let tab = current_browser.wait_for_initial_tab()?;
+
+    let https_hostname = "https://".to_string() + &hostname;
+
+    // tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
+    tab.navigate_to(&https_hostname)?;
+
+    // let html = match tab.wait_for_element("html") {
+    //     Ok(h) => {
+    //         println!("ok");
+    //         ()
+    //     }
+    //     Err(e) => {
+    //         eprintln!("Query failed: {:?}", e);
+    //         ()
+    //     }
+    // };
+    // Ok(html)
+
+    Ok(())
+}
+
+// pub fn browser_ctx_create() -> Fallible<Context<'static>> {
+//     let browser = browser_create().unwrap();
+//     let ctx = browser.new_context().unwrap();
+//
+//     Ok(ctx)
+// }
+
+pub fn browser_tab_create() -> Fallible<Arc<Tab>> {
+    let browser = Browser::new(
+        LaunchOptions::default_builder()
+            .build()
+            .expect("Could not find chrome-executable"),
+    )?;
+    let tab = browser.wait_for_initial_tab()?;
+
+    // println!("Browser created",);
+    Ok(tab)
+}
+
+pub fn user_tab_browse(current_tab: &Tab, hostname: &String) -> std::result::Result<(u128), (u128, failure::Error)> {
+    let now = Instant::now();
+    // println!("Entering user browsing",);
+    // Doesn't use incognito mode
+    //
+    // let current_tab = match current_browser.new_tab() {
+    //     Ok(tab) => tab,
+    //     Err(e) => return Err((now.elapsed().as_micros(), e)),
+    // };
+
+    // Incogeneto mode
+    //
+    // let incognito_cxt = current_browser.new_context()?;
+    // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
+
+    let https_hostname = "https://".to_string() + &hostname;
+
+    // wait until navigated or not
+    let navigate_to = match current_tab.navigate_to(&https_hostname) {
+        Ok(tab) => tab,
+        Err(e) => {
+            return Err((now.elapsed().as_micros(), e));
+        }
+    };
+
+    // let _ = current_tab.navigate_to(&https_hostname)?;
+    let result = match navigate_to.wait_until_navigated() {
+        // let result = match navigate_to {
+        Ok(_) => Ok(now.elapsed().as_micros()),
+        Err(e) => Err((now.elapsed().as_micros(), e)),
+    };
+
+    result
+}
+
+pub fn simple_user_browse(
     current_browser: &Browser,
     hostname: &String,
 ) -> std::result::Result<(u128), (u128, failure::Error)> {
@@ -155,39 +276,14 @@ pub fn user_browse(
     let https_hostname = "https://".to_string() + &hostname;
 
     // wait until navigated or not
-    let navigate_to = match current_tab.navigate_to(&https_hostname) {
-        Ok(tab) => tab,
-        Err(e) => {
-            return Err((now.elapsed().as_micros(), e));
-        }
-    };
-    // let _ = current_tab.navigate_to(&https_hostname)?;
-    let result = match navigate_to.wait_until_navigated() {
+    let result = match current_tab.navigate_to(&https_hostname) {
         Ok(_) => Ok(now.elapsed().as_micros()),
+        // Err(e) => Err((now.elapsed().as_micros(), e)),
         Err(e) => Err((now.elapsed().as_micros(), e)),
     };
 
+    // println!("{:?}", result);
     result
-}
-
-pub fn simple_scheduler(
-    pivot: &u128,
-    _num_of_users: &usize,
-    current_work: HashMap<usize, String>,
-    browser_list: &Vec<Browser>,
-) {
-    // println!("\npivot: {:?}", pivot);
-    // println!("current work {:?}", current_work);
-
-    for current_user in 1.._num_of_users + 1 {
-        // for current_user in 1..10 {
-        // println!("{:?}", current_work[&current_user]);
-        // println!("current_user {:?}", current_user);
-        match user_browse(&browser_list[current_user - 1], &current_work[&current_user]) {
-            Ok(_) => {}
-            Err(e) => println!("User {} caused an error: {:?}", current_user, e),
-        }
-    }
 }
 
 /// RDR proxy browsing scheduler.
@@ -195,6 +291,7 @@ pub fn simple_scheduler(
 ///
 // 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
 pub fn rdr_scheduler(
+    now: Instant,
     pivot: &usize,
     num_of_ok: &mut usize,
     num_of_err: &mut usize,
@@ -203,30 +300,79 @@ pub fn rdr_scheduler(
     current_work: Vec<(u64, String, usize)>,
     browser_list: &Vec<Browser>,
 ) {
-    let now = Instant::now();
-
     // println!("\npivot: {:?}", pivot);
     // println!("current work {:?}", current_work);
 
     for (milli, url, user) in current_work.into_iter() {
         println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
-        println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
+        // println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
 
         if now.elapsed().as_millis() < milli as u128 {
-            println!("DEBUG: waiting");
+            // println!("DEBUG: waiting");
             let one_millis = Duration::from_millis(1);
-            thread::sleep(one_millis);
+            std::thread::sleep(one_millis);
         } else {
-            println!("DEBUG: matched");
+            // println!("DEBUG: matched");
             match user_browse(&browser_list[user], &url) {
                 Ok(elapsed) => {
-                    *num_of_ok += 1;
-                    elapsed_time.push(elapsed);
+                    // println!("ok");
+                    // *num_of_ok += 1;
+                    // elapsed_time.push(elapsed);
+                }
+                // Err((elapsed, e)) => {
+                Err(e) => {
+                    // println!("err");
+                    // *num_of_err += 1;
+                    // elapsed_time.push(elapsed);
+                    // println!("User {} caused an error: {:?}", user, e);
+                    println!("User {} caused an error", user,);
+                }
+            }
+        }
+    }
+
+    // println!(
+    //     "(pivot {}) RDR Scheduling: {:?} {:?}",
+    //     pivot, num_of_ok, num_of_err
+    // );
+    // println!("(pivot {}) RDR Elapsed Time:  {:?}", pivot, elapsed_time);
+}
+
+pub fn rdr_scheduler_ng(
+    now: Instant,
+    pivot: &usize,
+    num_of_ok: &mut usize,
+    num_of_err: &mut usize,
+    elapsed_time: &mut Vec<u128>,
+    _num_of_users: &usize,
+    current_work: Vec<(u64, String, usize)>,
+    tab_list: &Vec<Arc<Tab>>,
+) {
+    // println!("\npivot: {:?}", pivot);
+    // println!("current work {:?}", current_work);
+
+    for (milli, url, user) in current_work.into_iter() {
+        println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
+        // println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
+
+        if now.elapsed().as_millis() < milli as u128 {
+            // println!("DEBUG: waiting");
+            let one_millis = Duration::from_millis(1);
+            std::thread::sleep(one_millis);
+        } else {
+            // println!("DEBUG: matched");
+            match user_tab_browse(&tab_list[user], &url) {
+                Ok(elapsed) => {
+                    // println!("ok");
+                    // *num_of_ok += 1;
+                    // elapsed_time.push(elapsed);
                 }
                 Err((elapsed, e)) => {
-                    *num_of_err += 1;
-                    elapsed_time.push(elapsed);
+                    // println!("err");
+                    // *num_of_err += 1;
+                    // elapsed_time.push(elapsed);
                     println!("User {} caused an error: {:?}", user, e);
+                    // println!("User {} caused an error", user,);
                 }
             }
         }
