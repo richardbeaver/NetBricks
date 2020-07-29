@@ -39,7 +39,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut workload = load_json(workload.to_string());
 
     // Fixed transmission setup
-    let torrents_dir = "/home/jethros/dev/pvn/utils/workload/torrent_files/";
+    let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
 
     let config_dir = "/data/config";
     let download_dir = "/data/downloads";
