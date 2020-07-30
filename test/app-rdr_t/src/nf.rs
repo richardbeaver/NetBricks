@@ -54,7 +54,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     let mut browser_list: Vec<Browser> = Vec::new();
 
     for x in 0..num_of_users {
-        // println!("x: {:?}", x);
+        println!("x: {:?}", x);
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
