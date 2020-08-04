@@ -13,6 +13,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
+    let rdr_users = rdr_retrieve_users(setup_val.parse::<usize>().unwrap()).unwrap();
     let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
 
     // Measurement code
@@ -40,10 +42,13 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
     // Workloads:
-    let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_".to_owned()
-        + &iter_val.to_string()
-        + ".json";
-    let num_of_users = 100;
+    // let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_".to_owned()
+    //     + &iter_val.to_string()
+    //     + ".json";
+    // let num_of_users = 100;
+    let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_5.json";
+    let num_of_users = rdr_users;
+
     let num_of_secs = 600;
 
     let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, num_of_users).unwrap();
@@ -57,7 +62,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         let browser = browser_create().unwrap();
         browser_list.push(browser);
     }
-    println!("All browsers are created ",);
+    println!("{} browsers are created ", num_of_users);
 
     let mut num_of_ok = 0;
     let mut num_of_err = 0;

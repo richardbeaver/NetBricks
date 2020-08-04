@@ -29,6 +29,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 mod nf;
+mod prune_workload;
 mod utils;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;

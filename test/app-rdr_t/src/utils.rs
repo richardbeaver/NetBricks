@@ -1,10 +1,11 @@
+use crate::prune_workload::curate_broken_records;
 use failure::Error;
 use failure::Fallible;
-use headless_chrome::LaunchOptions;
+use headless_chrome::LaunchOptionsBuilder;
 use headless_chrome::{Browser, Tab};
 use rand::Rng;
 use serde_json::{from_reader, Result, Value};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::sync::Arc;
 use std::thread;
@@ -14,12 +15,12 @@ use std::vec::Vec;
 /// Construct the workload from the session file.
 ///
 /// https://kbknapp.github.io/doapi-rs/docs/serde/json/index.html
+
 pub fn rdr_load_workload(
     file_path: String,
     num_of_secs: usize,
     num_of_user: usize,
 ) -> Result<HashMap<usize, Vec<(u64, String, usize)>>> {
-    println!("{:?}", file_path);
     // time in second, workload in that second
     // let mut workload = HashMap::<usize, HashMap<usize, Vec<(u64, String)>>>::with_capacity(num_of_secs);
     let mut workload = HashMap::<usize, Vec<(u64, String, usize)>>::with_capacity(num_of_secs);
@@ -51,67 +52,9 @@ pub fn rdr_load_workload(
             };
             // println!("{:?}", urls.unwrap());
 
-            if urls.unwrap()[1].as_str().unwrap().to_string() == "32.wcmcs.net" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "provider-directory.anthem.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "kr.sports.yahoo.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "desktopfw.weather.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "arienh4.net.nyud.net" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "hv3.webstat.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "rs.mail.ru" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "arienh4.net.nyud.net" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "apps.facebook.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ads.adultadvertising.net" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "reuters.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "pn1.adserver.yahoo.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "bbc.co.uk" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ad.yieldmanager.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "wikipedia.org" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "collegehumor.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "blog.naver.com" {
-                millis.push((
-                    urls.unwrap()[0].as_u64().unwrap(),
-                    "section.blog.naver.com".to_string(),
-                    user,
-                ));
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "l.qq.com" {
-                millis.push((urls.unwrap()[0].as_u64().unwrap(), "www.qq.com".to_string(), user));
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "llbean.com" {
-                millis.push((urls.unwrap()[0].as_u64().unwrap(), "google.com".to_string(), user));
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "womenofyoutube.mevio.com" {
-                millis.push((urls.unwrap()[0].as_u64().unwrap(), "google.com".to_string(), user));
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "msn.foxsports.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "reviews.samsclub.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "womenofyoutube.mevio.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ads.veldev.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "ad.doubleclick.net" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "search.ovguide.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "livejasmin.com" {
-                continue;
-            } else if urls.unwrap()[1].as_str().unwrap().to_string() == "video.od.visablemeasures.com" {
+            let mut broken_urls = curate_broken_records();
+
+            if broken_urls.contains(urls.unwrap()[1].as_str().unwrap()) {
                 continue;
             } else {
                 millis.push((
@@ -120,17 +63,6 @@ pub fn rdr_load_workload(
                     user,
                 ));
             }
-
-            // if urls.unwrap()[1].as_str().unwrap().to_string() == "32.wcmcs.net" {
-            //     println!("{:?}", urls.unwrap()[1].as_str().unwrap().to_string());
-            //     millis.push((
-            //         urls.unwrap()[0].as_u64().unwrap(),
-            //         urls.unwrap()[1].as_str().unwrap().to_string(),
-            //         user,
-            //     ));
-            // } else {
-            //     continue;
-            // }
         }
         millis.sort();
 
@@ -162,12 +94,17 @@ pub fn rdr_load_workload(
     Ok(workload)
 }
 
+// /usr/bin/chromedriver
+// /usr/bin/chromium-browser
 pub fn browser_create() -> Fallible<Browser> {
-    let browser = Browser::new(
-        LaunchOptions::default_builder()
-            .build()
-            .expect("Could not find chrome-executable"),
-    )?;
+    let timeout = Duration::new(1000, 0);
+
+    let options = LaunchOptionsBuilder::default()
+        .headless(true)
+        .idle_browser_timeout(timeout)
+        .build()
+        .expect("Couldn't find appropriate Chrome binary.");
+    let browser = Browser::new(options)?;
     // let tab = browser.wait_for_initial_tab()?;
     // tab.set_default_timeout(std::time::Duration::from_secs(100));
 
@@ -176,114 +113,16 @@ pub fn browser_create() -> Fallible<Browser> {
 }
 
 pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
-    // std::result::Result<(u128), (u128, failure::Error)> {
     let now = Instant::now();
 
-    let tab = current_browser.wait_for_initial_tab()?;
+    let tab = current_browser.new_tab()?;
 
     let https_hostname = "https://".to_string() + &hostname;
+    println!("{:?}", https_hostname);
 
-    // tab.navigate_to(&https_hostname)?.wait_until_navigated()?;
     tab.navigate_to(&https_hostname)?;
 
-    // let html = match tab.wait_for_element("html") {
-    //     Ok(h) => {
-    //         println!("ok");
-    //         ()
-    //     }
-    //     Err(e) => {
-    //         eprintln!("Query failed: {:?}", e);
-    //         ()
-    //     }
-    // };
-    // Ok(html)
-
     Ok(())
-}
-
-// pub fn browser_ctx_create() -> Fallible<Context<'static>> {
-//     let browser = browser_create().unwrap();
-//     let ctx = browser.new_context().unwrap();
-//
-//     Ok(ctx)
-// }
-
-pub fn browser_tab_create() -> Fallible<Arc<Tab>> {
-    let browser = Browser::new(
-        LaunchOptions::default_builder()
-            .build()
-            .expect("Could not find chrome-executable"),
-    )?;
-    let tab = browser.wait_for_initial_tab()?;
-
-    // println!("Browser created",);
-    Ok(tab)
-}
-
-pub fn user_tab_browse(current_tab: &Tab, hostname: &String) -> std::result::Result<(u128), (u128, failure::Error)> {
-    let now = Instant::now();
-    // println!("Entering user browsing",);
-    // Doesn't use incognito mode
-    //
-    // let current_tab = match current_browser.new_tab() {
-    //     Ok(tab) => tab,
-    //     Err(e) => return Err((now.elapsed().as_micros(), e)),
-    // };
-
-    // Incogeneto mode
-    //
-    // let incognito_cxt = current_browser.new_context()?;
-    // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
-
-    let https_hostname = "https://".to_string() + &hostname;
-
-    // wait until navigated or not
-    let navigate_to = match current_tab.navigate_to(&https_hostname) {
-        Ok(tab) => tab,
-        Err(e) => {
-            return Err((now.elapsed().as_micros(), e));
-        }
-    };
-
-    // let _ = current_tab.navigate_to(&https_hostname)?;
-    let result = match navigate_to.wait_until_navigated() {
-        // let result = match navigate_to {
-        Ok(_) => Ok(now.elapsed().as_micros()),
-        Err(e) => Err((now.elapsed().as_micros(), e)),
-    };
-
-    result
-}
-
-pub fn simple_user_browse(
-    current_browser: &Browser,
-    hostname: &String,
-) -> std::result::Result<(u128), (u128, failure::Error)> {
-    let now = Instant::now();
-    // println!("Entering user browsing",);
-    // Doesn't use incognito mode
-    //
-    let current_tab = match current_browser.new_tab() {
-        Ok(tab) => tab,
-        Err(e) => return Err((now.elapsed().as_micros(), e)),
-    };
-
-    // Incogeneto mode
-    //
-    // let incognito_cxt = current_browser.new_context()?;
-    // let current_tab: Arc<Tab> = incognito_cxt.new_tab()?;
-
-    let https_hostname = "https://".to_string() + &hostname;
-
-    // wait until navigated or not
-    let result = match current_tab.navigate_to(&https_hostname) {
-        Ok(_) => Ok(now.elapsed().as_micros()),
-        // Err(e) => Err((now.elapsed().as_micros(), e)),
-        Err(e) => Err((now.elapsed().as_micros(), e)),
-    };
-
-    // println!("{:?}", result);
-    result
 }
 
 /// RDR proxy browsing scheduler.
@@ -304,6 +143,9 @@ pub fn rdr_scheduler(
     // println!("current work {:?}", current_work);
 
     for (milli, url, user) in current_work.into_iter() {
+        if milli >= 750 {
+            break;
+        }
         println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
         // println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
 
@@ -314,7 +156,7 @@ pub fn rdr_scheduler(
         } else {
             // println!("DEBUG: matched");
             match user_browse(&browser_list[user], &url) {
-                Ok(elapsed) => {
+                Ok(_) => {
                     // println!("ok");
                     // *num_of_ok += 1;
                     // elapsed_time.push(elapsed);
@@ -338,43 +180,21 @@ pub fn rdr_scheduler(
     // println!("(pivot {}) RDR Elapsed Time:  {:?}", pivot, elapsed_time);
 }
 
-pub fn rdr_scheduler_ng(
-    now: Instant,
-    pivot: &usize,
-    num_of_ok: &mut usize,
-    num_of_err: &mut usize,
-    elapsed_time: &mut Vec<u128>,
-    _num_of_users: &usize,
-    current_work: Vec<(u64, String, usize)>,
-    tab_list: &Vec<Arc<Tab>>,
-) {
-    // println!("\npivot: {:?}", pivot);
-    // println!("current work {:?}", current_work);
+pub fn rdr_retrieve_users(setup_val: usize) -> Option<usize> {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+    map.insert(2, 4);
+    map.insert(3, 8);
+    map.insert(4, 12);
+    map.insert(5, 16);
+    map.insert(6, 20);
 
-    for (milli, url, user) in current_work.into_iter() {
-        println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
-        // println!("DEBUG: {:?} {:?}", now.elapsed().as_millis(), milli);
+    // map.insert(1, 1);
+    // map.insert(2, 2);
+    // map.insert(3, 4);
+    // map.insert(4, 6);
+    // map.insert(5, 8);
+    // map.insert(6, 10);
 
-        if now.elapsed().as_millis() < milli as u128 {
-            // println!("DEBUG: waiting");
-            let one_millis = Duration::from_millis(1);
-            std::thread::sleep(one_millis);
-        } else {
-            // println!("DEBUG: matched");
-            match user_tab_browse(&tab_list[user], &url) {
-                Ok(elapsed) => {
-                    // println!("ok");
-                    // *num_of_ok += 1;
-                    // elapsed_time.push(elapsed);
-                }
-                Err((elapsed, e)) => {
-                    // println!("err");
-                    // *num_of_err += 1;
-                    // elapsed_time.push(elapsed);
-                    println!("User {} caused an error: {:?}", user, e);
-                    // println!("User {} caused an error", user,);
-                }
-            }
-        }
-    }
+    map.remove(&setup_val)
 }
