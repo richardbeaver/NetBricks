@@ -1,0 +1,44 @@
+Using Cargo from /home/jethros/.cargo/bin/cargo
+Going to start with configuration Configuration: name: NATing mempool size: 2047 core cache: 32 primary core: 4
+ Ports:
+	Port 0000:01:00.1 RXQ_Count: 1 RX_Queues: [ 2 ] TXQ_Count: 1 TX_Queues: 2 RXD: 128 TXD: 128 Loopback false
+	Port 0000:01:00.0 RXQ_Count: 1 RX_Queues: [ 1 ] TXQ_Count: 1 TX_Queues: 1 RXD: 128 TXD: 128 Loopback false
+Cores:
+	1
+	2
+	3
+
+EAL: Probing VFIO support...
+Running on node 0
+Devname: "0000:01:00.1"
+EAL: PCI device 0000:01:00.1 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 0
+Devname: "0000:01:00.0"
+EAL: PCI device 0000:01:00.0 on NUMA socket -1
+EAL:   Invalid NUMA socket, default to 0
+EAL:   probe driver: 8086:1583 net_i40e
+Going to try and use port 1
+Running on node 0
+Running on node 0
+Running on node 0
+Receiving started
+Running 0 pipelines
+Receiving started
+Starting scheduler on 3
+Receiving started
+"/home/jethros/dev/pvn/utils/workloads/p2p-workload.json"
+"/home/jethros/dev/pvn/utils/workloads/p2p-workload.json"
+Running 1 pipelines
+Running 1 pipelines
+Starting scheduler on 2
+Starting scheduler on 1
+torrent is : "zevenet-ce_v5.10.1-amd64.iso.torrent"
+torrent is : "xubuntu-19.10-desktop-amd64.iso.torrent"
+torrent is : "volumio-2.657-2019-10-18-x86.img.zip.torrent"
+torrent is : "ubuntustudio-19.10-dvd-amd64.iso.torrent"
+torrent is : "ubuntukylin-19.10-desktop-amd64.iso.torrent"
+1.00 OVERALL RX 596687.41 TX 596687.41
+1.00 OVERALL RX 597363.80 TX 597363.80
+1.00 OVERALL RX 597299.78 TX 597299.78

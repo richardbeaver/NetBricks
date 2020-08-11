@@ -17,11 +17,11 @@ use transmission::{Client, ClientConfig};
 pub fn p2p_retrieve_param(setup_val: usize) -> Option<usize> {
     let mut map = HashMap::new();
     map.insert(1, 1);
-    map.insert(2, 5);
-    map.insert(3, 10);
-    map.insert(4, 20);
-    map.insert(5, 30);
-    map.insert(6, 40);
+    map.insert(2, 10);
+    map.insert(3, 50);
+    map.insert(4, 100);
+    map.insert(5, 150);
+    map.insert(6, 200);
 
     map.insert(11, 1);
     map.insert(12, 1);
