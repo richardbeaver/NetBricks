@@ -48,4 +48,3 @@ lto = true
 rpath = true
 debug = true    # for profiling
 debug-assertions = false
-

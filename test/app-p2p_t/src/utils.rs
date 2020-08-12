@@ -1,9 +1,15 @@
 use core_affinity::{self, CoreId};
 use crossbeam::thread;
+use dotenv::dotenv;
+use std::time::{Duration, Instant};
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
+use std::env;
 use std::fs;
-use transmission::{Client, ClientConfig};
+use transmission_rpc::types::{BasicAuth, Result, RpcResponse, SessionGet};
+use transmission_rpc::types::{Id, Nothing, TorrentAction};
+use transmission_rpc::types::{TorrentAddArgs, TorrentAdded};
+use transmission_rpc::TransClient;
 
 /// Get the parameters for running p2p experiments.
 ///
@@ -71,67 +77,48 @@ pub fn load_json(file_path: String) -> Vec<String> {
     torrents
 }
 
-pub fn run_torrent_test(pivot: u64, workload: &mut Vec<String>, torrents_dir: &str, c: &Client) {
-    // println!("run torrents {:?}", pivot);
-    match workload.pop() {
-        Some(torrent) => {
-            println!("{:?} torrent is : {:?}", pivot, torrent);
-            let torrent = torrents_dir.clone().to_owned() + &torrent;
-            // println!("torrent dir is : {:?}", torrent_dir);
-            let t = c.add_torrent_file(&torrent).unwrap();
-            t.start();
-        }
-        None => {
-            println!("no torrent");
-        }
-    }
+pub fn create_transmission_client() -> Result<TransClient>{
+    dotenv().ok();
+    // env_logger::init();
+
+    // setup session
+    let url : String= env::var("TURL")?;
+    let basic_auth = BasicAuth {
+        user: env::var("TUSER")?,
+        password: env::var("TPWD")?,
+    };
+    let client = TransClient::with_auth(&url, basic_auth);
+    Ok(client)
 }
 
-pub fn task_scheduler(
-    pivot: u64,
-    c: &Client,
-    workload: &mut Vec<String>,
-    torrents_dir: &str,
-    config_dir: &str,
-    download_dir: &str,
-) {
-    // println!("run torrents {:?}", pivot);
-    match workload.pop() {
-        Some(torrent) => {
-            println!("{:?} torrent is : {:?}", pivot, torrent);
-            let torrent = torrents_dir.clone().to_owned() + &torrent;
-            // println!("torrent dir is : {:?}", torrent_dir);
-            run_torrent(c, &torrent, &config_dir.to_string(), &download_dir.to_string());
+pub async fn run_all_torrents(mut pivot: usize, p2p_param: usize,client: TransClient, mut workload: Vec<String>) -> Result<()>
+ {
+    while let Some(torrent) = workload.pop() {
+        if pivot >= p2p_param {
+            break;
         }
-        None => {
-            println!("no torrent");
-        }
+        println!("torrent is : {:?}", torrent);
+
+        // add torrent
+        let add: TorrentAddArgs = TorrentAddArgs {
+            filename: Some(
+                          torrent.to_string(),
+                      ),
+                      ..TorrentAddArgs::default()
+        };
+        let res: RpcResponse<TorrentAdded> = client.torrent_add(add).await?;
+        println!("Add result: {:?}", &res.is_ok());
+
+        // keep track of torrent running
+        pivot += 1;
+
+        // if pivot == p2p_param {
+        //     start = Instant::now();
+        // }
     }
-}
 
-pub fn run_torrent(c: &Client, torrent: &str, config_dir: &str, download_dir: &str) {
-    thread::scope(|s| {
-        let core_ids = core_affinity::get_core_ids().unwrap();
-        let handles = core_ids
-            .into_iter()
-            .map(|id| {
-                s.spawn(move |_| {
-                    // Pin this thread to a single CPU core.
-                    core_affinity::set_for_current(id);
-                    // Do more work after this.
-                    //
-                    if id.id == 5 as usize {
-                        println!("Working in core {:?}", id);
-                        let t = c.add_torrent_file(torrent).unwrap();
-                        t.start();
-                    }
-                })
-            })
-            .collect::<Vec<_>>();
+    let res1: RpcResponse<Nothing> = client.torrent_action(TorrentAction::Start, vec![Id::Id(1)]).await?;
+    println!("Start result: {:?}", &res1.is_ok());
 
-        for handle in handles.into_iter() {
-            handle.join().unwrap();
-        }
-    })
-    .unwrap();
+    Ok(())
 }
