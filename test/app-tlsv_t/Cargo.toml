@@ -12,7 +12,7 @@ fnv = "*"
 twox-hash = "*"
 # rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.15.2", features = ["dangerous_configuration"] }
 rustls = "0.17"
-webpki = "0.19"
+webpki = "*"
 webpki-roots = "*"
 log = "0.4"
 

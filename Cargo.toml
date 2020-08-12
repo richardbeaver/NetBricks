@@ -32,14 +32,14 @@ members=["framework",
 		"test/app-xcdr_g",
 		"test/app-xcdr_t",
         # PVN examples (for latency measurement)
-        "test/tls-validator-groupby",
-		"test/tls-validator-transform",
-        "test/rdr-groupby",
-        "test/rdr-transform",
-        "test/transcoder-groupby",
-        "test/transcoder-transform",
-        "test/p2p-groupby",
-        "test/p2p-transform",
+        # "test/tls-validator-groupby",
+		# "test/tls-validator-transform",
+        # "test/rdr-groupby",
+        # "test/rdr-transform",
+        # "test/transcoder-groupby",
+        # "test/transcoder-transform",
+        # "test/p2p-groupby",
+        # "test/p2p-transform",
         ]
 
 [profile.release]
