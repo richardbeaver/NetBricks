@@ -15,7 +15,7 @@ extern crate getopts;
 extern crate rand;
 extern crate serde_json;
 extern crate time;
-extern crate transmission;
+extern crate transmission_rpc;
 
 use self::nf::p2p;
 use e2d2::config::{basic_opts, read_matches};
