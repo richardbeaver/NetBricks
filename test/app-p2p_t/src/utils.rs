@@ -1,6 +1,10 @@
 use core_affinity::{self, CoreId};
 use crossbeam::thread;
 use dotenv::dotenv;
+use futures::{
+    future::{BoxFuture, FutureExt},
+    stream::{FuturesUnordered, StreamExt},
+};
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -91,36 +95,30 @@ pub fn create_transmission_client() -> Result<TransClient> {
     Ok(client)
 }
 
-pub async fn run_all_torrents(
-    mut pivot: usize,
-    p2p_param: usize,
-    client: TransClient,
-    mut workload: Vec<String>,
-) -> Result<()> {
-    while let Some(torrent) = workload.pop() {
-        if pivot >= p2p_param {
+pub async fn run_all_torrents(p2p_param: usize, client: TransClient, mut workload: Vec<String>) -> Result<()> {
+    let mut futures: FuturesUnordered<BoxFuture<Result<RpcResponse<TorrentAdded>>>> = FuturesUnordered::new();
+
+    for (pos, t) in workload.iter().enumerate() {
+        println!("Torrent at position {}: {:?}", pos, t);
+        if pos >= 10 {
+            println!("exiting with {}", pos);
             break;
         }
-        println!("torrent is : {:?}", torrent);
-
         // add torrent
         let add: TorrentAddArgs = TorrentAddArgs {
-            filename: Some(torrent.to_string()),
+            filename: Some(t.to_string()),
             ..TorrentAddArgs::default()
         };
-        let res: RpcResponse<TorrentAdded> = client.torrent_add(add).await?;
-        println!("Add result: {:?}", &res.is_ok());
 
-        // keep track of torrent running
-        pivot += 1;
-
-        // if pivot == p2p_param {
-        //     start = Instant::now();
-        // }
+        futures.push(Box::pin(client.torrent_add(add)));
     }
 
-    let res1: RpcResponse<Nothing> = client.torrent_action(TorrentAction::Start, vec![Id::Id(1)]).await?;
-    println!("Start result: {:?}", &res1.is_ok());
+    while let Some(result) = futures.next().await {
+        match result {
+            Ok(val) => println!("ok {:?}", val),
+            Err(e) => eprintln!("err {}", e),
+        }
+    }
 
     Ok(())
 }

@@ -53,6 +53,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     let now = Instant::now();
     let mut start = Instant::now();
 
+    let mut workload_exec = true;
     // let mut torrent_list = Vec::new();
 
     let pipeline = parent
@@ -111,28 +112,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             }
 
             if matched {
-                let client = create_transmission_client().unwrap();
-                let mut rt = Runtime::new().unwrap();
-                rt.block_on(run_all_torrents(pivot, p2p_param, client, workload.clone()));
-
-                if start.elapsed().as_secs() >= 1 as u64 {
-                    // let tlist = torrent_list.clone();
-                    // let tlist2 = torrent_list.clone();
-                    // for t in tlist {
-                    //     println!(
-                    //         "state: {:?}, percent complete: {:?}, percent done: {:?}, finished: {:?}, is stalled: {:?}",
-                    //         t.stats().state,
-                    //         t.stats().percent_complete,
-                    //         t.stats().percent_done,
-                    //         t.stats().finished,
-                    //         t.stats().is_stalled
-                    //     );
-                    // }
-                    // if tlist.into_iter().all(|x| x.stats().percent_done == 1.0) {
-                    //     println!("All Done!!!!!");
-                    // }
-                    // println!("1 second");
-                    start = Instant::now();
+                if workload_exec {
+                    let client = create_transmission_client().unwrap();
+                    let mut rt = Runtime::new().unwrap();
+                    rt.block_on(run_all_torrents(p2p_param, client, workload.clone()));
+                    workload_exec = false;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
