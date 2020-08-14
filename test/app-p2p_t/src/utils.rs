@@ -1,11 +1,11 @@
 use core_affinity::{self, CoreId};
 use crossbeam::thread;
 use dotenv::dotenv;
-use std::time::{Duration, Instant};
 use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs;
+use std::time::{Duration, Instant};
 use transmission_rpc::types::{BasicAuth, Result, RpcResponse, SessionGet};
 use transmission_rpc::types::{Id, Nothing, TorrentAction};
 use transmission_rpc::types::{TorrentAddArgs, TorrentAdded};
@@ -77,12 +77,12 @@ pub fn load_json(file_path: String) -> Vec<String> {
     torrents
 }
 
-pub fn create_transmission_client() -> Result<TransClient>{
+pub fn create_transmission_client() -> Result<TransClient> {
     dotenv().ok();
     // env_logger::init();
 
     // setup session
-    let url : String= env::var("TURL")?;
+    let url: String = env::var("TURL")?;
     let basic_auth = BasicAuth {
         user: env::var("TUSER")?,
         password: env::var("TPWD")?,
@@ -91,8 +91,12 @@ pub fn create_transmission_client() -> Result<TransClient>{
     Ok(client)
 }
 
-pub async fn run_all_torrents(mut pivot: usize, p2p_param: usize,client: TransClient, mut workload: Vec<String>) -> Result<()>
- {
+pub async fn run_all_torrents(
+    mut pivot: usize,
+    p2p_param: usize,
+    client: TransClient,
+    mut workload: Vec<String>,
+) -> Result<()> {
     while let Some(torrent) = workload.pop() {
         if pivot >= p2p_param {
             break;
@@ -101,10 +105,8 @@ pub async fn run_all_torrents(mut pivot: usize, p2p_param: usize,client: TransCl
 
         // add torrent
         let add: TorrentAddArgs = TorrentAddArgs {
-            filename: Some(
-                          torrent.to_string(),
-                      ),
-                      ..TorrentAddArgs::default()
+            filename: Some(torrent.to_string()),
+            ..TorrentAddArgs::default()
         };
         let res: RpcResponse<TorrentAdded> = client.torrent_add(add).await?;
         println!("Add result: {:?}", &res.is_ok());

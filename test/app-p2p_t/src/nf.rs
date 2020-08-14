@@ -111,37 +111,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             }
 
             if matched {
-                // create client
                 let client = create_transmission_client().unwrap();
-
                 let mut rt = Runtime::new().unwrap();
-
                 rt.block_on(run_all_torrents(pivot, p2p_param, client, workload.clone()));
-                // while let Some(torrent) = workload.pop() {
-                //     if pivot >= p2p_param {
-                //         break;
-                //     }
-                //     println!("torrent is : {:?}", torrent);
-                //     let torrent = torrents_dir.to_owned() + &torrent;
-                //     // println!("torrent dir is : {:?}", torrent_dir);
-                //     let t = c.add_torrent_file(&torrent).unwrap();
-                //     t.start();
-                //     torrent_list.push(t);
-                //     pivot += 1;
-                //
-                //     if pivot == p2p_param {
-                //         // let end = Instant::now();
-                //         // println!(
-                //         //     "start {:?}, elapsed: {:?}, duration: {:?}",
-                //         //     start,
-                //         //     start.elapsed().as_secs(),
-                //         //     end.duration_since(start)
-                //         // );
-                //         // println!("init start");
-                //         start = Instant::now();
-                //     }
-                // }
-                //
+
                 if start.elapsed().as_secs() >= 1 as u64 {
                     // let tlist = torrent_list.clone();
                     // let tlist2 = torrent_list.clone();
