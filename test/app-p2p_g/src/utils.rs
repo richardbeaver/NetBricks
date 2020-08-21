@@ -1,10 +1,20 @@
 use core_affinity::{self, CoreId};
 use crossbeam::thread;
+use dotenv::dotenv;
+use futures::{
+    future::{BoxFuture, FutureExt},
+    stream::{FuturesUnordered, StreamExt},
+};
 use serde_json::{from_reader, Value};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::env;
 use std::fs;
 use std::time::{Duration, Instant};
-use transmission::{Client, ClientConfig};
+use transmission_rpc::types::{BasicAuth, Result, RpcResponse, SessionGet};
+use transmission_rpc::types::{Id, Nothing, TorrentAction};
+use transmission_rpc::types::{Torrent, TorrentGetField, Torrents};
+use transmission_rpc::types::{TorrentAddArgs, TorrentAdded};
+use transmission_rpc::TransClient;
 
 /// Get the parameters for running p2p experiments.
 ///
@@ -16,8 +26,8 @@ use transmission::{Client, ClientConfig};
 /// 40 torrent job in total -- 100% pktgen sending rate
 pub fn p2p_retrieve_param(setup_val: usize) -> Option<usize> {
     let mut map = HashMap::new();
-    map.insert(1, 1);
-    map.insert(2, 10);
+    map.insert(2, 1);
+    map.insert(1, 10);
     map.insert(3, 50);
     map.insert(4, 100);
     map.insert(5, 150);
@@ -72,51 +82,63 @@ pub fn load_json(file_path: String) -> Vec<String> {
     torrents
 }
 
-pub fn task_scheduler(
-    pivot: u64,
-    c: &Client,
-    workload: &mut Vec<String>,
-    torrents_dir: &str,
-    config_dir: &str,
-    download_dir: &str,
-) {
-    // println!("run torrents {:?}", pivot);
-    match workload.pop() {
-        Some(torrent) => {
-            println!("{:?} torrent is : {:?}", pivot, torrent);
-            let torrent = torrents_dir.clone().to_owned() + &torrent;
-            // println!("torrent dir is : {:?}", torrent_dir);
-            run_torrent(c, &torrent, &config_dir.to_string(), &download_dir.to_string());
-        }
-        None => {
-            println!("no torrent");
-        }
-    }
+pub fn create_transmission_client() -> Result<TransClient> {
+    dotenv().ok();
+    // env_logger::init();
+
+    // setup session
+    let url: String = env::var("TURL")?;
+    let basic_auth = BasicAuth {
+        user: env::var("TUSER")?,
+        password: env::var("TPWD")?,
+    };
+    let client = TransClient::with_auth(&url, basic_auth);
+    Ok(client)
 }
 
-pub fn run_torrent(c: &Client, torrent: &str, config_dir: &str, download_dir: &str) {
-    thread::scope(|s| {
-        let core_ids = core_affinity::get_core_ids().unwrap();
-        let handles = core_ids
-            .into_iter()
-            .map(|id| {
-                s.spawn(move |_| {
-                    // Pin this thread to a single CPU core.
-                    core_affinity::set_for_current(id);
-                    // Do more work after this.
-                    //
-                    if id.id == 5 as usize {
-                        println!("Working in core {:?}", id);
-                        let t = c.add_torrent_file(torrent).unwrap();
-                        t.start();
-                    }
-                })
-            })
-            .collect::<Vec<_>>();
+pub async fn add_all_torrents(p2p_param: usize, mut workload: Vec<String>, torrents_dir: String) -> Result<()> {
+    let client = create_transmission_client().unwrap();
+    let mut futures: FuturesUnordered<BoxFuture<Result<RpcResponse<TorrentAdded>>>> = FuturesUnordered::new();
 
-        for handle in handles.into_iter() {
-            handle.join().unwrap();
+    for (pos, t) in workload.iter().enumerate() {
+        println!("Torrent at position {}: {:?}", pos, t);
+        if pos >= p2p_param {
+            println!("exiting with {}", pos);
+            break;
         }
-    })
-    .unwrap();
+        // add torrent
+        let add: TorrentAddArgs = TorrentAddArgs {
+            filename: Some(torrents_dir.clone() + &t.to_string()),
+            ..TorrentAddArgs::default()
+        };
+
+        futures.push(Box::pin(client.torrent_add(add)));
+    }
+
+    while let Some(result) = futures.next().await {
+        match result {
+            Ok(_) => println!("ok"),
+            Err(e) => eprintln!("err {}", e),
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn run_all_torrents() -> Result<()> {
+    let client = create_transmission_client().unwrap();
+    let res: RpcResponse<Torrents<Torrent>> = client
+        .torrent_get(Some(vec![TorrentGetField::Id, TorrentGetField::Name]), None)
+        .await?;
+    let ids: Vec<Id> = res
+        .arguments
+        .torrents
+        .iter()
+        .map(|it| Id::Id(*it.id.as_ref().unwrap()))
+        .collect();
+
+    let res1: RpcResponse<Nothing> = client.torrent_action(TorrentAction::Start, ids).await?;
+    println!("Start result: {:?}", &res1.is_ok());
+
+    Ok(())
 }

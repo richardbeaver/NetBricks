@@ -9,7 +9,6 @@ extern crate e2d2;
 extern crate failure;
 extern crate fnv;
 extern crate getopts;
-extern crate headless_chrome;
 extern crate hyper;
 extern crate rand;
 extern crate rshttp;
@@ -18,7 +17,7 @@ extern crate serde_json;
 extern crate sha1;
 extern crate time;
 extern crate tiny_http;
-extern crate transmission;
+extern crate transmission_rpc;
 
 use self::nf::p2p;
 use e2d2::allocators::CacheAligned;

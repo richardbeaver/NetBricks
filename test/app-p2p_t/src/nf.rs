@@ -113,9 +113,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             if matched {
                 if workload_exec {
-                    let client = create_transmission_client().unwrap();
                     let mut rt = Runtime::new().unwrap();
-                    rt.block_on(run_all_torrents(p2p_param, client, workload.clone()));
+                    rt.block_on(add_all_torrents(p2p_param, workload.clone(), torrents_dir.to_string()));
+                    rt.block_on(run_all_torrents());
                     workload_exec = false;
                 }
 

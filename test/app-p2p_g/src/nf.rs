@@ -6,7 +6,7 @@ use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use transmission::{Client, ClientConfig};
+use tokio::runtime::Runtime;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -44,20 +44,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let config_dir = "/data/config";
     let download_dir = "/data/downloads";
 
-    // let config_dir = "config";
-    // let download_dir = "downloads";
-    let config = ClientConfig::new()
-        .app_name("testing")
-        .config_dir(config_dir)
-        .use_utp(false)
-        .download_dir(download_dir);
-    let c = Client::new(config);
-
     let mut pivot = 0 as usize;
     let now = Instant::now();
     let mut start = Instant::now();
 
-    let mut torrent_list = Vec::new();
+    let mut workload_exec = true;
 
     // States that this NF needs to maintain.
     //
@@ -173,33 +164,14 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            while let Some(torrent) = workload.pop() {
-                if pivot >= p2p_param {
-                    break;
-                }
-                println!("torrent is : {:?}", torrent);
-                let torrent = torrents_dir.to_owned() + &torrent;
-                // println!("torrent dir is : {:?}", torrent_dir);
-                let t = c.add_torrent_file(&torrent).unwrap();
-                t.start();
-                torrent_list.push(t);
-                pivot += 1;
-
-                if pivot == p2p_param {
-                    let end = Instant::now();
-                    // println!(
-                    //     "start {:?}, elapsed: {:?}, duration: {:?}",
-                    //     start,
-                    //     start.elapsed().as_secs(),
-                    //     end.duration_since(start)
-                    // );
-                    // println!("init start");
-                    start = Instant::now();
-                }
+            if workload_exec {
+                let mut rt = Runtime::new().unwrap();
+                rt.block_on(add_all_torrents(p2p_param, workload.clone(), torrents_dir.to_string()));
+                rt.block_on(run_all_torrents());
+                workload_exec = false;
             }
 
             if start.elapsed().as_secs() >= 1 as u64 {
-                let tlist = torrent_list.clone();
                 // for t in tlist {
                 //     println!(
                 //         "state: {:?}, percent complete: {:?}, percent done: {:?}, finished: {:?}, is stalled: {:?}",
@@ -210,9 +182,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 //         t.stats().is_stalled
                 //     );
                 // }
-                if tlist.into_iter().all(|x| x.stats().percent_done == 1.0) {
-                    println!("All Done!!!!!");
-                }
                 // println!("1 second");
                 start = Instant::now();
             }

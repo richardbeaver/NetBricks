@@ -15,15 +15,17 @@ log = "0.4"
 failure = "*"
 tiny_http = "0.6"
 rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
-headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn" }
 rustc-serialize = "*"
 serde_json = "*"
 sha1 = "0.2.0"
 hyper = "0.10"
-libevent-sys = { git = "https://github.com/jethrosun/libevent-sys", branch = "pvn" }
-transmission = { git = "https://github.com/jethrosun/transmission-rs", branch = "pvn" }
 core_affinity = "0.5.10"
 crossbeam = "0.7.3"
+"transmission-rpc" = "0.2.3"
+tokio = { version = "0.2", features = ["macros"] }
+dotenv = "0.15.0"
+env_logger = "0.7.1"
+futures = "0.3"
 
 [features]
 default = []
