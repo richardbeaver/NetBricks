@@ -21,6 +21,8 @@ if [ ! -e ${TOOLS_BASE} ]; then
     mkdir -p ${TOOLS_BASE}
 fi
 
+TARGET_DIR="/home/jethros/data/cargo-target/release"
+
 # setup the DPDK version
 DPDK_VER=17.08
 DPDK_HOME="${BASE_DIR}/3rdparty/dpdk"
@@ -441,7 +443,8 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        # executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -458,7 +461,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -475,7 +478,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -492,7 +495,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -509,7 +512,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -526,7 +529,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -543,7 +546,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build
@@ -560,7 +563,7 @@ case $TASK in
         fi
         cmd=$1
         shift
-        executable=${BASE_DIR}/target/release/$cmd
+        executable=${TARGET_DIR}/$cmd
         if [ ! -e ${executable} ]; then
             echo "${executable} not found, building"
             ${BASE_DIR}/${BUILD_SCRIPT} build

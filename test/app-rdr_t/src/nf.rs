@@ -118,24 +118,14 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             // Scheduling browsing jobs.
             if matched {
-                if now.elapsed().as_secs() == pivot as u64 {
+                for pivot in 0..605 {
                     let min = pivot / 60;
                     let rest_sec = pivot % 60;
                     println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&pivot) {
-                        Some(wd) => rdr_scheduler(
-                            now.clone(),
-                            &pivot,
-                            &mut num_of_ok,
-                            &mut num_of_err,
-                            &mut elapsed_time,
-                            &num_of_users,
-                            wd,
-                            &browser_list,
-                        ),
+                        Some(wd) => rdr_scheduler_ng(&pivot, wd, &browser_list),
                         None => println!("No workload for second {:?}", pivot),
                     }
-                    pivot += 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
