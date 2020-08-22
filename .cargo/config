@@ -1,6 +1,5 @@
 [build]
-# rustc="3rdparty/tools/bin/rustc.sh"
-# rustdoc="3rdparty/tools/bin/rustdoc.sh"
+target-dir = "/home/jethros/data/cargo-target"
 
 [term]
 color = 'auto'
