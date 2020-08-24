@@ -172,30 +172,41 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .transform(box move |pkt| {
+            let mut num_of_visits = Vec::new();
+            let mut elapsed_time = Vec::new();
+
             // Scheduling browsing jobs.
-            if now.elapsed().as_secs() == pivot as u64 {
-                let min = pivot / 60;
-                let rest_sec = pivot % 60;
+            // FIXME: This is not ideal as we are not actually schedule browse.
+            let cur_time = now.elapsed().as_secs() as usize;
+            if rdr_workload.contains_key(&cur_time) {
+                println!("pivot {:?}", cur_time);
+                let min = cur_time / 60;
+                let rest_sec = cur_time % 60;
                 println!("{:?} min, {:?} second", min, rest_sec);
-                match rdr_workload.remove(&pivot) {
-                    Some(wd) => rdr_scheduler(
-                        now.clone(),
-                        &pivot,
-                        &mut num_of_ok,
-                        &mut num_of_err,
-                        &mut elapsed_time,
-                        &num_of_users,
-                        wd,
-                        &browser_list,
-                    ),
-                    None => println!("No workload for second {:?}", pivot),
+                match rdr_workload.remove(&cur_time) {
+                    Some(wd) => {
+                        let (visits, elapsed) = rdr_scheduler_ng(&cur_time, wd, &browser_list).unwrap();
+                        num_of_visits.push(visits);
+                        elapsed_time.push(elapsed);
+                    }
+                    None => println!("No workload for second {:?}", cur_time),
                 }
-                pivot += 1;
             }
 
             pkt_count += 1;
             // println!("pkt count {:?}", pkt_count);
 
+            // Measurement: metric for the performance of the RDR proxy
+            if now.elapsed().as_secs() == APP_MEASURE_TIME {
+                let total_visits: usize = num_of_visits.iter().sum();
+                let total_time: usize = elapsed_time.iter().sum();
+                println!(
+                    "Metric: num_of_visit: {:?}, total_elapsed_time: {:?}",
+                    total_visits, total_time
+                );
+            }
+
+            // Measurement: instrumentation to collect latency metrics
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
                 let end = Instant::now();

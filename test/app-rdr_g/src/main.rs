@@ -8,7 +8,6 @@ extern crate failure;
 extern crate fnv;
 extern crate getopts;
 extern crate headless_chrome;
-extern crate rand;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
@@ -28,7 +27,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 mod nf;
-mod prune_workload;
+mod unresolvable;
 mod utils;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;

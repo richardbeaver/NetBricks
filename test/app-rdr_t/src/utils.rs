@@ -1,26 +1,21 @@
-use crate::prune_workload::curate_broken_records;
-use failure::Error;
+use crate::unresolvable::curate_unresolvable_records;
 use failure::Fallible;
-use headless_chrome::LaunchOptionsBuilder;
-use headless_chrome::{Browser, Tab};
-use rand::Rng;
-use serde_json::{from_reader, Result, Value};
-use std::collections::{HashMap, HashSet};
+use headless_chrome::{Browser, LaunchOptionsBuilder};
+use serde_json::{from_reader, Value};
+use std::collections::HashMap;
 use std::fs::File;
-use std::sync::Arc;
-use std::thread;
+use std::io::Result;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 
 /// Construct the workload from the session file.
 ///
 /// https://kbknapp.github.io/doapi-rs/docs/serde/json/index.html
-
 pub fn rdr_load_workload(
     file_path: String,
     num_of_secs: usize,
     num_of_user: usize,
-) -> Result<HashMap<usize, Vec<(u64, String, usize)>>> {
+) -> serde_json::Result<HashMap<usize, Vec<(u64, String, usize)>>> {
     // time in second, workload in that second
     // let mut workload = HashMap::<usize, HashMap<usize, Vec<(u64, String)>>>::with_capacity(num_of_secs);
     let mut workload = HashMap::<usize, Vec<(u64, String, usize)>>::with_capacity(num_of_secs);
@@ -52,7 +47,7 @@ pub fn rdr_load_workload(
             };
             // println!("{:?}", urls.unwrap());
 
-            let mut broken_urls = curate_broken_records();
+            let mut broken_urls = curate_unresolvable_records();
 
             if broken_urls.contains(urls.unwrap()[1].as_str().unwrap()) {
                 continue;
@@ -71,9 +66,41 @@ pub fn rdr_load_workload(
     Ok(workload)
 }
 
-// /usr/bin/chromedriver
-// /usr/bin/chromium-browser
+/// Retrieve the number of users based on our setup configuration.
+pub fn rdr_retrieve_users(setup_val: usize) -> Option<usize> {
+    let mut map = HashMap::new();
+    // map.insert(1, 2);
+    // map.insert(2, 4);
+    // map.insert(3, 8);
+    // map.insert(4, 12);
+    // map.insert(5, 16);
+    // map.insert(6, 20);
+
+    // map.insert(1, 1);
+    // map.insert(2, 2);
+    // map.insert(3, 4);
+    // map.insert(4, 6);
+    // map.insert(5, 8);
+    // map.insert(6, 10);
+
+    map.insert(1, 5);
+    map.insert(2, 10);
+    map.insert(3, 20);
+    map.insert(4, 40);
+    map.insert(5, 80);
+    map.insert(6, 100);
+
+    map.remove(&setup_val)
+}
+
+/// Create the browser for RDR proxy (user browsing).
+///
+/// FIXME: Instead of using the particular forked branch we want to eventually use the official
+/// headless chrome create but set those parameters correctly here.
 pub fn browser_create() -> Fallible<Browser> {
+    // /usr/bin/chromedriver
+    // /usr/bin/chromium-browser
+
     let timeout = Duration::new(1000, 0);
 
     let options = LaunchOptionsBuilder::default()
@@ -89,6 +116,7 @@ pub fn browser_create() -> Fallible<Browser> {
     Ok(browser)
 }
 
+/// (Deprecated) User browse activity.
 pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()> {
     let now = Instant::now();
 
@@ -106,8 +134,7 @@ pub fn user_browse(current_browser: &Browser, hostname: &String) -> Fallible<()>
     Ok(())
 }
 
-/// RDR proxy browsing scheduler.
-// 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
+/// (Deprecated) RDR proxy browsing scheduler.
 pub fn rdr_scheduler(
     now: Instant,
     pivot: &usize,
@@ -118,6 +145,7 @@ pub fn rdr_scheduler(
     current_work: Vec<(u64, String, usize)>,
     browser_list: &Vec<Browser>,
 ) {
+    // 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
     for (milli, url, user) in current_work.into_iter() {
         if milli >= 750 {
             break;
@@ -138,36 +166,36 @@ pub fn rdr_scheduler(
     }
 }
 
-/// RDR proxy browsing scheduler.
-// 4 [(4636, "fanfiction.net"), (9055, "bs.serving-sys.com")]
-pub fn rdr_scheduler_ng(pivot: &usize, current_work: Vec<(u64, String, usize)>, browser_list: &Vec<Browser>) {
-    for (milli, url, user) in current_work.into_iter() {
-        println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
+/// Simple user browse.
+pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<u128> {
+    let now = Instant::now();
+    let current_tab = match current_browser.new_tab() {
+        Ok(tab) => tab,
+        Err(e) => return Ok(now.elapsed().as_micros()),
+    };
 
-        match user_browse(&browser_list[user], &url) {
-            Ok(_) => {}
-            Err(e) => {
-                println!("User {} caused an error", user,);
-            }
-        }
+    let http_hostname = "http://".to_string() + &hostname;
+
+    match current_tab.navigate_to(&http_hostname) {
+        Ok(_) => Ok(now.elapsed().as_micros()),
+        Err(_) => Ok(now.elapsed().as_micros()),
     }
 }
 
-pub fn rdr_retrieve_users(setup_val: usize) -> Option<usize> {
-    let mut map = HashMap::new();
-    map.insert(1, 2);
-    map.insert(2, 4);
-    map.insert(3, 8);
-    map.insert(4, 12);
-    map.insert(5, 16);
-    map.insert(6, 20);
+/// RDR proxy browsing scheduler.
+pub fn rdr_scheduler_ng(
+    pivot: &usize,
+    current_work: Vec<(u64, String, usize)>,
+    browser_list: &Vec<Browser>,
+) -> Result<(usize, usize)> {
+    let mut elapsed_time = Vec::new();
+    for (milli, url, user) in current_work.into_iter() {
+        println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
 
-    // map.insert(1, 1);
-    // map.insert(2, 2);
-    // map.insert(3, 4);
-    // map.insert(4, 6);
-    // map.insert(5, 8);
-    // map.insert(6, 10);
-
-    map.remove(&setup_val)
+        let browsing_time = simple_user_browse(&browser_list[user], &url).unwrap();
+        elapsed_time.push(browsing_time as usize);
+    }
+    let total = elapsed_time.iter().sum();
+    // return number of url visited and total time elapsed
+    Ok((elapsed_time.len(), total))
 }
