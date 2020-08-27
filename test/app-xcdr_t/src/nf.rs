@@ -15,17 +15,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     // setup for this run
     let (setup, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    // let (xcdr_param, num_of_vid) = xcdr_retrieve_param(setup).unwrap();
     let num_of_vid = xcdr_retrieve_param(setup).unwrap();
-    // let time_span = 1000 / xcdr_param as u128;
-    // println!(
-    //     "Setup: {:?} port: {:?}, xcdr param: {:?}, num_of_vid: {:?}, time_span: {:?}",
-    //     setup, port, xcdr_param, num_of_vid, time_span
-    // );
     println!("Setup: {:?} port: {:?},  num_of_vid: {:?}", setup, port, num_of_vid,);
 
     // faktory job queue
-    // let default_faktory_conn = "tcp://localhost:".to_string() + &port;
     let default_faktory_conn = "tcp://localhost:7419".to_string();
 
     // Measurement code
@@ -55,7 +48,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    // pivot for registering jobs
+    // pivot for registering jobs. pivot will be incremented by 1 every second
     let mut pivot = 1 as u64;
 
     let now = Instant::now();
@@ -93,17 +86,12 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             let match_dst_port = 443;
 
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                Some((src, dst, p)) => {
-                    // println!("src: {:?} dst: {:}", src, dst); //
-                    (src, dst, p)
-                }
+                Some((src, dst, p)) => (src, dst, p),
                 None => (&0, &0, &0),
             };
 
             let src_port = p.get_header().src_port();
             let dst_port = p.get_header().dst_port();
-
-            // println!("src: {:?} dst: {:}", src_port, dst_port); //
 
             if *proto == 17 {
                 if *src_ip == match_src_ip
@@ -111,27 +99,20 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     && *dst_ip == match_dst_ip
                     && dst_port == match_dst_port
                 {
-                    // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
                     matched = true
                 } else if *src_ip == match_dst_ip
                     && src_port == match_dst_port
                     && *dst_ip == match_src_ip
                     && dst_port == match_src_port
                 {
-                    // println!("pkt count: {:?}", pkt_count);
-                    // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port);
                     matched = true
                 }
             }
 
             if matched {
-                // println!("matched");
-                // let time_in_millis = now.elapsed().as_millis();
                 let time_in_secs = now.elapsed().as_secs();
-                // println!("{:?}", time_in_secs);
 
-                // if we hit a new micro second/millisecond/second
+                // Append job within the new second
                 if time_in_secs == pivot {
                     // append job
                     //
@@ -146,7 +127,6 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     // w.push(end);
                 }
             } else {
-                // println!("notmatched");
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
@@ -157,6 +137,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             pkt_count += 1;
 
             if now.elapsed().as_secs() == APP_MEASURE_TIME {
+                // report the metrics
+                println!("Metric: {:?}", (pivot as usize) * num_of_vid);
+
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();

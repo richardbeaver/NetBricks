@@ -1,13 +1,10 @@
 use core_affinity::{self, CoreId};
-use std::sync::{Arc, RwLock};
-// use serde_json::{from_reader, Value};
+use faktory::{Job, Producer};
+use serde_json::{from_reader, Value};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io;
-// use std::thread;
-// use std::time::{Duration, Instant};
-use faktory::{Job, Producer};
-use serde_json::{from_reader, Value};
+use std::sync::{Arc, RwLock};
 
 /// Read setup for transcoder NF only.
 ///
@@ -74,43 +71,7 @@ pub fn xcdr_retrieve_param(setup_val: usize) -> Option<usize> {
     map.remove(&setup_val)
 }
 
-pub fn old_xcdr_retrieve_param(setup_val: usize) -> Option<(usize, usize)> {
-    let mut map = HashMap::new();
-    map.insert(1, (50, 1));
-    map.insert(2, (100, 1));
-    map.insert(3, (500, 1));
-    map.insert(4, (1000, 1));
-    map.insert(5, (1000, 2)); // 2
-    map.insert(6, (1000, 5));
-
-    map.remove(&setup_val)
-}
-
-// Append job to local queue. (deprecated)
-pub fn append_job(pivot: u128, job_queue: &Arc<RwLock<Vec<(String, String, String)>>>) {
-    // println!("enter append with pivot: {}", pivot);
-    let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
-    // let outfile = "out.y4m";
-    let width_height = "360x24";
-    for i in 0..1 {
-        let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned()
-            + &pivot.to_string()
-            + "_"
-            + &i.to_string()
-            + ".y4m";
-
-        let mut w = job_queue.write().unwrap();
-        w.push((infile.to_string(), outfile.to_string(), width_height.to_string()));
-        // println!(
-        //     "appending: {:?} {:?} {:?}",
-        //     infile.to_string(),
-        //     outfile.to_string(),
-        //     width_height.to_string()
-        // );
-    }
-}
-
-// Append job to a faktory queue.
+/// Append job to a faktory queue.
 pub fn append_job_faktory(pivot: u64, num_of_vid: usize, faktory_conn: Option<&str>, expr_num: &str) {
     let mut p = match Producer::connect(faktory_conn) {
         Ok(tcpstream) => tcpstream,
@@ -120,9 +81,7 @@ pub fn append_job_faktory(pivot: u64, num_of_vid: usize, faktory_conn: Option<&s
         }
     };
 
-    // println!("enter append with pivot: {}", pivot);
     let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
-    // let outfile = "out.y4m";
     let width_height = "360x24";
     for i in 0..num_of_vid {
         let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned()
@@ -136,11 +95,5 @@ pub fn append_job_faktory(pivot: u64, num_of_vid: usize, faktory_conn: Option<&s
             vec![infile.to_string(), outfile.to_string(), width_height.to_string()],
         ))
         .unwrap();
-        // println!(
-        //     "appending: {:?} {:?} {:?}",
-        //     infile.to_string(),
-        //     outfile.to_string(),
-        //     width_height.to_string()
-        // );
     }
 }
