@@ -64,9 +64,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     }
     println!("{} browsers are created ", num_of_users);
 
+    // Metrics for measurement
     let mut num_of_ok = 0;
+    let mut elapsed_time = Vec::new();
     let mut num_of_err = 0;
-    let mut elapsed_time: Vec<u128> = Vec::new();
+    let mut num_of_visit = 0;
 
     let mut pivot = 1;
     let now = Instant::now();
@@ -124,6 +126,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         matched = true
                     }
                 }
+
                 if now.elapsed().as_secs() == APP_MEASURE_TIME {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
@@ -172,9 +175,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .transform(box move |pkt| {
-            let mut num_of_visits = Vec::new();
-            let mut elapsed_time = Vec::new();
-
             // Scheduling browsing jobs.
             // FIXME: This is not ideal as we are not actually schedule browse.
             let cur_time = now.elapsed().as_secs() as usize;
@@ -184,26 +184,28 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let rest_sec = cur_time % 60;
                 println!("{:?} min, {:?} second", min, rest_sec);
                 match rdr_workload.remove(&cur_time) {
-                    Some(wd) => {
-                        let (visits, elapsed) = rdr_scheduler_ng(&cur_time, wd, &browser_list).unwrap();
-                        num_of_visits.push(visits);
-                        elapsed_time.push(elapsed);
-                    }
+                    Some(wd) => match rdr_scheduler_ng(&cur_time, wd, &browser_list) {
+                        Some((oks, errs, visits, elapsed)) => {
+                            num_of_ok += oks;
+                            num_of_err += errs;
+                            num_of_visit += visits;
+                            elapsed_time.push(elapsed);
+                        }
+                        None => println!("No workload for second {:?}", cur_time),
+                    },
                     None => println!("No workload for second {:?}", cur_time),
                 }
             }
 
             pkt_count += 1;
-            // println!("pkt count {:?}", pkt_count);
 
-            // Measurement: metric for the performance of the RDR proxy
             if now.elapsed().as_secs() == APP_MEASURE_TIME {
-                let total_visits: usize = num_of_visits.iter().sum();
-                let total_time: usize = elapsed_time.iter().sum();
+                // Measurement: metric for the performance of the RDR proxy
                 println!(
-                    "Metric: num_of_visit: {:?}, total_elapsed_time: {:?}",
-                    total_visits, total_time
+                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_visit: {:?}",
+                    num_of_ok, num_of_err, num_of_visit,
                 );
+                println!("Metric: Browsing Time: {:?}\n", elapsed_time);
             }
 
             // Measurement: instrumentation to collect latency metrics

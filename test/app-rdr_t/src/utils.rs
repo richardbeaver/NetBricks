@@ -167,19 +167,21 @@ pub fn rdr_scheduler(
 }
 
 /// Simple user browse.
-pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<u128> {
+pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<(bool, u128)> {
     let now = Instant::now();
     let current_tab = match current_browser.new_tab() {
         Ok(tab) => tab,
-        Err(e) => return Ok(now.elapsed().as_micros()),
+        Err(e) => {
+            println!("RDR Tab Error");
+            return Ok((false, now.elapsed().as_millis()));
+        }
     };
 
     let http_hostname = "http://".to_string() + &hostname;
 
-    match current_tab.navigate_to(&http_hostname) {
-        Ok(_) => Ok(now.elapsed().as_micros()),
-        Err(_) => Ok(now.elapsed().as_micros()),
-    }
+    current_tab.navigate_to(&http_hostname)?;
+
+    Ok((true, now.elapsed().as_millis()))
 }
 
 /// RDR proxy browsing scheduler.
@@ -187,15 +189,38 @@ pub fn rdr_scheduler_ng(
     pivot: &usize,
     current_work: Vec<(u64, String, usize)>,
     browser_list: &Vec<Browser>,
-) -> Result<(usize, usize)> {
+) -> Option<(usize, usize, usize, usize)> {
+    let mut num_of_ok = 0;
+    let mut num_of_err = 0;
+    let mut num_of_visit = 0;
     let mut elapsed_time = Vec::new();
+
     for (milli, url, user) in current_work.into_iter() {
         println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
 
-        let browsing_time = simple_user_browse(&browser_list[user], &url).unwrap();
-        elapsed_time.push(browsing_time as usize);
+        match simple_user_browse(&browser_list[user], &url) {
+            Ok((val, t)) => {
+                if val {
+                    num_of_ok += 1;
+                    num_of_visit += 1;
+                    elapsed_time.push(t as usize);
+                } else {
+                    num_of_err += 1;
+                    num_of_visit += 1;
+                    elapsed_time.push(t as usize);
+                }
+            }
+            Err(e) => {
+                println!("DEBUG: this should not be reachable!!!");
+            }
+        }
     }
+
     let total = elapsed_time.iter().sum();
-    // return number of url visited and total time elapsed
-    Ok((elapsed_time.len(), total))
+
+    if num_of_visit > 0 {
+        Some((num_of_ok, num_of_err, elapsed_time.len(), total))
+    } else {
+        None
+    }
 }
