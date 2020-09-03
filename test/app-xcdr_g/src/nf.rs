@@ -1,9 +1,9 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
-use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::xcdr::{pvn_elapsed, xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
-// use e2d2::utils::Flow;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
@@ -12,17 +12,21 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    let mut metric_exec = true;
+    let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
+
     // Specific setup config for this run
 
     // setup for this run
-    let (setup, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let num_of_vid = xcdr_retrieve_param(setup).unwrap();
-    println!(
-        "Setup: {:?} port: {:?}, num_of_vid: {:?}, expr_num: {:?}",
-        setup, port, num_of_vid, expr_num
-    );
+    let (setup_val, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(setup_val).unwrap();
+    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
     // faktory job queue
+    // let default_faktory_conn = "tcp://localhost:".to_string() + &port;
     let default_faktory_conn = "tcp://localhost:7419".to_string();
 
     // Measurement code
@@ -32,7 +36,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
-    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
+    let stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
     let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
 
     let t1_1 = Arc::clone(&start_ts);
@@ -43,8 +47,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // pkt count
     let mut pkt_count = 0;
 
-    let mut pivot = 1 as u64;
+    let mut pivot = 1 as u128 + time_span;
+
     let now = Instant::now();
+    let mut cur = Instant::now();
 
     // States that this NF needs to maintain.
     //
@@ -109,8 +115,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() == APP_MEASURE_TIME {
-                    println!("Metric: {:?}", (pivot as usize) * num_of_vid);
+                if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+                    println!("Pivot/span: {:?}", pivot / time_span);
+                    let mut w = latv_1.lock().unwrap();
+                    println!("Metric: {:?}", w);
 
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
@@ -139,7 +147,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     }
                     compute_stat(tmp_results);
                     println!("\nLatency results end",);
-                    // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                    metric_exec = false;
                 }
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
@@ -162,16 +170,20 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .get_group(0)
         .unwrap()
         .transform(box move |_| {
-            let time_in_secs = now.elapsed().as_secs();
+            let time_elapsed = pvn_elapsed(setup_val, now).unwrap();
 
             // if we hit a new micro second/millisecond/second
-            if time_in_secs == pivot {
+            if time_elapsed >= pivot {
+                let t = cur.elapsed().as_millis();
+                let mut w = latv_2.lock().unwrap();
+                w.push(t);
                 // append job
                 //
                 // we append a job to the job queue every *time_span*
-                append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn), &expr_num);
+                append_job_faktory(pivot, Some(&*default_faktory_conn), &expr_num);
 
-                pivot += 1;
+                cur = Instant::now();
+                pivot += time_span;
             }
 
             pkt_count += 1;

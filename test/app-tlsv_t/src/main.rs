@@ -14,14 +14,12 @@ extern crate webpki_roots;
 extern crate log;
 
 use self::nf::validator;
-use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
 use std::fmt::Display;
-use std::fs::OpenOptions;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};

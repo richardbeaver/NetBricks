@@ -8,9 +8,7 @@ use rustls::internal::msgs::{
 };
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::time::{Duration, Instant};
+use std::collections::{HashMap, HashSet};
 
 use webpki;
 use webpki_roots;
@@ -300,34 +298,4 @@ pub fn do_client_key_exchange(
             debug!("ISSUE: Oops, the payload cache doesn't have the entry for this flow");
         }
     }
-}
-
-pub fn merge_ts_old(
-    total_measured_pkt: usize,
-    stop_ts_tcp: Vec<Instant>,
-    stop_ts_non_tcp: HashMap<usize, Instant>,
-) -> HashMap<usize, Instant> {
-    let mut actual_ts = HashMap::<usize, Instant>::with_capacity(total_measured_pkt);
-    let mut non_tcp_c = 0;
-
-    for pivot in 1..total_measured_pkt + 1 {
-        if stop_ts_non_tcp.contains_key(&pivot) {
-            // non tcp ts
-            let item = stop_ts_non_tcp.get(&pivot).unwrap();
-            actual_ts.insert(pivot - 1, *item);
-            // println!("INSERT: pivot: {:?} is {:?}", pivot - 1, *item);
-            non_tcp_c += 1;
-        } else {
-            // tcp ts
-            // println!(
-            //     "INSERT: pivot: {:?} is {:?}",
-            //     pivot - 1,
-            //     stop_ts_tcp[pivot - non_tcp_c - 1]
-            // );
-            actual_ts.insert(pivot - 1, stop_ts_tcp[pivot - non_tcp_c - 1]);
-        }
-    }
-
-    println!("merging finished!",);
-    actual_ts
 }

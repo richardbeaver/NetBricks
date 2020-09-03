@@ -21,13 +21,11 @@ use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
-use std::net::Ipv4Addr;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 
 mod nf;
-mod unresolvable;
 mod utils;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;

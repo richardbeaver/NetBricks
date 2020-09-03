@@ -1,27 +1,27 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
-use e2d2::measure::*;
 use e2d2::operators::{Batch, CompositionBatch};
+use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{read_iter, read_setup};
+use e2d2::pvn::p2p::{load_json, p2p_fetch_workload, p2p_read_rand_seed, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
-use e2d2::utils::{ipv4_extract_flow, Flow};
-use fnv::FnvHasher;
 use std::collections::HashMap;
-use std::convert::From;
-use std::hash::BuildHasherDefault;
-use std::net::Ipv4Addr;
-use std::sync::{Arc, Mutex, RwLock};
-use std::time::{Duration, Instant};
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use tokio::runtime::Runtime;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // setup for this run
     let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let p2p_param = p2p_retrieve_param(setup_val.parse::<usize>().unwrap()).unwrap();
+    let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
+    let num_of_torrents = p2p_retrieve_param(setup_val).unwrap();
+    let p2p_torrents = p2p_read_rand_seed(num_of_torrents, iter_val).unwrap();
 
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
+    let mut metric_exec = true;
 
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
@@ -37,11 +37,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     let mut pkt_count = 0;
 
     // Workload and States for P2P NF
-    //
-    // 1, 10, 20, 40, 50, 75, 100, 150, 200
-    let workload = p2p_fetch_workload(setup_val.parse::<usize>().unwrap()).unwrap();
-    println!("{:?}", workload);
-    let mut workload = load_json(workload.to_string());
+    let fp_workload = p2p_fetch_workload("/home/jethros/setup".to_string()).unwrap();
+    let mut workload = load_json(fp_workload.to_string(), p2p_torrents);
+    // println!("{:?}", workload);
 
     // Fixed transmission setup
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -114,8 +112,18 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             if matched {
                 if workload_exec {
                     let mut rt = Runtime::new().unwrap();
-                    rt.block_on(add_all_torrents(p2p_param, workload.clone(), torrents_dir.to_string()));
-                    rt.block_on(run_all_torrents());
+                    match rt.block_on(add_all_torrents(
+                        num_of_torrents,
+                        workload.clone(),
+                        torrents_dir.to_string(),
+                    )) {
+                        Ok(_) => println!("Add torrents success"),
+                        Err(e) => println!("Add torrents failed with {:?}", e),
+                    }
+                    match rt.block_on(run_all_torrents()) {
+                        Ok(_) => println!("Run torrents success"),
+                        Err(e) => println!("Run torrents failed with {:?}", e),
+                    }
                     workload_exec = false;
                 }
 
@@ -134,7 +142,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == APP_MEASURE_TIME {
+            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();
@@ -162,7 +170,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
-                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                metric_exec = false;
             }
         });
     pipeline.compose()

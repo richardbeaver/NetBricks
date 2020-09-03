@@ -20,7 +20,6 @@ use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
-use std::fs::OpenOptions;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -28,7 +27,6 @@ use std::time::{Duration, Instant};
 mod nf;
 mod utils;
 
-const ENABLE_LOGGING: bool = false;
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the validator network function to schedule pipelines.

@@ -66,7 +66,7 @@ pub mod operators;
 pub mod state;
 
 #[doc(hidden)]
-pub mod measure;
+pub mod pvn;
 #[doc(hidden)]
 pub mod queues;
 #[doc(hidden)]

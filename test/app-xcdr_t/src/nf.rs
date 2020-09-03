@@ -1,7 +1,8 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, UdpHeader};
-use e2d2::measure::*;
 use e2d2::operators::{Batch, CompositionBatch};
+use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::xcdr::{pvn_elapsed, xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -11,14 +12,20 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
+    let mut metric_exec = true;
+    let mut latencyv = Vec::<u128>::new();
+    println!("Latency vec uses millisecond");
+
     // Specific setup config for this run
 
     // setup for this run
-    let (setup, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let num_of_vid = xcdr_retrieve_param(setup).unwrap();
-    println!("Setup: {:?} port: {:?},  num_of_vid: {:?}", setup, port, num_of_vid,);
+    let (setup_val, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(setup_val).unwrap();
+    println!("Setup: {:?} port: {:?}", setup_val, port,);
 
     // faktory job queue
+    // FIXME: use port from config
+    // let default_faktory_conn = "tcp://localhost:".to_string() + &port;
     let default_faktory_conn = "tcp://localhost:7419".to_string();
 
     // Measurement code
@@ -49,9 +56,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     let mut pkt_count = 0;
 
     // pivot for registering jobs. pivot will be incremented by 1 every second
-    let mut pivot = 1 as u64;
+    let mut pivot = 1 as u128 + time_span;
 
     let now = Instant::now();
+    let mut cur = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
     let pipeline = parent
@@ -110,15 +118,20 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             }
 
             if matched {
-                let time_in_secs = now.elapsed().as_secs();
+                let time_elapsed = pvn_elapsed(setup_val, now).unwrap();
 
                 // Append job within the new second
-                if time_in_secs == pivot {
+                if time_elapsed >= pivot {
+                    let t = cur.elapsed().as_millis();
+                    latencyv.push(t);
+
+                    // println!("append job, time_elapsed: {:?}, pivot: {:?}", time_elapsed, pivot);
                     // append job
                     //
                     // we append a job to the job queue every *time_span*
-                    append_job_faktory(pivot, num_of_vid, Some(&*default_faktory_conn), &expr_num);
-                    pivot += 1;
+                    append_job_faktory(pivot, Some(&*default_faktory_conn), &expr_num);
+                    cur = Instant::now();
+                    pivot += time_span;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
@@ -136,9 +149,10 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == APP_MEASURE_TIME {
+            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
                 // report the metrics
-                println!("Metric: {:?}", (pivot as usize) * num_of_vid);
+                println!("Pivot/time: {:?}", pivot / time_span);
+                println!("Metric: {:?}", latencyv);
 
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
@@ -167,7 +181,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
-                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                metric_exec = false;
             }
         });
     pipeline.compose()

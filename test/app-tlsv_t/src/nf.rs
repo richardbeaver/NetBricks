@@ -1,17 +1,19 @@
 use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
-use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use utils;
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
+    let mut metric_exec = true;
+
     // New payload cache.
     //
     // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
@@ -224,7 +226,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 );
             }
 
-            if now.elapsed().as_secs() == APP_MEASURE_TIME {
+            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
                 println!("pkt count {:?}", pkt_count);
                 // let mut total_duration = Duration::new(0, 0);
                 let mut total_time1 = Duration::new(0, 0);
@@ -255,7 +257,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
-                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
+                metric_exec = false;
             }
         });
     pipeline.compose()

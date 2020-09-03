@@ -1,22 +1,26 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
-use e2d2::measure::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{read_iter, read_setup};
+use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::Scheduler;
 use headless_chrome::Browser;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let rdr_users = rdr_retrieve_users(setup_val.parse::<usize>().unwrap()).unwrap();
+    let num_of_users = rdr_retrieve_users(setup_val).unwrap();
     let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, iter_val).unwrap();
 
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
+    let mut metric_exec = true;
 
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
@@ -37,28 +41,19 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    // Workloads:
-    // let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_".to_owned()
-    //     + &iter_val.to_string()
-    //     + ".json";
-    // let num_of_users = 100;
-
     let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_5.json";
     println!("{:?}", workload_path);
-    let num_of_users = rdr_users;
     let num_of_secs = 600;
 
-    let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, num_of_users).unwrap();
+    let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, rdr_users.clone()).unwrap();
     println!("Workload is generated",);
-    // println!("{:?}", rdr_workload);
 
     // Browser list.
-    let mut browser_list: Vec<Browser> = Vec::new();
+    let mut browser_list: HashMap<i64, Browser> = HashMap::new();
 
-    for x in 0..num_of_users {
-        // println!("x: {:?}", x);
+    for user in &rdr_users {
         let browser = browser_create().unwrap();
-        browser_list.push(browser);
+        browser_list.insert(*user, browser);
     }
     println!("{} browsers are created ", num_of_users);
 
@@ -128,7 +123,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                     let rest_sec = cur_time % 60;
                     println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&cur_time) {
-                        Some(wd) => match rdr_scheduler_ng(&cur_time, wd, &browser_list) {
+                        Some(wd) => match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
                             Some((oks, errs, visits, elapsed)) => {
                                 num_of_ok += oks;
                                 num_of_err += errs;
@@ -157,7 +152,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == APP_MEASURE_TIME {
+            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_visit: {:?}",
@@ -193,6 +188,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
+                metric_exec = false;
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
         });
