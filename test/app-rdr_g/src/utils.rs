@@ -28,14 +28,17 @@ pub fn browser_create() -> Fallible<Browser> {
 }
 
 /// Simple user browse.
-pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<(bool, u128)> {
+pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<(usize, u128)> {
     let now = Instant::now();
     let current_tab = match current_browser.new_tab() {
         Ok(tab) => tab,
         Err(e) => {
             println!("RDR Tab failed: {:?}", hostname);
-            println!("RDR Tab Error: {:?}", e);
-            return Ok((false, now.elapsed().as_millis()));
+            match e {
+                Timeout => return Ok((3, now.elapsed().as_millis())),
+                ConnectionClosed => return Ok((4, now.elapsed().as_millis())),
+                _ => return Ok((2, now.elapsed().as_millis())),
+            }
         }
     };
 
@@ -43,7 +46,7 @@ pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Falli
 
     current_tab.navigate_to(&http_hostname)?;
 
-    Ok((true, now.elapsed().as_millis()))
+    Ok((1, now.elapsed().as_millis()))
 }
 
 /// RDR proxy browsing scheduler.
@@ -52,9 +55,11 @@ pub fn rdr_scheduler_ng(
     rdr_users: &Vec<i64>,
     current_work: Vec<(u64, String, i64)>,
     browser_list: &HashMap<i64, Browser>,
-) -> Option<(usize, usize, usize, usize)> {
+) -> Option<(usize, usize, usize, usize, usize, usize)> {
     let mut num_of_ok = 0;
     let mut num_of_err = 0;
+    let mut num_of_closed = 0;
+    let mut num_of_timeout = 0;
     let mut num_of_visit = 0;
     let mut elapsed_time = Vec::new();
 
@@ -63,17 +68,33 @@ pub fn rdr_scheduler_ng(
 
         if rdr_users.contains(&user) {
             match simple_user_browse(&browser_list[&user], &url) {
-                Ok((val, t)) => {
-                    if val {
+                Ok((val, t)) => match val {
+                    // ok
+                    1 => {
                         num_of_ok += 1;
                         num_of_visit += 1;
                         elapsed_time.push(t as usize);
-                    } else {
+                    }
+                    // err
+                    2 => {
                         num_of_err += 1;
                         num_of_visit += 1;
                         elapsed_time.push(t as usize);
                     }
-                }
+                    // timeout
+                    3 => {
+                        num_of_timeout += 1;
+                        num_of_visit += 1;
+                        elapsed_time.push(t as usize);
+                    }
+                    // connection closed
+                    4 => {
+                        num_of_closed += 1;
+                        num_of_visit += 1;
+                        elapsed_time.push(t as usize);
+                    }
+                    _ => println!("Error: unknown user browsing error type"),
+                },
                 Err(e) => {
                     println!("DEBUG: this should not be reachable!!!");
                 }
@@ -84,7 +105,14 @@ pub fn rdr_scheduler_ng(
     let total = elapsed_time.iter().sum();
 
     if num_of_visit > 0 {
-        Some((num_of_ok, num_of_err, elapsed_time.len(), total))
+        Some((
+            num_of_ok,
+            num_of_err,
+            num_of_timeout,
+            num_of_closed,
+            elapsed_time.len(),
+            total,
+        ))
     } else {
         None
     }

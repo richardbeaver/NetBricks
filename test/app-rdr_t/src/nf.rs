@@ -60,9 +60,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     let mut pivot = 1 as usize;
 
     // Metrics for measurement
-    let mut num_of_ok = 0;
     let mut elapsed_time = Vec::new();
+    let mut num_of_ok = 0;
     let mut num_of_err = 0;
+    let mut num_of_timeout = 0;
+    let mut num_of_closed = 0;
     let mut num_of_visit = 0;
 
     let now = Instant::now();
@@ -124,9 +126,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                     println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&cur_time) {
                         Some(wd) => match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
-                            Some((oks, errs, visits, elapsed)) => {
+                            Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
                                 num_of_ok += oks;
                                 num_of_err += errs;
+                                num_of_timeout += timeouts;
+                                num_of_closed += closeds;
                                 num_of_visit += visits;
                                 elapsed_time.push(elapsed);
                             }
@@ -155,8 +159,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
-                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_visit: {:?}",
-                    num_of_ok, num_of_err, num_of_visit,
+                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
+                    num_of_ok, num_of_err, num_of_timeout,num_of_closed, num_of_visit,
                 );
                 println!("Metric: Browsing Time: {:?}\n", elapsed_time);
 
