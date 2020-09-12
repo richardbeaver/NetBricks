@@ -1,9 +1,9 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{Batch, CompositionBatch};
+use e2d2::pvn::measure::read_setup_iter;
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::measure::{read_iter, read_setup};
-use e2d2::pvn::p2p::{load_json, p2p_fetch_workload, p2p_read_rand_seed, p2p_retrieve_param};
+use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -12,10 +12,9 @@ use tokio::runtime::Runtime;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // setup for this run
-    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
-    let num_of_torrents = p2p_retrieve_param(setup_val).unwrap();
-    let p2p_torrents = p2p_read_rand_seed(num_of_torrents, iter_val).unwrap();
+    let (p2p_setup, p2p_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let num_of_torrents = p2p_retrieve_param(p2p_setup).unwrap();
+    let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter).unwrap();
 
     // Measurement code
     //
@@ -38,7 +37,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
     // Workload and States for P2P NF
     let fp_workload = p2p_fetch_workload("/home/jethros/setup".to_string()).unwrap();
-    let mut workload = load_json(fp_workload.to_string(), p2p_torrents);
+    let mut workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
     // println!("{:?}", workload);
 
     // Fixed transmission setup

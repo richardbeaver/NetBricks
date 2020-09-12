@@ -1,11 +1,11 @@
 use faktory::{Job, Producer};
-use serde_json::{from_reader, Value};
-use std::collections::HashMap;
 use std::fs::File;
 use std::thread;
+use std::time::Duration;
 
 /// Append job to a faktory queue.
 pub fn append_job_faktory(pivot: u128, faktory_conn: Option<&str>, expr_num: &str) {
+    println!("Appending to Faktory ");
     let mut p = match Producer::connect(faktory_conn) {
         Ok(tcpstream) => tcpstream,
         Err(e) => {

@@ -93,12 +93,12 @@ pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut time_span = 0;
     let mut map = HashMap::new();
-    map.insert(1, 50);
-    map.insert(2, 100);
-    map.insert(3, 500);
-    map.insert(4, 1000);
-    map.insert(5, 2500);
-    map.insert(6, 5000);
+    map.insert(1, 5);
+    map.insert(2, 10);
+    map.insert(3, 15);
+    map.insert(4, 25);
+    map.insert(5, 50);
+    map.insert(6, 100);
 
     // maps to milli second
     time_span = 1_000 / map.remove(&setup_val).unwrap();

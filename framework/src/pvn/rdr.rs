@@ -52,7 +52,7 @@ pub fn rdr_load_workload(
 }
 
 /// Retrieve the number of users based on our setup configuration.
-pub fn rdr_retrieve_users(setup_val: usize) -> Option<usize> {
+pub fn rdr_retrieve_users(rdr_setup: String) -> Option<usize> {
     let mut map = HashMap::new();
     // map.insert(1, 2);
     // map.insert(2, 4);
@@ -68,14 +68,14 @@ pub fn rdr_retrieve_users(setup_val: usize) -> Option<usize> {
     // map.insert(5, 8);
     // map.insert(6, 10);
 
-    map.insert(1, 5);
-    map.insert(2, 10);
-    map.insert(3, 20);
-    map.insert(4, 40);
-    map.insert(5, 80);
-    map.insert(6, 100);
+    map.insert("1", 5);
+    map.insert("2", 10);
+    map.insert("3", 20);
+    map.insert("4", 40);
+    map.insert("5", 80);
+    map.insert("6", 100);
 
-    map.remove(&setup_val)
+    map.remove(&*rdr_setup)
 }
 
 pub fn rdr_read_rand_seed(num_of_users: usize, iter: String) -> Result<Vec<i64>> {

@@ -1,8 +1,8 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::pvn::measure::read_setup_iter;
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::measure::{read_iter, read_setup};
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::Scheduler;
 use headless_chrome::Browser;
@@ -14,10 +14,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(setup_val).unwrap();
-    let iter_val = read_iter("/home/jethros/setup".to_string()).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, iter_val).unwrap();
+    let (rdr_setup, rdr_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
     // Measurement code
     //

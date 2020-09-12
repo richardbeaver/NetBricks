@@ -15,7 +15,7 @@ pub const APP_MEASURE_TIME: u64 = 610;
 
 /// Read setup for NF only.
 // FIXME: this might be improved as we can read multiple params together etc
-pub fn read_setup(file_path: String) -> Option<usize> {
+pub fn read_setup_iter(file_path: String) -> Option<(String, String)> {
     let file = File::open(file_path.clone()).expect("file should open read only");
     let read_json = file_path + "should be proper JSON";
     let json: Value = from_reader(file).expect(&read_json);
@@ -28,19 +28,6 @@ pub fn read_setup(file_path: String) -> Option<usize> {
             None
         }
     };
-    if setup.is_some() {
-        Some(setup.unwrap().parse::<usize>().unwrap())
-    } else {
-        None
-    }
-}
-
-/// Read the iteration for the current run. This is only used in RDR NFs.
-pub fn read_iter(file_path: String) -> Option<String> {
-    println!("read iter");
-    let file = File::open(file_path.clone()).expect("file should open read only");
-    let read_json = file_path + "should be proper JSON";
-    let json: Value = from_reader(file).expect(&read_json);
 
     let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have setup").clone()) {
         Ok(val) => {
@@ -53,11 +40,10 @@ pub fn read_iter(file_path: String) -> Option<String> {
         }
     };
 
-    if iter.is_some() {
-        return iter;
+    if setup.is_some() && iter.is_some() {
+        Some((setup.unwrap(), iter.unwrap()))
     } else {
-        println!("Iter: {:?} is None", iter);
-        return None;
+        None
     }
 }
 

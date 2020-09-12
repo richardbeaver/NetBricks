@@ -125,7 +125,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     let t = cur.elapsed().as_millis();
                     latencyv.push(t);
 
-                    // println!("append job, time_elapsed: {:?}, pivot: {:?}", time_elapsed, pivot);
+                    println!("append job, time_elapsed: {:?}, pivot: {:?}", time_elapsed, pivot);
                     // append job
                     //
                     // we append a job to the job queue every *time_span*

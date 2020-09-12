@@ -1,9 +1,9 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
+use e2d2::pvn::measure::read_setup_iter;
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::measure::{read_iter, read_setup};
-use e2d2::pvn::p2p::{load_json, p2p_fetch_workload, p2p_read_rand_seed, p2p_retrieve_param};
+use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -15,10 +15,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     sched: &mut S,
 ) -> CompositionBatch {
     // setup for this run
-    let setup_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let iter_val = read_setup("/home/jethros/setup".to_string()).unwrap();
-    let num_of_torrents = p2p_retrieve_param(setup_val).unwrap();
-    let p2p_torrents = p2p_read_rand_seed(num_of_torrents, iter_val.to_string()).unwrap();
+    let (p2p_setup, p2p_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
+    let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
 
     // Measurement code
     //
@@ -36,18 +35,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
 
-    // pkt count
-    let mut pkt_count = 0;
-
-    // Workload
-    let fp_workload = p2p_fetch_workload("/home/jethros/setup".to_string()).unwrap();
-    let mut workload = load_json(fp_workload.to_string(), p2p_torrents);
-
-    // Fixed transmission setup
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
 
-    let config_dir = "/data/config";
-    let download_dir = "/data/downloads";
+    // pkt count
+    let mut pkt_count = 0;
 
     let mut pivot = 0 as usize;
     let now = Instant::now();
@@ -169,34 +160,43 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .unwrap()
         .transform(box move |_| {
             if workload_exec {
-                let mut rt = Runtime::new().unwrap();
-                match rt.block_on(add_all_torrents(
-                    num_of_torrents,
-                    workload.clone(),
-                    torrents_dir.to_string(),
-                )) {
-                    Ok(_) => println!("Add torrents success"),
-                    Err(e) => println!("Add torrents failed with {:?}", e),
+                // Workload
+                let fp_workload = p2p_fetch_workload("/home/jethros/setup".to_string()).unwrap();
+
+                println!("p2p type: {}", p2p_type);
+                match &*p2p_type {
+                    // use our shell wrapper to interact with qBitTorrent
+                    // FIXME: it would be nicer if we can employ a Rust crate for this
+                    "p2p_controlled" => {
+                        println!("match before qbtrun");
+                        let qbt_run = qbt_run_torrents(fp_workload, num_of_torrents);
+                    }
+                    // use the transmission rpc for general and ext workload
+                    "p2p_general" | "p2p_ext" => {
+                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
+                        let mut workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
+
+                        let mut rt = Runtime::new().unwrap();
+                        match rt.block_on(add_all_torrents(
+                            num_of_torrents,
+                            workload.clone(),
+                            torrents_dir.to_string(),
+                        )) {
+                            Ok(_) => println!("Add torrents success"),
+                            Err(e) => println!("Add torrents failed with {:?}", e),
+                        }
+                        match rt.block_on(run_all_torrents()) {
+                            Ok(_) => println!("Run torrents success"),
+                            Err(e) => println!("Run torrents failed with {:?}", e),
+                        }
+                    }
+                    _ => println!("Current P2P type: {:?} doesn't match to any workload we know", p2p_type),
                 }
-                match rt.block_on(run_all_torrents()) {
-                    Ok(_) => println!("Run torrents success"),
-                    Err(e) => println!("Run torrents failed with {:?}", e),
-                }
+
                 workload_exec = false;
             }
 
             if start.elapsed().as_secs() >= 1 as u64 {
-                // for t in tlist {
-                //     println!(
-                //         "state: {:?}, percent complete: {:?}, percent done: {:?}, finished: {:?}, is stalled: {:?}",
-                //         t.stats().state,
-                //         t.stats().percent_complete,
-                //         t.stats().percent_done,
-                //         t.stats().finished,
-                //         t.stats().is_stalled
-                //     );
-                // }
-                // println!("1 second");
                 start = Instant::now();
             }
 

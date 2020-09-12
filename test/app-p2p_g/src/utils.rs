@@ -4,13 +4,18 @@ use futures::{
     stream::{FuturesUnordered, StreamExt},
 };
 use std::env;
+use std::env::var;
+use std::error::Error;
+use std::process::Command;
 use transmission_rpc::types::{BasicAuth, Result, RpcResponse};
 use transmission_rpc::types::{Id, Nothing, TorrentAction};
 use transmission_rpc::types::{Torrent, TorrentGetField, Torrents};
 use transmission_rpc::types::{TorrentAddArgs, TorrentAdded};
 use transmission_rpc::TransClient;
 
+///
 pub fn create_transmission_client() -> Result<TransClient> {
+    println!("debug: create transmission client");
     dotenv().ok();
     // env_logger::init();
 
@@ -24,7 +29,9 @@ pub fn create_transmission_client() -> Result<TransClient> {
     Ok(client)
 }
 
+///
 pub async fn add_all_torrents(p2p_param: usize, mut workload: Vec<String>, torrents_dir: String) -> Result<()> {
+    println!("debug: add all torrent to transmission client");
     let client = create_transmission_client().unwrap();
     let mut futures: FuturesUnordered<BoxFuture<Result<RpcResponse<TorrentAdded>>>> = FuturesUnordered::new();
 
@@ -53,7 +60,9 @@ pub async fn add_all_torrents(p2p_param: usize, mut workload: Vec<String>, torre
     Ok(())
 }
 
+///
 pub async fn run_all_torrents() -> Result<()> {
+    println!("debug: run all torrent to transmission client");
     let client = create_transmission_client().unwrap();
     let res: RpcResponse<Torrents<Torrent>> = client
         .torrent_get(Some(vec![TorrentGetField::Id, TorrentGetField::Name]), None)
@@ -68,5 +77,28 @@ pub async fn run_all_torrents() -> Result<()> {
     let res1: RpcResponse<Nothing> = client.torrent_action(TorrentAction::Start, ids).await?;
     println!("Start result: {:?}", &res1.is_ok());
 
+    Ok(())
+}
+
+/// Run BitTorrent jobs via qBitTorrent.
+// TORRENTS+=" $HOME/dev/pvn/utils/workloads/torrent_files/img${c}_secret.torrent"
+pub fn qbt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
+    let mut argv = Vec::new();
+    argv.push("qbittorrent-nox".to_string());
+    argv.push("--profile=/home/jethros/qbt_data".to_string());
+    for i in 1..(num_of_torrents + 1) {
+        let s = "$HOME/dev/pvn/utils/workloads/torrent_files/img".to_owned() + &i.to_string() + "_secret.torrent";
+        argv.push(s);
+    }
+    argv.push("&".to_string());
+
+    println!("Executing: {}", shell_words::join(&argv));
+
+    std::process::Command::new(&argv[0])
+        .args(&argv[1..])
+        .spawn()
+        .expect("failed to start subprocess")
+        .wait()
+        .expect("failed to wait for subprocess");
     Ok(())
 }
