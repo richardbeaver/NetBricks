@@ -14,6 +14,7 @@ extern crate fnv;
 extern crate getopts;
 extern crate rand;
 extern crate serde_json;
+extern crate shell_words;
 extern crate time;
 extern crate transmission_rpc;
 

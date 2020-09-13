@@ -97,8 +97,6 @@ pub fn qbt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
     std::process::Command::new(&argv[0])
         .args(&argv[1..])
         .spawn()
-        .expect("failed to start subprocess")
-        .wait()
-        .expect("failed to wait for subprocess");
+        .expect("failed to start subprocess");
     Ok(())
 }

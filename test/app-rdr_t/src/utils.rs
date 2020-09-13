@@ -32,14 +32,20 @@ pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Falli
     let now = Instant::now();
     let current_tab = match current_browser.new_tab() {
         Ok(tab) => tab,
-        Err(e) => {
-            println!("RDR Tab failed: {:?}", hostname);
-            match e {
-                Timeout => return Ok((3, now.elapsed().as_millis())),
-                ConnectionClosed => return Ok((4, now.elapsed().as_millis())),
-                _ => return Ok((2, now.elapsed().as_millis())),
+        Err(e) => match e {
+            Timeout => {
+                println!("RDR Tab timeout: {:?}", hostname);
+                return Ok((3, now.elapsed().as_millis()));
             }
-        }
+            ConnectionClosed => {
+                println!("RDR Tab connection closed: {:?}", hostname);
+                return Ok((4, now.elapsed().as_millis()));
+            }
+            _ => {
+                println!("RDR Tab failed: {:?}", hostname);
+                return Ok((2, now.elapsed().as_millis()));
+            }
+        },
     };
 
     let http_hostname = "http://".to_string() + &hostname;
