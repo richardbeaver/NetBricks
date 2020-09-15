@@ -28,21 +28,29 @@ pub fn browser_create() -> Fallible<Browser> {
 }
 
 /// Simple user browse.
-pub fn simple_user_browse(current_browser: &Browser, hostname: &String) -> Fallible<(usize, u128)> {
+pub fn simple_user_browse(current_browser: &Browser, hostname: &String, user: &i64) -> Fallible<(usize, u128)> {
     let now = Instant::now();
     let current_tab = match current_browser.new_tab() {
         Ok(tab) => tab,
         Err(e) => match e {
             Timeout => {
-                println!("RDR Tab timeout: {:?}", hostname);
-                return Ok((3, now.elapsed().as_millis()));
-            }
-            ConnectionClosed => {
-                println!("RDR Tab connection closed: {:?}", hostname);
-                return Ok((4, now.elapsed().as_millis()));
+                let t = match current_browser.new_tab() {
+                    Ok(tab) => tab,
+                    Err(e) => {
+                        println!(
+                            "RDR Tab timeout after the second try for hostname: {:?} and user: {}",
+                            hostname, user
+                        );
+                        return Ok((3, now.elapsed().as_millis()));
+                    }
+                };
+                t
             }
             _ => {
-                println!("RDR Tab failed: {:?}", hostname);
+                println!(
+                    "RDR Tab failed for unknown reason hostname: {:?} and user: {}",
+                    hostname, user
+                );
                 return Ok((2, now.elapsed().as_millis()));
             }
         },
@@ -73,7 +81,7 @@ pub fn rdr_scheduler_ng(
         println!("User {:?}: milli: {:?} url: {:?}", user, milli, url);
 
         if rdr_users.contains(&user) {
-            match simple_user_browse(&browser_list[&user], &url) {
+            match simple_user_browse(&browser_list[&user], &url, &user) {
                 Ok((val, t)) => match val {
                     // ok
                     1 => {
@@ -93,15 +101,12 @@ pub fn rdr_scheduler_ng(
                         num_of_visit += 1;
                         elapsed_time.push(t as usize);
                     }
-                    3 => {
-                        num_of_closed += 1;
-                        num_of_visit += 1;
-                        elapsed_time.push(t as usize);
-                    }
                     _ => println!("Error: unknown user browsing error type"),
                 },
                 Err(e) => {
-                    println!("DEBUG: this should not be reachable!!!");
+                    println!("User browsing failed for url {} with user {} :{:?}", url, user, e);
+                    num_of_err += 1;
+                    num_of_visit += 1;
                 }
             }
         }
