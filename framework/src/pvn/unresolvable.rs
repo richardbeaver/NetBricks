@@ -3621,9 +3621,8 @@ pub fn curate_unresolvable_records() -> HashSet<&'static str> {
     broken_urls.insert("sesamestats.com");
     broken_urls.insert("ads.brazzers.com");
 
-    // crash the tab
+    // Urls that crash the tab
     broken_urls.insert("kr.sports.yahoo.com");
-
     broken_urls.insert("msn.foxsports.com");
     broken_urls.insert("arienh4.net.nyud.net");
     broken_urls.insert("rockyou.com");
@@ -3631,7 +3630,6 @@ pub fn curate_unresolvable_records() -> HashSet<&'static str> {
     broken_urls.insert("myyearbook.com");
     broken_urls.insert("img.alimama.cn");
     broken_urls.insert("img4.catalog.video.msn.com");
-
     broken_urls.insert("584.adsina.allyes.com");
     broken_urls.insert("ads.pointroll.com");
     broken_urls.insert("apps.new.facebook.com");
@@ -3688,6 +3686,33 @@ pub fn curate_unresolvable_records() -> HashSet<&'static str> {
     broken_urls.insert("usweb.dotomi.com");
     broken_urls.insert("www2.victoriassecret.com");
     broken_urls.insert("www-slis.lib.indiana.edu");
+
+    // Urls that cause timeout
+    broken_urls.insert("aarinfantasy.com");
+    broken_urls.insert("ads.bridgetrack.com");
+    broken_urls.insert("ad.yieldmanager.com");
+    broken_urls.insert("at.amgdgt.com");
+    broken_urls.insert("audio-sjl-t2-1.pandora.com");
+    broken_urls.insert("bbc.co.uk");
+    broken_urls.insert("campusfood.com");
+    broken_urls.insert("cvscaremark.com");
+    broken_urls.insert("dataandsearch.org");
+    broken_urls.insert("dickssportinggoods.com");
+    broken_urls.insert("googleads.g.doubleclick.net");
+    broken_urls.insert("hcr.com");
+    broken_urls.insert("hz.mmstat.com");
+    broken_urls.insert("imgur.com");
+    broken_urls.insert("imiclk.com");
+    broken_urls.insert("log8.doubleverify.com");
+    broken_urls.insert("mads.cbssports.com");
+    broken_urls.insert("mh2.manhunt.net");
+    broken_urls.insert("missbimbo.com");
+    broken_urls.insert("pinkfloyd.co.uk");
+    broken_urls.insert("surfthechannel.com");
+    broken_urls.insert("thelimited.com");
+    broken_urls.insert("tienganh.com.vn");
+    broken_urls.insert("undergear.com");
+    broken_urls.insert("youtube.com");
 
     return broken_urls;
 }
