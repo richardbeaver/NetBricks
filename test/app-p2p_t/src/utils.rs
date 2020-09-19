@@ -80,23 +80,24 @@ pub async fn run_all_torrents() -> Result<()> {
     Ok(())
 }
 
-/// Run BitTorrent jobs via qBitTorrent.
-// TORRENTS+=" $HOME/dev/pvn/utils/workloads/torrent_files/img${c}_secret.torrent"
+/// Run BitTorrent jobs via deluge console
 pub fn qbt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
-    let mut argv = Vec::new();
-    argv.push("qbittorrent-nox".to_string());
-    argv.push("--profile=/home/jethros/qbt_data".to_string());
     for i in 1..(num_of_torrents + 1) {
-        let s = "$HOME/dev/pvn/utils/workloads/torrent_files/img".to_owned() + &i.to_string() + "_secret.torrent";
+        let mut argv = Vec::new();
+        argv.push("deluge-console".to_string());
+        argv.push("-c".to_string());
+        argv.push("/home/jethros/bt_data/config".to_string());
+        argv.push("\"add ".to_string());
+
+        let s = " $HOME/dev/pvn/utils/workloads/torrent_files/img".to_owned() + &i.to_string() + "_secret.torrent\"";
         argv.push(s);
+        println!("Executing: {}", shell_words::join(&argv));
+
+        std::process::Command::new(&argv[0])
+            .args(&argv[1..])
+            .spawn()
+            .expect("failed to start subprocess");
     }
-    argv.push("&".to_string());
 
-    println!("Executing: {}", shell_words::join(&argv));
-
-    std::process::Command::new(&argv[0])
-        .args(&argv[1..])
-        .spawn()
-        .expect("failed to start subprocess");
     Ok(())
 }
