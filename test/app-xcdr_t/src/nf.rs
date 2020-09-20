@@ -4,9 +4,10 @@ use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
 use e2d2::pvn::xcdr::{pvn_elapsed, xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
+use faktory::Producer;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
@@ -24,9 +25,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     println!("Setup: {:?} port: {:?}", setup_val, port,);
 
     // faktory job queue
-    // FIXME: use port from config
-    // let default_faktory_conn = "tcp://localhost:".to_string() + &port;
-    let default_faktory_conn = "tcp://localhost:7419".to_string();
+    let faktory_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
 
     // Measurement code
     //
@@ -60,6 +59,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     let now = Instant::now();
     let mut cur = Instant::now();
+    let mut time_diff = Duration::new(0, 0);
 
     // group packets into MAC, TCP and UDP packet.
     let pipeline = parent
@@ -118,18 +118,30 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             }
 
             if matched {
-                let time_elapsed = pvn_elapsed(setup_val, now).unwrap();
+                // time difference
+                if time_diff == Duration::new(0, 0) {
+                    time_diff = now.elapsed();
+                    println!("update time diff before crash: {:?}", time_diff);
+                    pivot = pivot + time_diff.as_millis();
+                    println!("update pivot: {}", pivot);
+                }
+                let time_elapsed = now.elapsed().as_millis();
 
                 // Append job within the new second
                 if time_elapsed >= pivot {
                     let t = cur.elapsed().as_millis();
                     latencyv.push(t);
 
-                    println!("append job, time_elapsed: {:?}, pivot: {:?}", time_elapsed, pivot);
-                    // append job
-                    //
                     // we append a job to the job queue every *time_span*
-                    append_job_faktory(pivot, Some(&*default_faktory_conn), &expr_num);
+                    let conn = Arc::clone(&faktory_conn);
+                    append_job_faktory(pivot, conn, &expr_num);
+                    // println!(
+                    //     "append job, time_elapsed: {:?}, pivot: {:?}, elapsed since cur: {:?}",
+                    //     time_elapsed,
+                    //     pivot,
+                    //     cur.elapsed().as_millis()
+                    // );
+
                     cur = Instant::now();
                     pivot += time_span;
                 }
