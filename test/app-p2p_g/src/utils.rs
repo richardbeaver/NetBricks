@@ -81,15 +81,16 @@ pub async fn run_all_torrents() -> Result<()> {
 }
 
 /// Run BitTorrent jobs via deluge console
-pub fn qbt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
+pub fn bt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
     for i in 1..(num_of_torrents + 1) {
         let mut argv = Vec::new();
         argv.push("deluge-console".to_string());
         argv.push("-c".to_string());
         argv.push("/home/jethros/bt_data/config".to_string());
-        argv.push("\"add ".to_string());
 
-        let s = " $HOME/dev/pvn/utils/workloads/torrent_files/img".to_owned() + &i.to_string() + "_secret.torrent\"";
+        let s = "add /home/jethro/dev/pvn/utils/workloads/torrent_files/img".to_owned()
+            + &i.to_string()
+            + "_secret.torrent";
         argv.push(s);
         println!("Executing: {}", shell_words::join(&argv));
 

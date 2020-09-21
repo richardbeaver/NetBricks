@@ -110,12 +110,13 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                         // use our shell wrapper to interact with qBitTorrent
                         // FIXME: it would be nicer if we can employ a Rust crate for this
                         "app_p2p-controlled" => {
-                            println!("match before qbtrun");
-                            let qbt_run = qbt_run_torrents(fp_workload, num_of_torrents);
-                            println!("qbt run is not blocking");
+                            println!("match p2p controlled before btrun");
+                            let bt_run = bt_run_torrents(fp_workload, num_of_torrents);
+                            println!("bt run is not blocking");
                         }
                         // use the transmission rpc for general and ext workload
                         "app_p2p" | "app_p2p-ext" => {
+                            println!("match p2p general or ext ");
                             let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
                             let mut workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
