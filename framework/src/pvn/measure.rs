@@ -30,10 +30,7 @@ pub fn read_setup_iter(file_path: String) -> Option<(String, String)> {
     };
 
     let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have setup").clone()) {
-        Ok(val) => {
-            println!("response: {}", val);
-            Some(val)
-        }
+        Ok(val) => Some(val),
         Err(e) => {
             println!("Malformed JSON response: {}", e);
             None
@@ -41,6 +38,7 @@ pub fn read_setup_iter(file_path: String) -> Option<(String, String)> {
     };
 
     if setup.is_some() && iter.is_some() {
+        println!("Setup: {:?}, Iter: {:?}", setup, iter);
         Some((setup.unwrap(), iter.unwrap()))
     } else {
         None
