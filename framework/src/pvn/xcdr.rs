@@ -91,17 +91,16 @@ pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
 /// 50 videos per second -- 1% pktgen sending rate
 /// 100 videos per second -- 2% pktgen sending rate
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
-    let mut time_span = 0;
     let mut map = HashMap::new();
-    map.insert(1, 5);
-    map.insert(2, 10);
-    map.insert(3, 15);
-    map.insert(4, 25);
-    map.insert(5, 50);
-    map.insert(6, 100);
+    map.insert(1, 10);
+    map.insert(2, 20);
+    map.insert(3, 50);
+    map.insert(4, 100);
+    map.insert(5, 150);
+    map.insert(6, 200);
 
     // maps to milli second
-    time_span = 1_000 / map.remove(&setup_val).unwrap();
+    let time_span = 1_000 / map.remove(&setup_val).unwrap();
     println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
 
     Some(time_span as u128)

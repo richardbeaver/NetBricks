@@ -11,10 +11,10 @@ extern crate core_affinity;
 extern crate crossbeam;
 extern crate e2d2;
 extern crate fnv;
+extern crate fork;
 extern crate getopts;
 extern crate rand;
 extern crate serde_json;
-extern crate shell_words;
 extern crate time;
 extern crate transmission_rpc;
 
