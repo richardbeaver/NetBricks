@@ -169,8 +169,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" => {
                         println!("match p2p controlled before btrun");
+
                         // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents_ng(fp_workload, p2p_setup.clone());
+                        let _ = bt_run_torrents(fp_workload, p2p_setup.clone());
 
                         println!("bt run is not blocking");
                         workload_exec = false;

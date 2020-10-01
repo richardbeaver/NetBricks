@@ -107,18 +107,16 @@ pub fn bt_run_torrents_prev(workload: &str, num_of_torrents: usize) -> Result<Ve
 }
 
 /// Run BitTorrent jobs via deluge console
-pub fn bt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
+pub fn bt_run_torrents(workload: &str, setup: String) -> Result<()> {
     let mut argv = Vec::new();
-    argv.push("/home/jethros/dev/pvn/utils/p2p_expr/p2p_run_leecher.sh".to_string());
-    argv.push(num_of_torrents.to_string());
-    argv.push("&".to_string());
+    argv.push("/home/jethros/dev/pvn/utils/p2p_expr/p2p_run_nb.sh".to_string());
+    argv.push(setup);
+    // argv.push("&".to_string());
 
-    if let Ok(Fork::Child) = daemon(false, false) {
-        Command::new(&argv[0])
-            .args(&argv[1..])
-            .spawn()
-            .expect("failed to execute process");
-    }
+    let output = Command::new(&argv[0])
+        .args(&argv[1..])
+        .spawn()
+        .expect("failed to execute process");
 
     Ok(())
 }
@@ -126,7 +124,7 @@ pub fn bt_run_torrents(workload: &str, num_of_torrents: usize) -> Result<()> {
 /// Run BitTorrent jobs via deluge console
 pub fn bt_run_torrents_ng(workload: &str, setup: String) -> Result<()> {
     let mut argv = Vec::new();
-    argv.push("/home/jethros/dev/pvn/utils/p2p_expr/p2p_run_leecher_wrapper.sh".to_string());
+    argv.push("/home/jethros/dev/pvn/utils/p2p_expr/p2p_run_nb.sh".to_string());
     argv.push(setup.to_string());
 
     let output = Command::new(&argv[0])
