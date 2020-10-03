@@ -81,15 +81,14 @@ pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
 
     Some(time_span as u128)
 }
+
 /// Return the time span between submitting jobs to the faktory job queue
 /// based on the setup value for running transcoder experiments.
 ///
-/// 5 videos per second -- 1% pktgen sending rate
-/// 10 videos per second -- 1% pktgen sending rate
-/// 15 videos per second -- 1% pktgen sending rate
-/// 25 videos per second -- 1% pktgen sending rate
-/// 50 videos per second -- 1% pktgen sending rate
-/// 100 videos per second -- 2% pktgen sending rate
+/// We configure the number of users per setup: 10, 20, 50, 100, 150, 200. We
+/// calculate the time duration between submitted jobs as follows:
+///     jobs_submitted_per_second = (number_of_users * 12MB/second) / video_unit [10MB]
+///     duration = 1 second [1000 milliseconds] / jobs_submitted_per_second
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
     map.insert(1, 10);
@@ -99,15 +98,18 @@ pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     map.insert(5, 150);
     map.insert(6, 200);
 
-    // maps to milli second
-    let time_span = 1_000 / map.remove(&setup_val).unwrap();
-    println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
+    let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 12 / 10;
+    let time_span = 1_000 / jobs_submitted_per_second;
+    println!(
+        "setup: {:?} maps to time span: {:?} millisecond",
+        setup_val, time_span as u128
+    );
 
     Some(time_span as u128)
 }
 
 /// Wrapper for counting time elapsed.
-pub fn pvn_elapsed(setup_val: usize, now: Instant) -> Option<u128> {
+pub fn pvn_elapsed_deprecated(setup_val: usize, now: Instant) -> Option<u128> {
     if setup_val <= 3 {
         // maps to milli second
         let t = now.elapsed().as_millis();
