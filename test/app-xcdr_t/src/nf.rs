@@ -138,6 +138,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     // we append a job to the job queue every *time_span*
                     let c = Arc::clone(&fak_conn);
                     append_job_faktory(pivot, c, core_id, &expr_num);
+                    println!("job: {}, core id: {}", job_id, core_id);
 
                     cur = Instant::now();
                     pivot += time_span;
