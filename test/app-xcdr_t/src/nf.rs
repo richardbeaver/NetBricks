@@ -2,7 +2,7 @@ use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, UdpHeader};
 use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::xcdr::{pvn_elapsed, xcdr_read_setup, xcdr_retrieve_param};
+use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use faktory::Producer;
 use std::collections::HashMap;
@@ -25,7 +25,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     println!("Setup: {:?} port: {:?}", setup_val, port,);
 
     // faktory job queue
-    let faktory_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
+    let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
 
     // Measurement code
     //
@@ -53,6 +53,8 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     // pkt count
     let mut pkt_count = 0;
+    // job id
+    let mut job_id = 0;
 
     // pivot for registering jobs. pivot will be incremented by 1 every second
     let mut pivot = 1 as u128 + time_span;
@@ -132,18 +134,14 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     let t = cur.elapsed().as_millis();
                     latencyv.push(t);
 
+                    let core_id = job_id % setup_val;
                     // we append a job to the job queue every *time_span*
-                    let conn = Arc::clone(&faktory_conn);
-                    append_job_faktory(pivot, conn, &expr_num);
-                    // println!(
-                    //     "append job, time_elapsed: {:?}, pivot: {:?}, elapsed since cur: {:?}",
-                    //     time_elapsed,
-                    //     pivot,
-                    //     cur.elapsed().as_millis()
-                    // );
+                    let c = Arc::clone(&fak_conn);
+                    append_job_faktory(pivot, c, core_id, &expr_num);
 
                     cur = Instant::now();
                     pivot += time_span;
+                    job_id += 1;
                 }
 
                 if pkt_count > NUM_TO_IGNORE {
