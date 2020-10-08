@@ -34,6 +34,7 @@ pub fn simple_user_browse(current_browser: &Browser, hostname: &String, user: &i
         Ok(tab) => tab,
         Err(e) => match e {
             Timeout => {
+                thread::sleep(Duration::from_millis(100));
                 let t = match current_browser.new_tab() {
                     Ok(tab) => tab,
                     Err(e) => {
