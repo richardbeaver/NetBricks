@@ -15,10 +15,10 @@ pub fn append_job_faktory(
     let width_height = "360x24";
     let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
 
-    println!(
-        "faktory: {:?}",
-        "app-xcdr_".to_owned() + &core_id.to_string() + "-" + expr_num,
-    );
+    // println!(
+    //     "faktory: {:?}",
+    //     "app-xcdr_".to_owned() + &core_id.to_string() + "-" + expr_num,
+    // );
 
     faktory_conn
         .lock()
