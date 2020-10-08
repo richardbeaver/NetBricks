@@ -1,6 +1,7 @@
 use failure::Fallible;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
 use std::collections::HashMap;
+use std::thread;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 

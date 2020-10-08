@@ -1,6 +1,7 @@
 use failure::Fallible;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
 use std::collections::HashMap;
+use std::thread;
 use std::time::{Duration, Instant};
 use std::vec::Vec;
 
@@ -13,17 +14,13 @@ pub fn browser_create() -> Fallible<Browser> {
     // /usr/bin/chromium-browser
 
     let timeout = Duration::new(1000, 0);
-
     let options = LaunchOptionsBuilder::default()
         .headless(true)
         .idle_browser_timeout(timeout)
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
-    let browser = Browser::new(options)?;
-    // let tab = browser.wait_for_initial_tab()?;
-    // tab.set_default_timeout(std::time::Duration::from_secs(100));
 
-    // println!("Browser created",);
+    let browser = Browser::new(options)?;
     Ok(browser)
 }
 
