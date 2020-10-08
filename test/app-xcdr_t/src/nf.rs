@@ -134,7 +134,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     let t = cur.elapsed().as_millis();
                     latencyv.push(t);
 
-                    let core_id = job_id % setup_val;
+                    let core_id = job_id % setup_val + 1;
                     // we append a job to the job queue every *time_span*
                     let c = Arc::clone(&fak_conn);
                     append_job_faktory(pivot, c, core_id, &expr_num);
