@@ -93,10 +93,10 @@ pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
     map.insert(1, 10);
     map.insert(2, 20);
-    map.insert(3, 50);
-    map.insert(4, 100);
-    map.insert(5, 150);
-    map.insert(6, 200);
+    map.insert(3, 40);
+    map.insert(4, 80);
+    map.insert(5, 100);
+    map.insert(6, 150);
 
     let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 12 / 10;
     let time_span = 1_000 / jobs_submitted_per_second;
