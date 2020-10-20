@@ -23,7 +23,7 @@ export examples=(
 	# test/chain-test
 	# test/lpm-test
 	# test/packet_test
-	# PVN examples (in application format)
+	# PVN application
 	test/app-tlsv_g
 	test/app-tlsv_t
 	test/app-rdr_g
@@ -32,14 +32,14 @@ export examples=(
 	test/app-p2p_t
 	test/app-xcdr_g
 	test/app-xcdr_t
-	# PVN examples (for latency measurement)
-	# test/tls-validator-groupby
-	# test/tls-validator-transform
-	# test/rdr-groupby
-	# test/rdr-transform
-	# test/p2p-groupby
-	# test/p2p-transform
-	# test/transcoder-groupby
-	# test/transcoder-transform
+	# PVN NF libraries
+	pvnf/tlsv-groupby
+	pvnf/tlsv-transform
+	pvnf/rdr-groupby
+	pvnf/rdr-transform
+	pvnf/p2p-groupby
+	pvnf/p2p-transform
+	pvnf/xcdr-groupby
+	pvnf/xcdr-transform
 )
 
