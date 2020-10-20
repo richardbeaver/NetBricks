@@ -1,13 +1,13 @@
 [package]
-name = "pvn-rdr-tlsv-groupby-chain"
+name = "pvn-tlsv-xcdr-groupby-chain"
 version = "0.1.0"
 authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
 edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-rdr-groupby = { path = "../../pvnf/rdr-groupby" }
 tlsv-groupby = { path = "../../pvnf/tlsv-groupby" }
+xcdr-groupby = { path = "../../pvnf/xcdr-groupby" }
 time = "0.2.22"
 
 [features]

@@ -15,6 +15,7 @@ failure = "*"
 tiny_http = "0.6"
 rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
+# headless_chrome = "0.9"
 rustc-serialize = "*"
 serde_json = "*"
 

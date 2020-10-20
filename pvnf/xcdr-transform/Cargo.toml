@@ -1,5 +1,5 @@
 [package]
-name = "transcoder-transform"
+name = "xcdr-transform"
 version = "0.1.0"
 authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
 edition = "2018"

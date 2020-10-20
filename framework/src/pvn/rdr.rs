@@ -90,7 +90,7 @@ pub fn rdr_read_rand_seed(num_of_users: usize, iter: String) -> Result<Vec<i64>>
                 Some(data) => {
                     for x in data.as_array().unwrap() {
                         rand_vec.push(x.as_i64().unwrap());
-                        println!("RDR user: {:?}", x.as_i64().unwrap());
+                        // println!("RDR user: {:?}", x.as_i64().unwrap());
                     }
                 }
                 None => println!("No rand data for iter {:?} for users {:?}", iter, num_of_users),
@@ -100,7 +100,7 @@ pub fn rdr_read_rand_seed(num_of_users: usize, iter: String) -> Result<Vec<i64>>
         None => println!("No rdr data in the rand seed file"),
     }
     println!(
-        "Fetch rand seed for num_of_users: {:?}, iter: {:?}.\n\t rdr users: {:?}",
+        "Fetch rand seed for num_of_users: {:?}, iter: {:?}.\nrdr users: {:?}",
         num_of_users, iter, rand_vec
     );
     Ok(rand_vec)
