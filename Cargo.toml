@@ -38,6 +38,8 @@ members=["framework",
 		"pvnf/rdr-transform",
 		"pvnf/xcdr-groupby",
 		"pvnf/xcdr-transform",
+		# PVN chain
+		"test/chain-rdr-tlsv_g",
 		"pvnf/p2p-groupby",
 		"pvnf/p2p-transform",
         ]
