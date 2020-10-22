@@ -14,46 +14,25 @@ pub fn browser_create() -> Fallible<Browser> {
     // /usr/bin/chromium-browser
 
     let timeout = Duration::new(1000, 0);
+
     let options = LaunchOptionsBuilder::default()
         .headless(true)
         .idle_browser_timeout(timeout)
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
-
     let browser = Browser::new(options)?;
+    // let tab = browser.wait_for_initial_tab()?;
+    // tab.set_default_timeout(std::time::Duration::from_secs(100));
+
+    // println!("Browser created",);
     Ok(browser)
 }
 
 /// Simple user browse.
 pub fn simple_user_browse(current_browser: &Browser, hostname: &String, user: &i64) -> Fallible<(usize, u128)> {
     let now = Instant::now();
-    let current_tab = match current_browser.new_tab() {
-        Ok(tab) => tab,
-        Err(e) => match e {
-            Timeout => {
-                thread::sleep(Duration::from_millis(100));
-                let t = match current_browser.new_tab() {
-                    Ok(tab) => tab,
-                    Err(e) => {
-                        println!(
-                            "RDR Tab timeout after the second try for hostname: {:?} and user: {}",
-                            hostname, user
-                        );
-                        return Ok((3, now.elapsed().as_millis()));
-                    }
-                };
-                t
-            }
-            _ => {
-                println!(
-                    "RDR Tab failed for unknown reason hostname: {:?} and user: {}",
-                    hostname, user
-                );
-                return Ok((2, now.elapsed().as_millis()));
-            }
-        },
-    };
-
+    let tabs = current_browser.get_tabs().lock().unwrap();
+    let current_tab = tabs.iter().next().unwrap();
     let http_hostname = "http://".to_string() + &hostname;
 
     current_tab.navigate_to(&http_hostname)?;
@@ -101,11 +80,17 @@ pub fn rdr_scheduler_ng(
                     }
                     _ => println!("Error: unknown user browsing error type"),
                 },
-                Err(e) => {
-                    println!("User browsing failed for url {} with user {} :{:?}", url, user, e);
-                    num_of_err += 1;
-                    num_of_visit += 1;
-                }
+                Err(e) => match e {
+                    ConnectionClosed => {
+                        num_of_closed += 1;
+                        num_of_visit += 1;
+                    }
+                    _ => {
+                        println!("User browsing failed for url {} with user {} :{:?}", url, user, e);
+                        num_of_err += 1;
+                        num_of_visit += 1;
+                    }
+                },
             }
         }
     }
