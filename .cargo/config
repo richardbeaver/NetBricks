@@ -1,5 +1,5 @@
 [build]
-target-dir = "/home/jethros/data/cargo-target"
+target-dir = "../../data/cargo-target"
 
 [term]
 color = 'auto'
