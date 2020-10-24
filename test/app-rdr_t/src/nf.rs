@@ -1,7 +1,7 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_iter;
+use e2d2::pvn::measure::read_setup_param;
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::Scheduler;
@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
-    let (rdr_setup, rdr_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -76,7 +76,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst{
+                    w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -155,13 +157,17 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    // w.push(end);
+                    if inst{
+                        w.push(end);
+                    }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst{
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
             }
 

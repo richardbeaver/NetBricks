@@ -6,7 +6,6 @@ use futures::{
 };
 use std::env;
 use std::env::var;
-use std::error::Error;
 use std::io::{self, Write};
 use std::process::Command;
 use transmission_rpc::types::{BasicAuth, Result, RpcResponse};

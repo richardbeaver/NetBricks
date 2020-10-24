@@ -1,4 +1,4 @@
-use crate::pvn::measure::read_setup_iter;
+use crate::pvn::measure::read_setup_param;
 use serde_json::{from_reader, Value};
 use std::collections::HashMap;
 use std::fs::File;
@@ -15,7 +15,7 @@ use std::io::Result;
 pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     println!("fetch param");
     let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
-    let (p2p_setup, iter) = read_setup_iter(fp_setup).unwrap();
+    let (p2p_setup, iter, _) = read_setup_param(fp_setup).unwrap();
     let mut map = HashMap::new();
 
     println!("type: {}, setup: {}, iter: {}", p2p_type, p2p_setup, iter);

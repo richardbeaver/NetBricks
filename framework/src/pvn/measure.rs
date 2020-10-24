@@ -4,7 +4,6 @@ use statrs::statistics::Variance;
 use statrs::statistics::{Max, Mean, Median, Min};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Result;
 use std::time::Instant;
 
 pub const EPSILON: usize = 1000;
@@ -13,9 +12,11 @@ pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
 pub const MEASURE_TIME: u64 = 60;
 pub const APP_MEASURE_TIME: u64 = 610;
 
-/// Read setup for NF only.
-// FIXME: this might be improved as we can read multiple params together etc
-pub fn read_setup_iter(file_path: String) -> Option<(String, String)> {
+/// Read various params from setup.
+///
+/// Currently returns: *setup* (which setup it is), *iter* (which iteration it
+/// is), and *inst* (instrumentation for retrieving latencies for every packet).
+pub fn read_setup_param(file_path: String) -> Option<(String, String, bool)> {
     let file = File::open(file_path.clone()).expect("file should open read only");
     let read_json = file_path + "should be proper JSON";
     let json: Value = from_reader(file).expect(&read_json);
@@ -37,14 +38,32 @@ pub fn read_setup_iter(file_path: String) -> Option<(String, String)> {
         }
     };
 
-    if setup.is_some() && iter.is_some() {
-        println!("Setup: {:?}, Iter: {:?}", setup, iter);
-        Some((setup.unwrap(), iter.unwrap()))
+    let inst: Option<String> = match serde_json::from_value(json.get("inst").expect("file should have setup").clone()) {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+    let inst_val = match &*inst.unwrap() {
+        "on" => Some(true),
+        "off" => Some(false),
+        _ => None,
+    };
+
+    if setup.is_some() && iter.is_some() && inst_val.is_some() {
+        println!("Setup: {:?}, Iter: {:?}, Inst mode: {:?}", setup, iter, inst_val);
+        Some((setup.unwrap(), iter.unwrap(), inst_val.unwrap()))
     } else {
         None
     }
 }
 
+/// Merge all the timestamps we have and generate meaningful latencies for each
+/// packet.
+///
+/// The current implementation just works so please don't touch the code unless
+/// you have time to verify the correctness.
 pub fn merge_ts(
     total_measured_pkt: usize,
     stop_ts_matched: Vec<Instant>,
@@ -74,6 +93,7 @@ pub fn merge_ts(
     actual_ts
 }
 
+/// Compute statistics for the latency results collected.
 pub fn compute_stat(mut tmp_results: Vec<u128>) {
     tmp_results.sort();
     let mut results: Vec<f64> = tmp_results.into_iter().map(|item| item as f64).collect();

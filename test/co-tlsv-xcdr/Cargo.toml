@@ -1,14 +1,18 @@
 [package]
 name = "pvn-tlsv-xcdr-coexist-app"
-version = "0.1.0"
-authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
+version = "0.2.0"
+authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-tlsv-groupby = { path = "../../pvnf/tlsv-groupby" }
-xcdr-groupby = { path = "../../pvnf/xcdr-groupby" }
+tlsv = { path = "../../pvnf/tlsv" }
+xcdr = { path = "../../pvnf/xcdr" }
 time = "0.2.22"
+rustls = { version = "0.17", features = ["dangerous_configuration"] }
+webpki = "*"
+webpki-roots = "*"
+faktory = "0.11"
 
 [features]
 default = []

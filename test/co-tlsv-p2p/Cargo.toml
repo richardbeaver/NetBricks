@@ -1,14 +1,18 @@
 [package]
 name = "pvn-tlsv-p2p-coexist-app"
-version = "0.1.0"
-authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
+version = "0.2.0"
+authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-tlsv-groupby = { path = "../../pvnf/tlsv-groupby" }
-p2p-groupby = { path = "../../pvnf/p2p-groupby" }
+tlsv = { path = "../../pvnf/tlsv" }
+p2p = { path = "../../pvnf/p2p" }
 time = "0.2.22"
+tokio = { version = "0.2", features = ["macros"] }
+webpki = "*"
+webpki-roots = "*"
+rustls = { version = "0.17", features = ["dangerous_configuration"] }
 
 [features]
 default = []

@@ -4,25 +4,37 @@ use e2d2::pvn::measure::*;
 use e2d2::pvn::p2p::*;
 use e2d2::pvn::rdr::*;
 use e2d2::scheduler::Scheduler;
-use headless_chrome::Browser;
+use e2d2::utils::Flow;
 use p2p::utils::*;
-use rdr::utils::*;
-use std::collections::HashMap;
+use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+use tlsv::utils::*;
 use tokio::runtime::Runtime;
 
-pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
     // FIXME: read inst mode
     let inst = false;
 
-    // RDR setup
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
+    // TLSV setup
+    //
+    let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
+    // Temporary payload cache.
+    let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
+    // New map to keep track of the expected seq #
+    let mut seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
+    // Temporary map to keep track of the expected seq #
+    let mut tmp_seqnum_map = HashMap::<Flow, (u32, u32)>::with_hasher(Default::default());
+    // TLS connection with invalid certs.
+    let mut unsafe_connection: HashSet<Flow> = HashSet::new();
+    // DNS name cache.
+    let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
+    // Cert count
+    let mut cert_count = 0;
 
     // P2P setup
     let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
@@ -52,30 +64,6 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
     // Pkt counter. We keep track of every packet.
     let mut pkt_count = 0;
 
-    // Workloads:
-    let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_5.json";
-    let num_of_secs = 600;
-
-    let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, rdr_users.clone()).unwrap();
-    println!("Workload is generated",);
-
-    // Browser list.
-    let mut browser_list: HashMap<i64, Browser> = HashMap::new();
-
-    for user in &rdr_users {
-        let browser = browser_create().unwrap();
-        browser_list.insert(*user, browser);
-    }
-    println!("{} browsers are created ", num_of_users);
-
-    // Metrics for measurement
-    let mut elapsed_time = Vec::new();
-    let mut num_of_ok = 0;
-    let mut num_of_err = 0;
-    let mut num_of_timeout = 0;
-    let mut num_of_closed = 0;
-    let mut num_of_visit = 0;
-
     // let mut pivot = 1;
     let now = Instant::now();
     let mut start = Instant::now();
@@ -96,23 +84,15 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let flow = p.get_header().flow().unwrap();
+            flow
         })
         .parse::<TcpHeader>()
         .group_by(
             3,
             box move |p| {
                 pkt_count += 1;
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
+                let f = p.read_metadata().clone();
 
                 // 0 means the packet doesn't match RDR or P2P
                 let mut matched = 0;
@@ -123,14 +103,17 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
                 // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
+                // warning: borrow of packed field is unsafe and requires unsafe function or block (error E0133)
+                let src_port = f.src_port;
+                let dst_port = f.dst_port;
                 // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
-                if *proto == 6 {
-                    if *src_ip == match_ip || *dst_ip == match_ip {
-                        if src_port == rdr_match_port || dst_port == rdr_match_port {
-                            matched = 1
-                        } else if p2p_match_port.contains(&src_port) || p2p_match_port.contains(&dst_port) {
+                if f.proto == 6 {
+                    if f.src_ip == match_ip || f.dst_ip == match_ip {
+                        if p2p_match_port.contains(&src_port) || p2p_match_port.contains(&dst_port) {
                             matched = 2
                         }
+                    } else {
+                        matched = 1
                     }
                 }
 
@@ -175,47 +158,114 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
             sched,
         );
 
-    let rdr_pipe = groups
+    let tlsv_pipe = groups
         .get_group(1)
         .unwrap()
-        .transform(box move |pkt| {
-            // Scheduling browsing jobs.
-            // FIXME: This is not ideal as we are not actually schedule browse.
-            let cur_time = now.elapsed().as_secs() as usize;
-            if rdr_workload.contains_key(&cur_time) {
-                println!("pivot {:?}", cur_time);
-                let min = cur_time / 60;
-                let rest_sec = cur_time % 60;
-                println!("{:?} min, {:?} second", min, rest_sec);
-                match rdr_workload.remove(&cur_time) {
-                    Some(wd) => match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
-                        Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
-                            num_of_ok += oks;
-                            num_of_err += errs;
-                            num_of_timeout += timeouts;
-                            num_of_closed += closeds;
-                            num_of_visit += visits;
-                            elapsed_time.push(elapsed);
+        .transform(box move |p| {
+            let flow = p.read_metadata();
+            let rev_flow = flow.reverse_flow();
+            let _seq = p.get_header().seq_num();
+            let _tcph = p.get_header();
+            let _payload_size = p.payload_size();
+
+            // FIXME: The else part should be written as a filter and it should exec before all these..
+            if !unsafe_connection.contains(flow) {
+                // check if the flow is recognized
+                if payload_cache.contains_key(flow) {
+                    // Check if this packet is not expected, ie, is a out of order segment.
+                    if _seq == *seqnum_map.get(flow).unwrap() {
+                        // We received an expected packet
+                        tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
+                        seqnum_map.entry(*flow).and_modify(|e| {
+                            *e = *e + _payload_size as u32;
+                            ()
+                        });
+                    } else if _seq > *seqnum_map.get(flow).unwrap() {
+                        // We received a out-of-order TLS segment
+                        // We need to check if we should update the entry in the tmp payload cache
+                        if tmp_payload_cache.contains_key(flow) {
+                            // Check if we should update the entry in the tmp payload cache
+                            let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
+                            if _seq == entry_expected_seqno {
+                                tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
+                                tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
+                                    *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
+                                });
+                            } else {
+                            }
+                        } else {
+                            tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
+                            tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                         }
-                        None => println!("No workload for second {:?}", cur_time),
-                    },
-                    None => println!("No workload for second {:?}", cur_time),
+                    } else {
+                    }
+                } else {
+                    match on_frame(&p.get_payload()) {
+                        Some((handshake, _)) => {
+                            match handshake.payload {
+                                ClientHello(_) => {
+                                    let server_name = match get_server_name(&p.get_payload()) {
+                                        Some(n) => n,
+                                        None => {
+                                            // FIXME: tmp hack
+                                            let name_ref =
+                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            webpki::DNSName::from(name_ref)
+                                        }
+                                    };
+                                    name_cache
+                                        .entry(rev_flow)
+                                        .and_modify(|e| *e = server_name.clone())
+                                        .or_insert(server_name);
+                                }
+                                ServerHello(_) => {
+                                    // capture the sequence number
+                                    seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                                    payload_cache.insert(*flow, p.get_payload().to_vec());
+                                }
+                                ClientKeyExchange(_) => {
+                                    let dns_name = name_cache.remove(&rev_flow);
+                                    match dns_name {
+                                        Some(name) => do_client_key_exchange(
+                                            name,
+                                            flow,
+                                            &rev_flow,
+                                            &mut cert_count,
+                                            &mut unsafe_connection,
+                                            &mut tmp_payload_cache,
+                                            &mut tmp_seqnum_map,
+                                            &mut payload_cache,
+                                            &mut seqnum_map,
+                                        ),
+                                        None => eprintln!("We are missing the dns name from the client hello",),
+                                    }
+                                }
+                                _ => eprintln!("Other kinds of payload",),
+                            }
+                        }
+                        None => eprintln!("Get none for matching payload",),
+                    }
                 }
+            } else {
+                // Disabled for now, we can enable it when we are finished.
+
+                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                // let _ = unsafe_connection.take(flow);
+                // let tcph = p.get_mut_header();
+                // tcph.set_rst_flag();
             }
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
-                // Measurement: metric for the performance of the RDR proxy
+            if pkt_count == NUM_TO_IGNORE {
+                println!("\nMeasurement started ",);
                 println!(
-                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
-                    num_of_ok, num_of_err, num_of_timeout, num_of_closed, num_of_visit,
+                    "NUM_TO_IGNORE: {:#?}, TOTAL_MEASURED_PKT: {:#?}, pkt_count: {:#?}",
+                    NUM_TO_IGNORE, TOTAL_MEASURED_PKT, pkt_count
                 );
-                println!("Metric: Browsing Time: {:?}\n", elapsed_time);
-                metric_exec = false;
             }
 
-            // Measurement: instrumentation to collect latency metrics
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
@@ -292,5 +342,5 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
         .reset()
         .compose();
 
-    merge(vec![groups.get_group(0).unwrap().compose(), rdr_pipe, p2p_pipe]).compose()
+    merge(vec![groups.get_group(0).unwrap().compose(), tlsv_pipe, p2p_pipe]).compose()
 }

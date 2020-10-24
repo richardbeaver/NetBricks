@@ -1,22 +1,49 @@
-use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_iter;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
+use e2d2::pvn::measure::*;
+use e2d2::pvn::rdr::*;
+use e2d2::pvn::xcdr::*;
 use e2d2::scheduler::Scheduler;
+use faktory::{Job, Producer};
 use headless_chrome::Browser;
+use rdr::utils::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
+use xcdr::utils::*;
 
-pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let (rdr_setup, rdr_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    // FIXME: read inst mode
+    let inst = false;
+
+    // RDR setup
+    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
+
+    // XCDR setup
+    let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
+    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(setup_val).unwrap();
+    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
+
+    // faktory job queue
+    let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
+
+    // job id
+    let mut job_id = 0;
+
+    let mut pivot = 1 as u128 + time_span;
+
+    let now = Instant::now();
+    let mut cur = Instant::now();
+    let mut time_diff = Duration::new(0, 0);
 
     // Measurement code
     //
@@ -34,15 +61,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t1_2 = Arc::clone(&start_ts);
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
+    let t2_3 = Arc::clone(&stop_ts_matched);
 
     // Pkt counter. We keep track of every packet.
     let mut pkt_count = 0;
-
-    // States that this NF needs to maintain.
-    //
-    // The RDR proxy network function needs to maintain a list of active headless browsers. This is
-    // for the purpose of simulating multi-container extension in Firefox and multiple users. We
-    // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
     // Workloads:
     let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_5.json";
@@ -68,8 +90,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
 
-    let mut pivot = 1;
+    // let mut pivot = 1;
     let now = Instant::now();
+    let mut start = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
@@ -79,7 +102,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end;
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -93,14 +118,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         })
         .parse::<TcpHeader>()
         .group_by(
-            2,
+            3,
             box move |p| {
                 pkt_count += 1;
-
-                let mut matched = false;
-                // NOTE: the following ip addr and port are hardcode based on the trace we are
-                // replaying
-                let match_ip = 180_907_852 as u32; // 10.200.111.76
                 let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
                     Some((src, dst, p)) => (src, dst, p),
                     None => (&0, &0, &0),
@@ -108,11 +128,38 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let src_port = p.get_header().src_port();
                 let dst_port = p.get_header().dst_port();
 
+                // 0 means the packet doesn't match RDR or P2P
+                let mut matched = 0;
+                // NOTE: the following ip addr and port are hardcode based on the trace we are
+                // replaying
+                let match_ip = 180_907_852 as u32; // 10.200.111.76
+                let rdr_match_port = 443 as u16;
+
+                let xcdr_match_src_ip = 3_232_235_524 as u32;
+                let xcdr_match_src_port = 58_111;
+                let xcdr_match_dst_ip = 2_457_012_302 as u32;
+                let xcdr_match_dst_port = 443;
+
+                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
                 if *proto == 6 {
-                    if *src_ip == match_ip {
-                        matched = true
-                    } else if *dst_ip == match_ip {
-                        matched = true
+                    if *src_ip == match_ip || *dst_ip == match_ip {
+                        if src_port == rdr_match_port || dst_port == rdr_match_port {
+                            matched = 1
+                        }
+                    }
+                } else if *proto == 17 {
+                    if *src_ip == xcdr_match_src_ip
+                        && src_port == xcdr_match_src_port
+                        && *dst_ip == xcdr_match_dst_ip
+                        && dst_port == xcdr_match_dst_port
+                    {
+                        matched = 2
+                    } else if *src_ip == xcdr_match_dst_ip
+                        && src_port == xcdr_match_dst_port
+                        && *dst_ip == xcdr_match_src_ip
+                        && dst_port == xcdr_match_src_port
+                    {
+                        matched = 2
                     }
                 }
 
@@ -145,23 +192,20 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     latency_exec = false;
                 }
 
-                if pkt_count > NUM_TO_IGNORE && !matched {
+                if pkt_count > NUM_TO_IGNORE && matched == 0 {
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
 
-                if matched {
-                    0
-                } else {
-                    1
-                }
+                matched
             },
             sched,
         );
 
-    // Create the pipeline--we perform the actual packet processing here.
-    let pipe = groups
-        .get_group(0)
+    let rdr_pipe = groups
+        .get_group(1)
         .unwrap()
         .transform(box move |pkt| {
             // Scheduling browsing jobs.
@@ -202,12 +246,58 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             // Measurement: instrumentation to collect latency metrics
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .reset()
         .compose();
-    merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
+
+    let xcdr_pipe = groups
+        .get_group(2)
+        .unwrap()
+        .transform(box move |_| {
+            // time difference
+            if time_diff == Duration::new(0, 0) {
+                time_diff = now.elapsed();
+                println!("update time diff before crash: {:?}", time_diff);
+                pivot = pivot + time_diff.as_millis();
+                println!("update pivot: {}", pivot);
+            }
+            let time_elapsed = now.elapsed().as_millis();
+
+            // if we hit a new micro second/millisecond/second
+            if time_elapsed >= pivot {
+                let t = cur.elapsed().as_millis();
+                let mut w = latv_2.lock().unwrap();
+                w.push(t);
+
+                let core_id = job_id % setup_val;
+                // we append a job to the job queue every *time_span*
+                let c = Arc::clone(&fak_conn);
+                append_job_faktory(pivot, c, core_id, &expr_num);
+                // println!("job: {}, core id: {}", job_id, core_id);
+
+                cur = Instant::now();
+                pivot += time_span;
+                job_id += 1;
+            }
+
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_1.lock().unwrap();
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
+            }
+        })
+        .reset()
+        .compose();
+
+    merge(vec![groups.get_group(0).unwrap().compose(), rdr_pipe, xcdr_pipe]).compose()
 }

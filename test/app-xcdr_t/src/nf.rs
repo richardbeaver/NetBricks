@@ -20,7 +20,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // Specific setup config for this run
 
     // setup for this run
-    let (setup_val, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?}", setup_val, port,);
 
@@ -71,7 +71,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -148,13 +150,17 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    // w.push(end);
+                    if inst {
+                        w.push(end);
+                    }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
             }
 

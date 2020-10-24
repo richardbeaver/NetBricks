@@ -1,31 +1,27 @@
-use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::*;
+use e2d2::pvn::xcdr::*;
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
+use faktory::{Job, Producer};
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use tlsv::utils::*;
+use xcdr::utils::*;
 
-use utils;
-
-pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let mut metric_exec = true;
+    // FIXME: read inst mode
+    let inst = false;
 
-    // New payload cache.
+    // TLSV setup
     //
-    // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
-    // naive implementation of TCP out-of-order segments, for a more comprehensive version you
-    // should visit something like [assembler in
-    // smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
-    // buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
-
     // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
     // New map to keep track of the expected seq #
@@ -36,63 +32,152 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
     // DNS name cache.
     let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
-
     // Cert count
     let mut cert_count = 0;
-    // pkt count
-    let mut pkt_count = 0;
+
+    // XCDR setup
+    let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
+    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(setup_val).unwrap();
+    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
+    // faktory job queue
+    let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
+    // job id
+    let mut job_id = 0;
+
+    let mut pivot = 1 as u128 + time_span;
+
+    let now = Instant::now();
+    let mut cur = Instant::now();
+    let mut time_diff = Duration::new(0, 0);
+    let mut workload_exec = true;
 
     // Measurement code
     //
+    // NOTE: Store timestamps and calculate the delta to get the processing time for individual
+    // packet is disabled here (TOTAL_MEASURED_PKT removed)
+    let mut metric_exec = true;
+    let mut latency_exec = true;
+
     // start timestamps will be a vec protected with arc and mutex.
-    let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
-    let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
-        TOTAL_MEASURED_PKT + EPSILON,
-    )));
-    let mut stop_ts_tcp: Vec<Instant> = Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+    let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
+    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
+    let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
 
-    let t1_1 = Arc::clone(&start_ts_1);
-    let t1_2 = Arc::clone(&start_ts_1);
-    let t2_1 = Arc::clone(&stop_ts_non_tcp);
-    let t2_2 = Arc::clone(&stop_ts_non_tcp);
+    let t1_1 = Arc::clone(&start_ts);
+    let t1_2 = Arc::clone(&start_ts);
+    let t2_1 = Arc::clone(&stop_ts_matched);
+    let t2_2 = Arc::clone(&stop_ts_matched);
+    let t2_3 = Arc::clone(&stop_ts_matched);
 
+    // Pkt counter. We keep track of every packet.
+    let mut pkt_count = 0;
+
+    // let mut pivot = 1;
     let now = Instant::now();
+    let mut start = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
-        .transform(box move |p| {
+        .transform(box move |_| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                // w.push(Instant::now());
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
             }
-
-            // p.get_mut_header().swap_addresses();
-            p.get_mut_header();
         })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
+        .metadata(box move |p| {
+            let f = p.get_header().flow().unwrap();
+            f
+        })
         .group_by(
-            2,
+            3,
             box move |p| {
                 pkt_count += 1;
-                if p.get_header().protocol() == 6 {
-                    0
-                } else {
-                    if pkt_count > NUM_TO_IGNORE {
-                        let mut w = t2_1.lock().unwrap();
-                        // w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                let f = p.read_metadata();
+
+                // 0 means the packet doesn't match RDR or P2P
+                let mut matched = 0;
+                // NOTE: the following ip addr and port are hardcode based on the trace we are
+                // replaying
+                let match_ip = 180_907_852 as u32; // 10.200.111.76
+                let rdr_match_port = 443 as u16;
+                let xcdr_match_src_ip = 3_232_235_524 as u32;
+                let xcdr_match_src_port = 58_111;
+                let xcdr_match_dst_ip = 2_457_012_302 as u32;
+                let xcdr_match_dst_port = 443;
+
+                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                if f.proto == 6 {
+                    matched = 1
+                } else if f.proto == 17 {
+                    if f.src_ip == xcdr_match_src_ip
+                        && f.src_port == xcdr_match_src_port
+                        && f.dst_ip == xcdr_match_dst_ip
+                        && f.dst_port == xcdr_match_dst_port
+                    {
+                        matched = 2
+                    } else if f.src_ip == xcdr_match_dst_ip
+                        && f.src_port == xcdr_match_dst_port
+                        && f.dst_ip == xcdr_match_src_ip
+                        && f.dst_port == xcdr_match_src_port
+                    {
+                        matched = 2
                     }
-                    1
                 }
+
+                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                    println!("pkt count {:?}", pkt_count);
+                    let w1 = t1_2.lock().unwrap();
+                    let w2 = t2_2.lock().unwrap();
+                    println!(
+                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                        w1.len(),
+                        stop_ts_not_matched.len(),
+                        w2.len(),
+                    );
+                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
+                    let num = actual_stop_ts.len();
+                    println!(
+                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
+                        w2.len(),
+                        actual_stop_ts.len()
+                    );
+                    println!("Latency results start: {:?}", num);
+                    let mut tmp_results = Vec::<u128>::with_capacity(num);
+                    for i in 0..num {
+                        let stop = actual_stop_ts.get(&i).unwrap();
+                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                        tmp_results.push(since_the_epoch.as_nanos());
+                    }
+                    compute_stat(tmp_results);
+                    println!("\nLatency results end",);
+                    latency_exec = false;
+                }
+
+                if pkt_count > NUM_TO_IGNORE && matched == 0 {
+                    let end = Instant::now();
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
+                }
+
+                matched
             },
             sched,
         );
 
-    // Create the pipeline--we perform the actual packet processing here.
-    let pipe = groups
-        .get_group(0)
+    let tlsv_pipe = groups
+        .get_group(1)
         .unwrap()
         .metadata(box move |p| {
             let flow = p.get_header().flow().unwrap();
@@ -106,27 +191,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let _tcph = p.get_header();
             let _payload_size = p.payload_size();
 
-            info!("");
-            info!("TCP Headers: {}", _tcph);
-
             // FIXME: The else part should be written as a filter and it should exec before all these..
             if !unsafe_connection.contains(flow) {
                 // check if the flow is recognized
                 if payload_cache.contains_key(flow) {
-                    info!("Pkt #{} is Occupied!", _seq);
-                    info!("And the flow is: {:?}", flow);
-
                     // The rest of the TLS server hello handshake should be captured here.
-                    info!("There is nothing, that is why we should insert the packet!!!");
-                    debug!(
-                        "Pkt seq # is {}, the expected seq # is {} ",
-                        _seq,
-                        seqnum_map.get(flow).unwrap()
-                    );
                     // Check if this packet is not expected, ie, is a out of order segment.
                     if _seq == *seqnum_map.get(flow).unwrap() {
                         // We received an expected packet
-                        debug!("Pkt match expected seq #, update the flow entry...");
                         //debug!("{:?}", p.get_payload());
                         tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
                         seqnum_map.entry(*flow).and_modify(|e| {
@@ -135,33 +207,24 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         });
                     } else if _seq > *seqnum_map.get(flow).unwrap() {
                         // We received a out-of-order TLS segment
-                        debug!("OOO: pkt seq # is larger then expected seq #\n");
                         // We need to check if we should update the entry in the tmp payload cache
                         if tmp_payload_cache.contains_key(flow) {
-                            debug!("OOO: we already have entry in the tmp payload cache");
                             // Check if we should update the entry in the tmp payload cache
                             let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
                             if _seq == entry_expected_seqno {
-                                debug!("OOO: seq # of current pkt matches the expected seq # of the entry in tpc");
                                 tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
                                 tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
                                     *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
                                 });
                             } else {
-                                info!("Oops: passing because it should be a unrelated packet");
                             }
                         } else {
-                            debug!("OOO: We are adding an entry in the tpc!");
                             tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
                             tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                         }
                     } else {
-                        debug!("Oops: pkt seq # is even smaller then the expected #");
                     }
                 } else {
-                    info!("Pkt #{} is Vacant", _seq);
-                    info!("And the flow is: {:?}", flow);
-
                     match on_frame(&p.get_payload()) {
                         Some((handshake, _)) => {
                             match handshake.payload {
@@ -182,7 +245,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                 }
                                 ServerHello(_) => {
                                     // capture the sequence number
-                                    debug!("Got ServerHello, insert the flow entry");
                                     seqnum_map.insert(*flow, _seq + _payload_size as u32);
                                     payload_cache.insert(*flow, p.get_payload().to_vec());
                                 }
@@ -200,13 +262,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                             &mut payload_cache,
                                             &mut seqnum_map,
                                         ),
-                                        None => info!("We are missing the dns name from the client hello",),
+                                        None => eprintln!("We are missing the dns name from the client hello",),
                                     }
                                 }
-                                _ => info!("Other kinds of payload",),
+                                _ => eprintln!("Other kinds of payload",),
                             }
                         }
-                        None => info!("Get none for matching payload",),
+                        None => eprintln!("Get none for matching payload",),
                     }
                 }
             } else {
@@ -229,46 +291,59 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 );
             }
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
-                println!("pkt count {:?}", pkt_count);
-                // let mut total_duration = Duration::new(0, 0);
-                let mut total_time1 = Duration::new(0, 0);
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    w2.len(),
-                    stop_ts_tcp.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
-                    stop_ts_tcp.len(),
-                    actual_stop_ts.len()
-                );
-
-                println!("Latency results start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
-                    tmp_results.push(since_the_epoch.as_nanos());
-                }
-                compute_stat(tmp_results);
-                println!("\nLatency results end",);
-                metric_exec = false;
-            }
-
             if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
-                stop_ts_tcp.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .reset()
         .compose();
-    merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
+
+    let xcdr_pipe = groups
+        .get_group(2)
+        .unwrap()
+        .transform(box move |_| {
+            // time difference
+            if time_diff == Duration::new(0, 0) {
+                time_diff = now.elapsed();
+                println!("update time diff before crash: {:?}", time_diff);
+                pivot = pivot + time_diff.as_millis();
+                println!("update pivot: {}", pivot);
+            }
+            let time_elapsed = now.elapsed().as_millis();
+
+            // if we hit a new micro second/millisecond/second
+            if time_elapsed >= pivot {
+                let t = cur.elapsed().as_millis();
+                let mut w = latv_2.lock().unwrap();
+                w.push(t);
+
+                let core_id = job_id % setup_val;
+                // we append a job to the job queue every *time_span*
+                let c = Arc::clone(&fak_conn);
+                append_job_faktory(pivot, c, core_id, &expr_num);
+                // println!("job: {}, core id: {}", job_id, core_id);
+
+                cur = Instant::now();
+                pivot += time_span;
+                job_id += 1;
+            }
+
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_1.lock().unwrap();
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
+            }
+        })
+        .reset()
+        .compose();
+
+    merge(vec![groups.get_group(0).unwrap().compose(), tlsv_pipe, xcdr_pipe]).compose()
 }

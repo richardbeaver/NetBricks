@@ -241,8 +241,8 @@ pub fn do_client_key_exchange(
                         debug!("Testing our cert");
                         let result = test_extracted_cert(chain, dns_name);
                         *cert_count = *cert_count + 1;
-                        if *cert_count % 100000 as usize == 0 {
-                            println!("cert count is {}", cert_count);
+                        if *cert_count % 1_000 as usize == 0 {
+                            println!("cert count is {}k", *cert_count / 1_000);
                         }
                         if !result {
                             debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);
@@ -279,8 +279,9 @@ pub fn do_client_key_exchange(
                     let result = test_extracted_cert(chain, dns_name);
 
                     *cert_count = *cert_count + 1;
-                    if *cert_count % 100000 as usize == 0 {
-                        println!("cert count is {}", cert_count);
+
+                    if *cert_count % 1_000 as usize == 0 {
+                        println!("cert count is {}k", *cert_count / 1_000);
                     }
                     if !result {
                         debug!("info: Certificate validation failed, both flows' connection need to be reset\n{:?}\n{:?}\n", flow, rev_flow);

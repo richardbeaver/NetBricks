@@ -6,7 +6,7 @@ use std::time::Instant;
 /// Read setup for transcoder NF. This function returns <setup, port, expr number>.
 ///
 /// We need to get the port number for faktory queue besides the setup value.
-pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String)> {
+pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String, bool)> {
     let file = File::open(file_path).expect("file should open read only");
     let json: Value = from_reader(file).expect("file should be proper JSON");
 
@@ -36,11 +36,25 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String)> {
             }
         };
 
-    if port.is_some() || setup.is_some() || expr_num.is_some() {
+    let inst: Option<String> = match serde_json::from_value(json.get("inst").expect("file should have setup").clone()) {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+    let inst_val = match &*inst.unwrap() {
+        "on" => Some(true),
+        "off" => Some(false),
+        _ => None,
+    };
+
+    if port.is_some() && setup.is_some() && expr_num.is_some() && inst_val.is_some() {
         return Some((
             setup.unwrap().parse::<usize>().unwrap(),
             port.unwrap().to_string(),
             expr_num.unwrap().to_string(),
+            inst_val.unwrap(),
         ));
     } else {
         println!("Setup: {:?} and Port: {:?} have None values", setup, port);

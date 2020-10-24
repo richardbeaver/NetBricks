@@ -32,7 +32,7 @@ pub fn rdr_load_workload(
                 None => continue,
             };
 
-            let mut broken_urls = curate_unresolvable_records();
+            let broken_urls = curate_unresolvable_records();
 
             if broken_urls.contains(urls.unwrap()[1].as_str().unwrap()) {
                 continue;

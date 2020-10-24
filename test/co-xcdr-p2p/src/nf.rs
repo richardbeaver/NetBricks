@@ -1,29 +1,58 @@
-use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_iter;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
+use e2d2::pvn::measure::*;
+use e2d2::pvn::p2p::*;
+use e2d2::pvn::xcdr::*;
 use e2d2::scheduler::Scheduler;
+use faktory::{Job, Producer};
+use p2p::utils::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use tokio::runtime::Runtime;
+use xcdr::utils::*;
 
-pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // setup for this run
-    let (p2p_setup, p2p_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    // FIXME: read inst mode
+    let inst = false;
+
+    // XCDR setup
+    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(setup_val).unwrap();
+    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
+
+    let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
+
+    // faktory job queue
+    let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
+    // job id
+    let mut job_id = 0;
+
+    let mut pivot = 1 as u128 + time_span;
+
+    let now = Instant::now();
+    let mut cur = Instant::now();
+    let mut time_diff = Duration::new(0, 0);
+
+    // P2P setup
+    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
+    let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
+    let mut workload_exec = true;
 
     // Measurement code
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
     let mut metric_exec = true;
+    let mut latency_exec = true;
 
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
@@ -34,82 +63,61 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t1_2 = Arc::clone(&start_ts);
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
+    let t2_3 = Arc::clone(&stop_ts_matched);
 
-    let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
-
-    // pkt count
+    // Pkt counter. We keep track of every packet.
     let mut pkt_count = 0;
 
-    let mut pivot = 0 as usize;
+    // let mut pivot = 1;
     let now = Instant::now();
     let mut start = Instant::now();
 
-    let mut workload_exec = true;
-
-    // States that this NF needs to maintain.
-    //
-    // The RDR proxy network function needs to maintain a list of active headless browsers. This is
-    // for the purpose of simulating multi-container extension in Firefox and multiple users. We
-    // also need to maintain a content cache for the bulk HTTP request and response pairs.
-
     // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
-        .transform(box move |p| {
+        .transform(box move |_| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let start = Instant::now();
-                // w.push(start);
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow().unwrap();
+            f
         })
-        .parse::<TcpHeader>()
         .group_by(
-            2,
+            3,
             box move |p| {
                 pkt_count += 1;
+                let f = p.read_metadata();
 
-                let mut matched = false;
+                // 0 means the packet doesn't match RDR or P2P
+                let mut matched = 0;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_ip = 180_907_852 as u32;
+                let match_ip = 180_907_852 as u32; // 10.200.111.76
+
                 // https://wiki.wireshark.org/BitTorrent
-                let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
+                let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => {
-                        // println!("src: {:?} dst: {:}", src, dst); //
-                        (src, dst, p)
-                    }
-                    None => (&0, &0, &0),
-                };
-
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
-
-                // println!("src: {:?} dst: {:}", src_port, dst_port); //
-
-                if *proto == 6 {
-                    if *src_ip == match_ip && match_port.contains(&dst_port) {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
-                        matched = true
-                    } else if *dst_ip == match_ip && match_port.contains(&src_port) {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
-                        matched = true
+                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                if f.proto == 17 {
+                    matched = 1
+                } else if f.proto == 6 {
+                    if f.src_ip == match_ip || f.dst_ip == match_ip {
+                        if p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port) {
+                            matched = 2
+                        }
                     }
                 }
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+
+                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -132,31 +140,69 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         let stop = actual_stop_ts.get(&i).unwrap();
                         let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                         tmp_results.push(since_the_epoch.as_nanos());
-                        // print!("{:?}, ", since_the_epoch1);
-                        // total_time1 = total_time1 + since_the_epoch1;
                     }
                     compute_stat(tmp_results);
                     println!("\nLatency results end",);
-                    metric_exec = false;
+                    latency_exec = false;
                 }
 
-                if pkt_count > NUM_TO_IGNORE && !matched {
-                    let stop = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, stop);
+                if pkt_count > NUM_TO_IGNORE && matched == 0 {
+                    let end = Instant::now();
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
 
-                if matched {
-                    0
-                } else {
-                    1
-                }
+                matched
             },
             sched,
         );
 
-    // Create the pipeline--we perform the actual packet processing here.
-    let pipe = groups
-        .get_group(0)
+    let xcdr_pipe = groups
+        .get_group(1)
+        .unwrap()
+        .transform(box move |pkt| {
+            // time difference
+            if time_diff == Duration::new(0, 0) {
+                time_diff = now.elapsed();
+                println!("update time diff before crash: {:?}", time_diff);
+                pivot = pivot + time_diff.as_millis();
+                println!("update pivot: {}", pivot);
+            }
+            let time_elapsed = now.elapsed().as_millis();
+
+            // if we hit a new micro second/millisecond/second
+            if time_elapsed >= pivot {
+                let t = cur.elapsed().as_millis();
+                let mut w = latv_2.lock().unwrap();
+                w.push(t);
+
+                let core_id = job_id % setup_val;
+                // we append a job to the job queue every *time_span*
+                let c = Arc::clone(&fak_conn);
+                append_job_faktory(pivot, c, core_id, &expr_num);
+                // println!("job: {}, core id: {}", job_id, core_id);
+
+                cur = Instant::now();
+                pivot += time_span;
+                job_id += 1;
+            }
+
+            pkt_count += 1;
+
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_1.lock().unwrap();
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
+            }
+        })
+        .reset()
+        .compose();
+
+    let p2p_pipe = groups
+        .get_group(2)
         .unwrap()
         .transform(box move |_| {
             if workload_exec {
@@ -180,7 +226,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
                         let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
-                        let mut workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
+                        let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
                         match rt.block_on(add_all_torrents(
@@ -210,12 +256,15 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             // println!("pkt count {:?}", pkt_count);
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .reset()
         .compose();
-    merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
+
+    merge(vec![groups.get_group(0).unwrap().compose(), xcdr_pipe, p2p_pipe]).compose()
 }

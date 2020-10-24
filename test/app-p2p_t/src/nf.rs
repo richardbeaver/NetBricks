@@ -1,7 +1,7 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_iter;
+use e2d2::pvn::measure::read_setup_param;
 use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
 use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
@@ -12,7 +12,7 @@ use tokio::runtime::Runtime;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Scheduler) -> CompositionBatch {
     // setup for this run
-    let (p2p_setup, p2p_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
 
@@ -52,8 +52,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             // println!("pkt_count {:?}", pkt_count);
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                // let now = Instant::now();
-                // w.push(now);
+                let now = Instant::now();
+                if inst {
+                    w.push(now);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -146,13 +148,17 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    // w.push(end);
+                    if inst {
+                        w.push(end);
+                    }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end;
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
             }
 

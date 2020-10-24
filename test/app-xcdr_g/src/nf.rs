@@ -23,7 +23,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // Specific setup config for this run
 
     // setup for this run
-    let (setup_val, port, expr_num) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
@@ -37,7 +37,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     // start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
-    let stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
+    let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
     let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
 
     let t1_1 = Arc::clone(&start_ts);
@@ -70,7 +70,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -156,7 +158,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
                 // println!("{:?}", matched);
 
@@ -206,7 +210,9 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .reset()

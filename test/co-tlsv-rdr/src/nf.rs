@@ -11,9 +11,9 @@ use std::time::Instant;
 use tlsv::validator;
 
 pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
-    let mut tlsv = validator(parent);
+    let tlsv = validator(parent);
 
-    let (rdr_setup, rdr_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -78,7 +78,9 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst{
+                w.push(end);
+                }
             }
         })
         .parse::<MacHeader>()
@@ -157,13 +159,17 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    // w.push(end);
+                    if inst{
+                    w.push(end);
+                    }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst{
+                    stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
                 }
             }
 

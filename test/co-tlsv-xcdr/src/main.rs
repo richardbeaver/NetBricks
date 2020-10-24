@@ -1,12 +1,9 @@
-//! A Remote Dependency Resolution (RDR) proxy network function will employ a headless browser and
-//! fetch the top-level HTML based on the HTTP (or even HTTPS) request. The exact implementation is
-//! in `nf.rs`.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
-extern crate tlsv_groupby;
-extern crate xcdr_groupby;
+extern crate time;
 
+use crate::nf::tlsv_xcdr_test;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
@@ -16,10 +13,35 @@ use std::env;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use tlsv_groupby::validator_test;
-use xcdr_groupby::transcoder_test;
+
+mod nf;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
+
+/// Test for the rdr proxy network function to schedule pipelines.
+fn test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
+    for port in &ports {
+        println!(
+            "Receiving port {} rxq {} txq {}",
+            port.port.mac_address(),
+            port.rxq(),
+            port.txq()
+        );
+    }
+
+    // create a pipeline for each port
+    let pipelines: Vec<_> = ports
+        .iter()
+        .map(|port| tlsv_xcdr_test(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .collect();
+
+    println!("Running {} pipelines", pipelines.len());
+
+    // schedule pipelines
+    for pipeline in pipelines {
+        sched.add_task(pipeline).unwrap();
+    }
+}
 
 /// default main
 fn main() {
@@ -37,8 +59,7 @@ fn main() {
     let duration = configuration.duration;
 
     config.start_schedulers();
-    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| validator_test(p, s)));
-    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| transcoder_test(p, s)));
+    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| test(p, s)));
     config.execute();
 
     let mut pkts_so_far = (0, 0);

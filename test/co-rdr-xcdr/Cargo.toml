@@ -1,14 +1,16 @@
 [package]
 name = "pvn-rdr-xcdr-coexist-app"
-version = "0.1.0"
-authors = ["Shuwen Jethro Sun <jethrosun@ccs.neu.edu>"]
+version = "0.2.0"
+authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-rdr-groupby = { path = "../../pvnf/rdr-groupby" }
-xcdr-groupby = { path = "../../pvnf/xcdr-groupby" }
+rdr = { path = "../../pvnf/rdr" }
+xcdr = { path = "../../pvnf/xcdr" }
 time = "0.2.22"
+headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
+faktory = "0.11"
 
 [features]
 default = []

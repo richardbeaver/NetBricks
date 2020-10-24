@@ -35,9 +35,9 @@ else
 fi
 
 CARGO_PATH="$HOME/.cargo/bin/cargo"
-CARGO_LOC=`which cargo || true`
+CARGO_LOC=$(which cargo || true)
 export CARGO=${CARGO_PATH-"${CARGO_LOC}"}
-if [ -z ${CARGO} ] || [ ! -e ${CARGO} ]; then
+if [ -z "${CARGO}" ] || [ ! -e "${CARGO}" ]; then
     echo "Could not find a preinstalled Cargo in PATH. Set CARGO_PATH if necessary."
     exit 1
 fi
@@ -64,7 +64,7 @@ export RUSTFLAGS="-C target-cpu=native"
 TRACING_LEVEL=1
 
 rust_build_static() {
-    if [ ! -d ${RUST_DOWNLOAD_PATH} ]; then
+    if [ ! -d "${RUST_DOWNLOAD_PATH}" ]; then
         git clone https://github.com/rust-lang/rust.git \
             ${RUST_DOWNLOAD_PATH}
     else

@@ -19,7 +19,9 @@ use e2d2::config::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::{merge, Batch, CompositionBatch, ReceiveBatch};
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{
+    compute_stat, merge_ts, read_setup_param, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+};
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
@@ -59,6 +61,7 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
 }
 
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
+    let (_, _, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
     // New payload cache.
@@ -109,7 +112,10 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                // w.push(Instant::now());
+                let end = Instant::now();
+                if inst {
+                    w.push(end);
+                }
             }
 
             // p.get_mut_header().swap_addresses();
@@ -254,12 +260,16 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
 
                 if pkt_count > NUM_TO_IGNORE {
                     let end = Instant::now();
-                    // stop_ts_tcp.push(end);
+                    if inst {
+                        stop_ts_tcp.push(end);
+                    }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
-                    // w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    if inst {
+                        w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
+                    }
                 }
             }
 
