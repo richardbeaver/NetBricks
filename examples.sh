@@ -46,7 +46,7 @@ export examples=(
 	# pvnf/xcdr-groupby
 	# pvnf/xcdr-transform
 	# PVN chain
-	# test/co-rdr-tlsv
+	test/co-tlsv-rdr
 	test/co-rdr-p2p
 	# test/co-rdr-xcdr
 	# test/co-tlsv-p2p

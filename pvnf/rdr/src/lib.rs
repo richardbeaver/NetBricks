@@ -44,7 +44,7 @@ pub fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| rdr(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .map(|port| rdr(ReceiveBatch::new(port.clone())).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());

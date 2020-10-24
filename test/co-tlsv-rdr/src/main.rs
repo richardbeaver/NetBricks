@@ -4,16 +4,17 @@
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
-extern crate rdr_groupby;
-extern crate tlsv_groupby;
+extern crate rdr;
+extern crate tlsv;
 
-use crate::nf::rdr_tlsv_chain;
+use crate::nf::tlsv_rdr_chain;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use std::env;
+use std::fmt::Display;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -21,6 +22,26 @@ use std::time::{Duration, Instant};
 mod nf;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
+
+fn test<T, S>(ports: Vec<T>, sched: &mut S)
+where
+    T: PacketRx + PacketTx + Display + Clone + 'static,
+    S: Scheduler + Sized,
+{
+    println!("Receiving started");
+    for port in &ports {
+        println!("Receiving port {}", port,);
+    }
+
+    let pipelines: Vec<_> = ports
+        .iter()
+        .map(|port| tlsv_rdr_chain(ReceiveBatch::new(port.clone())).send(port.clone()))
+        .collect();
+    println!("Running {} pipelines", pipelines.len());
+    for pipeline in pipelines {
+        sched.add_task(pipeline).unwrap();
+    }
+}
 
 /// default main
 fn main() {
@@ -38,7 +59,7 @@ fn main() {
     let duration = configuration.duration;
 
     config.start_schedulers();
-    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| rdr_tlsv_chain(p, s)));
+    config.add_pipeline_to_run(Arc::new(move |p, s: &mut StandaloneScheduler| test(p, s)));
     config.execute();
 
     let mut pkts_so_far = (0, 0);

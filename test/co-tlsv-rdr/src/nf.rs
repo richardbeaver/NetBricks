@@ -1,16 +1,18 @@
-use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_iter;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
-use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
+use e2d2::pvn::measure::*;
+use e2d2::pvn::rdr::*;
 use e2d2::scheduler::Scheduler;
 use headless_chrome::Browser;
+use rdr::utils::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+use tlsv::validator;
 
-pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
+pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
+    let mut tlsv = validator(parent);
+
     let (rdr_setup, rdr_iter) = read_setup_iter("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
@@ -69,7 +71,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBat
     let now = Instant::now();
     println!("Timer started");
 
-    parent
+    tlsv
         .transform(box move |_| {
             pkt_count += 1;
 
