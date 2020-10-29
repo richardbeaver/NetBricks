@@ -217,8 +217,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                     }
                     compute_stat(tmp_results);
                     println!("\nLatency results end",);
-                    metric_exec = false;
                 }
+                metric_exec = false;
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
         });

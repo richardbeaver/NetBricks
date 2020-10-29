@@ -134,33 +134,35 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                     let mut w = latv_1.lock().unwrap();
                     println!("Metric: {:?}", w);
 
-                    println!("pkt count {:?}", pkt_count);
-                    let w1 = t1_2.lock().unwrap();
-                    let w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        stop_ts_not_matched.len(),
-                        w2.len(),
-                    );
-                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                    let num = actual_stop_ts.len();
-                    println!(
-                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                        w2.len(),
-                        actual_stop_ts.len()
-                    );
-                    println!("Latency results start: {:?}", num);
-                    let mut tmp_results = Vec::<u128>::with_capacity(num);
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                        tmp_results.push(since_the_epoch.as_nanos());
-                        // print!("{:?}, ", since_the_epoch1);
-                        // total_time1 = total_time1 + since_the_epoch1;
+                    if inst {
+                        println!("pkt count {:?}", pkt_count);
+                        let w1 = t1_2.lock().unwrap();
+                        let w2 = t2_2.lock().unwrap();
+                        println!(
+                            "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                            w1.len(),
+                            stop_ts_not_matched.len(),
+                            w2.len(),
+                        );
+                        let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
+                        let num = actual_stop_ts.len();
+                        println!(
+                            "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
+                            w2.len(),
+                            actual_stop_ts.len()
+                        );
+                        println!("Latency results start: {:?}", num);
+                        let mut tmp_results = Vec::<u128>::with_capacity(num);
+                        for i in 0..num {
+                            let stop = actual_stop_ts.get(&i).unwrap();
+                            let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                            tmp_results.push(since_the_epoch.as_nanos());
+                            // print!("{:?}, ", since_the_epoch1);
+                            // total_time1 = total_time1 + since_the_epoch1;
+                        }
+                        compute_stat(tmp_results);
+                        println!("\nLatency results end",);
                     }
-                    compute_stat(tmp_results);
-                    println!("\nLatency results end",);
                     metric_exec = false;
                 }
 
