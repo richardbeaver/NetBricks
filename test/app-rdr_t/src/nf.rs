@@ -68,11 +68,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
 
-    if inst {
-        let measure_time = INST_MEASURE_TIME;
-    } else {
-        let measure_time = APP_MEASURE_TIME;
-    }
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
     println!("measure time: {}", measure_time);
 
     let now = Instant::now();

@@ -60,11 +60,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
 
-    if inst {
-        let measure_time = INST_MEASURE_TIME;
-    } else {
-        let measure_time = APP_MEASURE_TIME;
-    }
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
 

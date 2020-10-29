@@ -54,11 +54,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     let mut pivot = 1 as u128 + time_span;
 
-    if inst {
-        let measure_time = INST_MEASURE_TIME;
-    } else {
-        let measure_time = APP_MEASURE_TIME;
-    }
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
     let mut cur = Instant::now();

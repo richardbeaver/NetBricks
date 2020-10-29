@@ -42,11 +42,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // pkt count
     let mut pkt_count = 0;
 
-    if inst {
-        let measure_time = INST_MEASURE_TIME;
-    } else {
-        let measure_time = APP_MEASURE_TIME;
-    }
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
+
     let mut workload_exec = true;
     let mut pivot = 0 as usize;
     let now = Instant::now();

@@ -40,11 +40,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     // Fixed transmission setup
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
 
-    if inst {
-        let measure_time = INST_MEASURE_TIME;
-    } else {
-        let measure_time = APP_MEASURE_TIME;
-    }
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let mut workload_exec = true;
     let mut pivot = 0 as usize;
