@@ -243,7 +243,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dy
                 );
             }
 
-            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                 println!("pkt count {:?}", pkt_count);
                 // let mut total_duration = Duration::new(0, 0);
                 let mut total_time1 = Duration::new(0, 0);
