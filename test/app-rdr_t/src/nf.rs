@@ -89,7 +89,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 }
             }
         })
-        .parse::<MacHeader>()
+    .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
             let src_ip = p.get_header().src();
@@ -98,28 +98,28 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             Some((src_ip, dst_ip, proto))
         })
-        .parse::<TcpHeader>()
+    .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying
             // let match_ip = 3_232_235_524 as u32; // 192.168.0.4
             // let match_port = 443;
-           // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-           //      Some((src, dst, p)) => (src, dst, p),
-           //      None => (&0, &0, &0),
-           //  };
-           //
-           //  let src_port = p.get_header().src_port();
-           //  let dst_port = p.get_header().dst_port();
-           //
-           //  if *proto == 6 {
-           //      if *src_ip == match_ip && dst_port == match_port {
-           //          matched = true
-           //      } else if *dst_ip == match_ip && src_port == match_port {
-           //          matched = true
-           //      }
-           //  }
+            // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
+            //      Some((src, dst, p)) => (src, dst, p),
+            //      None => (&0, &0, &0),
+            //  };
+            //
+            //  let src_port = p.get_header().src_port();
+            //  let dst_port = p.get_header().dst_port();
+            //
+            //  if *proto == 6 {
+            //      if *src_ip == match_ip && dst_port == match_port {
+            //          matched = true
+            //      } else if *dst_ip == match_ip && src_port == match_port {
+            //          matched = true
+            //      }
+            //  }
 
             let match_ip =  180_907_852 as u32; // 10.200.111.76
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
@@ -189,35 +189,36 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
                 );
                 println!("Metric: Browsing Time: {:?}\n", elapsed_time);
 
-                println!("pkt count {:?}", pkt_count);
-
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    stop_ts_not_matched.len(),
-                    w2.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                    w2.len(),
-                    actual_stop_ts.len()
-                );
-                println!("Latency results start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    tmp_results.push(since_the_epoch.as_nanos());
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
+                if inst{
+                    println!("pkt count {:?}", pkt_count);
+                    let w1 = t1_2.lock().unwrap();
+                    let w2 = t2_2.lock().unwrap();
+                    println!(
+                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                        w1.len(),
+                        stop_ts_not_matched.len(),
+                        w2.len(),
+                    );
+                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
+                    let num = actual_stop_ts.len();
+                    println!(
+                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
+                        w2.len(),
+                        actual_stop_ts.len()
+                    );
+                    println!("Latency results start: {:?}", num);
+                    let mut tmp_results = Vec::<u128>::with_capacity(num);
+                    for i in 0..num {
+                        let stop = actual_stop_ts.get(&i).unwrap();
+                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                        tmp_results.push(since_the_epoch.as_nanos());
+                        // print!("{:?}, ", since_the_epoch1);
+                        // total_time1 = total_time1 + since_the_epoch1;
+                    }
+                    compute_stat(tmp_results);
+                    println!("\nLatency results end",);
+                    metric_exec = false;
                 }
-                compute_stat(tmp_results);
-                println!("\nLatency results end",);
-                metric_exec = false;
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
         });

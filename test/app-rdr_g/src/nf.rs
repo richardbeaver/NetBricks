@@ -200,7 +200,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= measure_time&& metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
