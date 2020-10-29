@@ -2,7 +2,9 @@ use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::read_setup_param;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{
+    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+};
 use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
@@ -40,11 +42,15 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // pkt count
     let mut pkt_count = 0;
 
+    if inst {
+        let measure_time = INST_MEASURE_TIME;
+    } else {
+        let measure_time = APP_MEASURE_TIME;
+    }
+    let mut workload_exec = true;
     let mut pivot = 0 as usize;
     let now = Instant::now();
     let mut start = Instant::now();
-
-    let mut workload_exec = true;
 
     // States that this NF needs to maintain.
     //
@@ -111,7 +117,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+                if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
