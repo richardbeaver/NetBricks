@@ -70,8 +70,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
 
-    if inst {let measure
+    if inst {
+        let measure_time = INST_MEASURE_TIME;
     } else {
+        let measure_time = APP_MEASURE_TIME;
     }
 
     let mut pivot = 1;
@@ -123,7 +125,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 }
 
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
