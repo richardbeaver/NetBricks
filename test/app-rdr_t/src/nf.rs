@@ -73,6 +73,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
     } else {
         let measure_time = APP_MEASURE_TIME;
     }
+    println!("measure time: {}", measure_time);
 
     let now = Instant::now();
     println!("Timer started");
@@ -180,6 +181,10 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
             }
 
             pkt_count += 1;
+
+            if now.elapsed().as_secs() >= measure_time {
+                println!("\nMatch here\n");
+            }
 
             if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
