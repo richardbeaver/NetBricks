@@ -78,7 +78,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
-            const APP_MEASURE_TIME: u64 = 600;
 
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying
@@ -172,7 +171,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                 println!("pkt count {:?}", pkt_count);
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();
