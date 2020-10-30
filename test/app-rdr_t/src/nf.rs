@@ -178,11 +178,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T, _s: &mut dyn Sche
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= measure_time {
-                println!("Match here: {:?}", now.elapsed().as_secs());
-            }
-
-            // FIXME:
             if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
