@@ -34,7 +34,7 @@ where
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
+        .map(|port| validator(ReceiveBatch::new(port.clone())).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());

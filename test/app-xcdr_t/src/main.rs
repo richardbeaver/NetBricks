@@ -26,7 +26,7 @@ use std::env;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use xcdr::xcdr;
+use xcdr::transcoder;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
