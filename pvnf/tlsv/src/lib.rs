@@ -20,7 +20,8 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::{merge, Batch, CompositionBatch, ReceiveBatch};
 use e2d2::pvn::measure::{
-    compute_stat, merge_ts, read_setup_param, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+    compute_stat, merge_ts, read_setup_param, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE,
+    TOTAL_MEASURED_PKT,
 };
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
@@ -102,6 +103,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
     let t1_2 = Arc::clone(&start_ts_1);
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
+
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
 
@@ -283,7 +286,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                 );
             }
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 println!("pkt count {:?}", pkt_count);
                 // let mut total_duration = Duration::new(0, 0);
                 let mut total_time1 = Duration::new(0, 0);

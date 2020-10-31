@@ -27,7 +27,9 @@ use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::read_setup_param;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{
+    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+};
 use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
@@ -68,6 +70,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t2_2 = Arc::clone(&stop_ts_matched);
 
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
+
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     // pkt count
     let mut pkt_count = 0;
@@ -141,7 +145,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+
+                if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -174,7 +179,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                 if pkt_count > NUM_TO_IGNORE && !matched {
                     let stop = Instant::now();
-                    // stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, stop);
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, stop);
+                    }
                 }
 
                 if matched {
@@ -244,7 +251,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
                 let end = Instant::now();
-                // w.push(end);
+                if inst {
+                    w.push(end);
+                }
             }
         })
         .reset()

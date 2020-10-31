@@ -2,7 +2,9 @@ use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::read_setup_param;
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{
+    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+};
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::Scheduler;
 use headless_chrome::Browser;
@@ -65,6 +67,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBat
     let mut num_of_timeout = 0;
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
+
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
     println!("Timer started");
@@ -173,7 +177,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBat
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",

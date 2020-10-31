@@ -24,7 +24,9 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
 use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::{compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, NUM_TO_IGNORE, TOTAL_MEASURED_PKT};
+use e2d2::pvn::measure::{
+    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
+};
 use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use faktory::{Job, Producer};
@@ -80,6 +82,8 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     let mut job_id = 0;
 
     let mut pivot = 1 as u128 + time_span;
+
+    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
     let mut cur = Instant::now();
@@ -150,7 +154,8 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                         matched = true
                     }
                 }
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+
+                if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                     println!("Pivot/span: {:?}", pivot / time_span);
                     let mut w = latv_1.lock().unwrap();
                     println!("Metric: {:?}", w);
