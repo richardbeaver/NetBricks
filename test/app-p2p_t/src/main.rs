@@ -13,25 +13,23 @@ extern crate e2d2;
 extern crate fnv;
 extern crate fork;
 extern crate getopts;
+extern crate p2p;
 extern crate rand;
 extern crate serde_json;
 extern crate time;
 extern crate transmission_rpc;
 
-use self::nf::p2p;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::{PacketRx, PacketTx};
 use e2d2::operators::{Batch, ReceiveBatch};
 use e2d2::scheduler::{initialize_system, Scheduler, StandaloneScheduler};
+use p2p::p2p;
 use std::env;
 use std::fmt::Display;
 use std::process;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-
-mod nf;
-mod utils;
 
 const CONVERSION_FACTOR: f64 = 1000000000.;
 

@@ -8,25 +8,23 @@ extern crate failure;
 extern crate fnv;
 extern crate getopts;
 extern crate headless_chrome;
+extern crate rdr;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate time;
 extern crate tiny_http;
 
-use self::nf::rdr;
 use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
+use rdr::rdr;
 use std::env;
 use std::fmt::Display;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-
-mod nf;
-mod utils;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 

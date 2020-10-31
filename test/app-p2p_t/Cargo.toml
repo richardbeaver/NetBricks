@@ -6,6 +6,8 @@ edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
+p2p = { path = "../../pvnf/p2p" }
+
 time = "0.1.42"
 getopts = "*"
 rand = ">=0.3"

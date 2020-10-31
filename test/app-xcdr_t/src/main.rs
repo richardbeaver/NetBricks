@@ -14,9 +14,9 @@ extern crate resize;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate time;
+extern crate xcdr;
 extern crate y4m;
 
-use self::nf::*;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
@@ -26,9 +26,7 @@ use std::env;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-
-mod nf;
-mod utils;
+use xcdr::xcdr;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 

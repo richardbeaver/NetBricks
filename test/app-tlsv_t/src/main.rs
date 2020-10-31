@@ -8,12 +8,10 @@ extern crate fnv;
 extern crate getopts;
 extern crate rustls;
 extern crate time;
+extern crate tlsv;
 extern crate webpki;
 extern crate webpki_roots;
-#[macro_use]
-extern crate log;
 
-use self::nf::validator;
 use e2d2::config::*;
 use e2d2::interface::*;
 use e2d2::operators::*;
@@ -23,9 +21,7 @@ use std::fmt::Display;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-
-mod nf;
-mod utils;
+use tlsv::validator;
 
 const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
