@@ -50,7 +50,7 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| validator(ReceiveBatch::new(port.clone())).send(port.clone()))
+        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
 
     println!("Running {} pipelines", pipelines.len());
@@ -60,8 +60,10 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
         sched.add_task(pipeline).unwrap();
     }
 }
-
-pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
+pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+    parent: T,
+    sched: &mut S,
+) -> CompositionBatch {
     let (_, _, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
