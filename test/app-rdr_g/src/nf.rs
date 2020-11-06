@@ -90,32 +90,26 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow().unwrap();
+            f
         })
         .parse::<TcpHeader>()
         .group_by(
             2,
             box move |p| {
                 pkt_count += 1;
+                let f = p.read_metadata();
 
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
 
                 let match_ip = 180_907_852 as u32; // 10.200.111.76
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
 
-                if *proto == 6 {
-                    if *src_ip == match_ip {
+                if f.proto == 6 {
+                    if f.src_ip == match_ip {
                         matched = true
-                    } else if *dst_ip == match_ip {
+                    } else if f.dst_ip == match_ip {
                         matched = true
                     }
                 }

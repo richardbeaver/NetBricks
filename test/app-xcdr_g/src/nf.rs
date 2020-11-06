@@ -82,17 +82,15 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow().unwrap();
+            f
         })
         .parse::<TcpHeader>()
         .group_by(
             2,
             box move |p| {
                 pkt_count += 1;
+                let f = p.read_metadata();
 
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
@@ -102,25 +100,17 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 let match_dst_ip = 2_457_012_302 as u32;
                 let match_dst_port = 443;
 
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
-
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
-
-                if *proto == 17 {
-                    if *src_ip == match_src_ip
-                        && src_port == match_src_port
-                        && *dst_ip == match_dst_ip
-                        && dst_port == match_dst_port
+                if f.proto == 17 {
+                    if f.src_ip == match_src_ip
+                        && f.src_port == match_src_port
+                        && f.dst_ip == match_dst_ip
+                        && f.dst_port == match_dst_port
                     {
                         matched = true
-                    } else if *src_ip == match_dst_ip
-                        && src_port == match_dst_port
-                        && *dst_ip == match_src_ip
-                        && dst_port == match_src_port
+                    } else if f.src_ip == match_dst_ip
+                        && f.src_port == match_dst_port
+                        && f.dst_ip == match_src_ip
+                        && f.dst_port == match_src_port
                     {
                         matched = true
                     }

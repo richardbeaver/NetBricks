@@ -102,17 +102,15 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow().unwrap();
+            f
         })
         .parse::<TcpHeader>()
         .group_by(
             2,
             box move |p| {
                 pkt_count += 1;
+                let f = p.read_metadata();
 
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
@@ -121,27 +119,10 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // https://wiki.wireshark.org/BitTorrent
                 let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => {
-                        // println!("src: {:?} dst: {:}", src, dst); //
-                        (src, dst, p)
-                    }
-                    None => (&0, &0, &0),
-                };
-
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
-
-                // println!("src: {:?} dst: {:}", src_port, dst_port); //
-
-                if *proto == 6 {
-                    if *src_ip == match_ip && match_port.contains(&dst_port) {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n src ip: {:?}, dst port: {:?}", src_ip, dst_port);
+                if f.proto == 6 {
+                    if f.src_ip == match_ip && match_port.contains(&f.dst_port) {
                         matched = true
-                    } else if *dst_ip == match_ip && match_port.contains(&src_port) {
-                        // println!("pkt count: {:?}", pkt_count);
-                        // println!("We got a hit\n dst ip: {:?}, src port: {:?}", dst_ip, src_port); //
+                    } else if f.dst_ip == match_ip && match_port.contains(&f.src_port) {
                         matched = true
                     }
                 }
