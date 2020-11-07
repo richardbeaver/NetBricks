@@ -8,7 +8,8 @@ use std::time::Instant;
 
 pub const EPSILON: usize = 1000;
 pub const NUM_TO_IGNORE: usize = 0;
-pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
+// pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
+pub const TOTAL_MEASURED_PKT: usize = 100_000_000;
 
 // pub const INST_MEASURE_TIME: u64 = 60;
 pub const INST_MEASURE_TIME: u64 = 601;
