@@ -16,16 +16,13 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    // FIXME: read inst mode
-    let inst = false;
-
     // RDR setup
     let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
     // P2P setup
-    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, _) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -246,7 +243,6 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
                         let _ = bt_run_torrents(fp_workload, p2p_setup.clone());
 
                         println!("bt run is not blocking");
-                        workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
