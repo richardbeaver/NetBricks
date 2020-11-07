@@ -131,8 +131,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                if inst{
-                w.push(end);
+                if inst {
+                    w.push(end);
                 }
             }
         })
@@ -142,7 +142,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let f = p.get_header().flow();
             match f {
                 Some(f) => f,
-                None => fake_flow()
+                None => fake_flow(),
             }
         })
         .parse::<TcpHeader>()
@@ -150,58 +150,54 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let mut matched = false;
             let f = p.read_metadata();
             // NOTE: the following ip addr and port are hardcode based on the trace we are
-            // replaying
-            // let match_ip = 3_232_235_524 as u32; // 192.168.0.4
-            // let match_port = 443;
-           // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-           //      Some((src, dst, p)) => (src, dst, p),
-           //      None => (&0, &0, &0),
-           //  };
-           //
-           //  let src_port = p.get_header().src_port();
-           //  let dst_port = p.get_header().dst_port();
-           //
-           //  if *proto == 6 {
-           //      if *src_ip == match_ip && dst_port == match_port {
-           //          matched = true
-           //      } else if *dst_ip == match_ip && src_port == match_port {
-           //          matched = true
-           //      }
-           //  }
+            // replaying let match_ip = 3_232_235_524 as u32; // 192.168.0.4 let match_port = 443;
+            // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
+            // Some((src, dst, p)) => (src, dst, p), None => (&0, &0, &0), };
+            //
+            //  let src_port = p.get_header().src_port(); let dst_port = p.get_header().dst_port();
+            //
+            //  if *proto == 6 { if *src_ip == match_ip && dst_port == match_port { matched = true }
+            //  else if *dst_ip == match_ip && src_port == match_port { matched = true } }
 
-            let match_ip =  180_907_852 as u32; // 10.200.111.76
+            let match_ip = 180_907_852 as u32; // 10.200.111.76
 
             if f.proto == 6 {
                 if f.src_ip == match_ip {
                     matched = true
-                } else if f.dst_ip == match_ip  {
+                } else if f.dst_ip == match_ip {
                     matched = true
                 }
             }
 
             // Scheduling browsing jobs.
             if matched {
-                // Scheduling browsing jobs.
-                // FIXME: This is not ideal as we are not actually schedule browse.
+                // Scheduling browsing jobs. FIXME: This is not ideal as we are not actually
+                // schedule browse.
                 let cur_time = now.elapsed().as_secs() as usize;
                 if rdr_workload.contains_key(&cur_time) {
                     // println!("pivot {:?}", cur_time);
                     let min = cur_time / 60;
                     let rest_sec = cur_time % 60;
-                    println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&cur_time) {
-                        Some(wd) => match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
-                            Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
-                                num_of_ok += oks;
-                                num_of_err += errs;
-                                num_of_timeout += timeouts;
-                                num_of_closed += closeds;
-                                num_of_visit += visits;
-                                elapsed_time.push(elapsed);
+                        Some(wd) => {
+                            println!("{:?} min, {:?} second", min, rest_sec);
+                            match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
+                                Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
+                                    num_of_ok += oks;
+                                    num_of_err += errs;
+                                    num_of_timeout += timeouts;
+                                    num_of_closed += closeds;
+                                    num_of_visit += visits;
+                                    elapsed_time.push(elapsed);
+                                }
+                                None => {
+                                    // println!("No workload for second {:?}", cur_time)
+                                }
                             }
-                            None => println!("No workload for second {:?}", cur_time),
-                        },
-                        None => println!("No workload for second {:?}", cur_time),
+                        }
+                        None => {
+                            // println!("No workload for second {:?}", cur_time)
+                        }
                     }
                 }
 
@@ -209,16 +205,16 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    if inst{
-                    w.push(end);
+                    if inst {
+                        w.push(end);
                     }
                 }
             } else {
                 if pkt_count > NUM_TO_IGNORE {
                     // Insert the timestamp as
                     let end = Instant::now();
-                    if inst{
-                    stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    if inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
                     }
                 }
             }
@@ -228,17 +224,23 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
-                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
-                    num_of_ok, num_of_err, num_of_timeout,num_of_closed, num_of_visit,
+                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?},
+                    num_of_closed: {:?}, num_of_visit: {:?}",
+                    num_of_ok, num_of_err, num_of_timeout, num_of_closed, num_of_visit,
                 );
-                println!("Metric: Browsing Time: {:?}\n", elapsed_time);
+                println!(
+                    "Metric: Browsing Time:
+                    {:?}\n",
+                    elapsed_time
+                );
 
                 println!("pkt count {:?}", pkt_count);
 
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();
                 println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                    "# of start
+                    ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
                     w1.len(),
                     stop_ts_not_matched.len(),
                     w2.len(),
@@ -256,13 +258,14 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     let stop = actual_stop_ts.get(&i).unwrap();
                     let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
                     tmp_results.push(since_the_epoch.as_nanos());
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
+                    // print!("{:?}, ", since_the_epoch1); total_time1 = total_time1 +
+                    // since_the_epoch1;
                 }
                 compute_stat(tmp_results);
                 println!("\nLatency results end",);
                 metric_exec = false;
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
-        }).compose()
+        })
+        .compose()
 }

@@ -95,25 +95,6 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
-            // NOTE: the following ip addr and port are hardcode based on the trace we are
-            // replaying
-            // let match_ip = 3_232_235_524 as u32; // 192.168.0.4
-            // let match_port = 443;
-           // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-           //      Some((src, dst, p)) => (src, dst, p),
-           //      None => (&0, &0, &0),
-           //  };
-           //
-           //  let src_port = p.get_header().src_port();
-           //  let dst_port = p.get_header().dst_port();
-           //
-           //  if *proto == 6 {
-           //      if *src_ip == match_ip && dst_port == match_port {
-           //          matched = true
-           //      } else if *dst_ip == match_ip && src_port == match_port {
-           //          matched = true
-           //      }
-           //  }
 
             let match_ip =  180_907_852 as u32; // 10.200.111.76
             let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
@@ -135,23 +116,29 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
                 // FIXME: This is not ideal as we are not actually schedule browse.
                 let cur_time = now.elapsed().as_secs() as usize;
                 if rdr_workload.contains_key(&cur_time) {
-                    println!("pivot {:?}", cur_time);
+                    // println!("pivot {:?}", cur_time);
                     let min = cur_time / 60;
                     let rest_sec = cur_time % 60;
-                    println!("{:?} min, {:?} second", min, rest_sec);
                     match rdr_workload.remove(&cur_time) {
-                        Some(wd) => match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
-                            Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
-                                num_of_ok += oks;
-                                num_of_err += errs;
-                                num_of_timeout += timeouts;
-                                num_of_closed += closeds;
-                                num_of_visit += visits;
-                                elapsed_time.push(elapsed);
+                        Some(wd) => {
+                            println!("{:?} min, {:?} second", min, rest_sec);
+                            match rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
+                                Some((oks, errs, timeouts, closeds, visits, elapsed)) => {
+                                    num_of_ok += oks;
+                                    num_of_err += errs;
+                                    num_of_timeout += timeouts;
+                                    num_of_closed += closeds;
+                                    num_of_visit += visits;
+                                    elapsed_time.push(elapsed);
+                                }
+                                None => {
+                                    // println!("No workload for second {:?}", cur_time);
+                                }
                             }
-                            None => println!("No workload for second {:?}", cur_time),
                         },
-                        None => println!("No workload for second {:?}", cur_time),
+                        None => {
+                            // println!("No workload for second {:?}", cur_time),
+                        }
                     }
                 }
 
