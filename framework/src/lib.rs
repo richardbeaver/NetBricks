@@ -4,7 +4,7 @@
 #![feature(llvm_asm)]
 #![feature(log_syntax)]
 #![feature(box_syntax)]
-#![feature(specialization)]
+#![feature(min_specialization)]
 #![feature(slice_concat_ext)]
 #![feature(const_fn)]
 // FIXME: Figure out if this is really the right thing here.

@@ -8,8 +8,9 @@ use std::slice;
 /// The data type that implements a network flow.
 // FIXME: Currently just deriving Hash, but figure out if this is a performance problem. By
 // default, Rust uses SipHash which is supposed to have reasonable performance characteristics.
+// #[repr(C, packed)]
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash, Ord, PartialOrd)]
-#[repr(C, packed)]
+#[repr(C)]
 pub struct Flow {
     /// Source IP.
     pub src_ip: u32,

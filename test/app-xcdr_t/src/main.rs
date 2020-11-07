@@ -3,7 +3,6 @@
 //! in `nf.rs`.
 #![feature(box_syntax)]
 #![feature(asm)]
-extern crate core_affinity;
 extern crate e2d2;
 extern crate failure;
 extern crate faktory;

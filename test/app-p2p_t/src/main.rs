@@ -7,7 +7,6 @@
 //! For details please refer to the section 5.2.2 of the NetBricks paper.
 
 #![feature(box_syntax)]
-extern crate core_affinity;
 extern crate crossbeam;
 extern crate e2d2;
 extern crate fnv;
