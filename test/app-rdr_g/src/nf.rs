@@ -113,7 +113,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         matched = true
                     }
                 }
-                println!("flow {:?}, matched ip {}", f, match_ip);
 
                 if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                     println!("pkt count {:?}", pkt_count);
