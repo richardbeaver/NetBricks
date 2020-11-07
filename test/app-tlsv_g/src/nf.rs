@@ -1,10 +1,7 @@
 use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::{
-    compute_stat, merge_ts, read_setup_param, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE,
-    TOTAL_MEASURED_PKT,
-};
+use e2d2::pvn::measure::*;
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
@@ -106,8 +103,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .get_group(0)
         .unwrap()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow,
+            }
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {

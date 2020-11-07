@@ -1,10 +1,7 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_param;
-use e2d2::pvn::measure::{
-    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
-};
+use e2d2::pvn::measure::*;
 use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
@@ -71,8 +68,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header().flow().unwrap();
-            f
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow,
+            }
         })
         .parse::<TcpHeader>()
         .group_by(

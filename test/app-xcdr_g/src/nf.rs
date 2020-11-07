@@ -1,9 +1,7 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::{
-    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
-};
+use e2d2::pvn::measure::*;
 use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use faktory::{Job, Producer};
@@ -82,8 +80,11 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header().flow().unwrap();
-            f
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow,
+            }
         })
         .parse::<TcpHeader>()
         .group_by(

@@ -1,10 +1,7 @@
 use crate::utils::*;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::read_setup_param;
-use e2d2::pvn::measure::{
-    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
-};
+use e2d2::pvn::measure::*;
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::Scheduler;
 use headless_chrome::Browser;
@@ -90,8 +87,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header().flow().unwrap();
-            f
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow,
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
