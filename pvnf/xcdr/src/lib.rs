@@ -24,9 +24,7 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader, UdpHeader};
 use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
 use e2d2::operators::{merge, Batch, CompositionBatch};
-use e2d2::pvn::measure::{
-    compute_stat, merge_ts, APP_MEASURE_TIME, EPSILON, INST_MEASURE_TIME, NUM_TO_IGNORE, TOTAL_MEASURED_PKT,
-};
+use e2d2::pvn::measure::*;
 use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use faktory::{Job, Producer};
@@ -46,7 +44,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     sched: &mut S,
 ) -> CompositionBatch {
     let mut metric_exec = true;
-    let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
+    let latencyv = Arc::new(Mutex::new(Vec::<u128>::new()));
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");

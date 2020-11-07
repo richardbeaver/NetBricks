@@ -23,7 +23,6 @@ use e2d2::operators::*;
 use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::*;
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
-use e2d2::scheduler::Scheduler;
 use e2d2::scheduler::*;
 use headless_chrome::Browser;
 use std::collections::HashMap;
