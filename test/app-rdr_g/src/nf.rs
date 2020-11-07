@@ -168,7 +168,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             // FIXME: This is not ideal as we are not actually schedule browse.
             let cur_time = now.elapsed().as_secs() as usize;
             if rdr_workload.contains_key(&cur_time) {
-                println!("pivot {:?}", cur_time);
+                // println!("pivot {:?}", cur_time);
                 let min = cur_time / 60;
                 let rest_sec = cur_time % 60;
                 println!("{:?} min, {:?} second", min, rest_sec);
