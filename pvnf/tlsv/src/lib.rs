@@ -134,7 +134,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
             let f = p.get_header().flow();
             match f {
                 Some(f) => f,
-                None => fake_flow,
+                None => fake_flow(),
             }
         })
         .parse::<TcpHeader>()

@@ -71,7 +71,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             let f = p.get_header().flow();
             match f {
                 Some(f) => f,
-                None => fake_flow,
+                None => fake_flow(),
             }
         })
         .parse::<TcpHeader>()
