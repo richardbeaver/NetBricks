@@ -23,7 +23,8 @@ LIBS += -lm -lpthread -ldl -lpcap -ldpdk -lzcsi
 
 
 # change fpic to fPIC if something fails
-CFLAGS = -std=gnu99 -g3 -ggdb3 -O3 -Wall -Werror -m64 -march=native -Wno-unused-function -Wno-unused-but-set-variable \
+CFLAGS = -std=gnu99 -g3 -ggdb3 -O3 -Wall -Werror -m64 -march=native \
+		 -Wno-unused-function -Wno-unused-but-set-variable -Wno-implicit-fallthrough \
 	 -I$(DPDK_INC_DIR) \
 	 -I$(DPDK_INCLUDE) \
 	 -D_GNU_SOURCE
