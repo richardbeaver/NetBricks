@@ -139,7 +139,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header();
+            let f = p.get_header().flow();
             match f {
                 Some(f) => f,
                 None => fake_flow()
