@@ -8,7 +8,7 @@ error_chain! {
             description("Failed to deallocate memory")
             display("Failed to deallocate memory")
         }
-        FailedToInitializePort(port: i32) {
+        FailedToInitializePort(port: u8) {
             description("Failed to initialize port")
             display("Failed to initialize port: {}", port)
         }
@@ -28,11 +28,11 @@ error_chain! {
             description("Bad vdev specification")
             display("Bad vdev specification: {}", vdev)
         }
-        BadTxQueue(port: i32, queue: i32) {
+        BadTxQueue(port: u8, queue: i32) {
             description("Bad TX queue")
             display("Bad TX queue {} for port {}", queue, port)
         }
-        BadRxQueue(port: i32, queue: i32) {
+        BadRxQueue(port: u8, queue: i32) {
             description("Bad RX queue")
             display("Bad RX queue {} for port {}", queue, port)
         }

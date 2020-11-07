@@ -17,7 +17,7 @@ use std::sync::Arc;
 pub struct PmdPort {
     connected: bool,
     should_close: bool,
-    port: i32,
+    port: u8,
     rxqs: i32,
     txqs: i32,
     stats_rx: Vec<Arc<CacheAligned<PortStats>>>,
@@ -32,7 +32,7 @@ pub struct PortQueue {
     pub port: Arc<PmdPort>,
     stats_rx: Arc<CacheAligned<PortStats>>,
     stats_tx: Arc<CacheAligned<PortStats>>,
-    port_id: i32,
+    port_id: u8,
     txq: i32,
     rxq: i32,
 }
@@ -136,7 +136,7 @@ impl PmdPort {
     }
 
     /// Find a port ID given a PCI-E string.
-    pub fn find_port_id(pcie: &str) -> i32 {
+    pub fn find_port_id(pcie: &str) -> u8 {
         let pcie_cstr = CString::new(pcie).unwrap();
         unsafe { find_port_with_pci_address(pcie_cstr.as_ptr()) }
     }
@@ -170,7 +170,7 @@ impl PmdPort {
 
     /// Current port ID.
     #[inline]
-    pub fn name(&self) -> i32 {
+    pub fn name(&self) -> u8 {
         self.port
     }
 
@@ -185,7 +185,7 @@ impl PmdPort {
 
     /// Create a PMD port with a given number of RX and TXQs.
     fn init_dpdk_port(
-        port: i32,
+        port: u8,
         rxqs: i32,
         txqs: i32,
         rx_cores: &[i32],
@@ -246,19 +246,15 @@ impl PmdPort {
             init_bess_eth_ring(ifname.as_ptr(), core)
         };
         // FIXME: Can we really not close?
-        if port >= 0 {
-            Ok(Arc::new(PmdPort {
-                connected: true,
-                port,
-                rxqs: 1,
-                txqs: 1,
-                should_close: false,
-                stats_rx: vec![Arc::new(PortStats::new())],
-                stats_tx: vec![Arc::new(PortStats::new())],
-            }))
-        } else {
-            Err(ErrorKind::FailedToInitializePort(port).into())
-        }
+        Ok(Arc::new(PmdPort {
+            connected: true,
+            port,
+            rxqs: 1,
+            txqs: 1,
+            should_close: false,
+            stats_rx: vec![Arc::new(PortStats::new())],
+            stats_tx: vec![Arc::new(PortStats::new())],
+        }))
     }
 
     fn new_ovs_port(name: &str, core: i32) -> Result<Arc<PmdPort>> {
@@ -266,19 +262,15 @@ impl PmdPort {
             Ok(iface) => {
                 // This call returns the port number
                 let port = unsafe { init_ovs_eth_ring(iface, core) };
-                if port >= 0 {
-                    Ok(Arc::new(PmdPort {
-                        connected: true,
-                        port,
-                        rxqs: 1,
-                        txqs: 1,
-                        should_close: false,
-                        stats_rx: vec![Arc::new(PortStats::new())],
-                        stats_tx: vec![Arc::new(PortStats::new())],
-                    }))
-                } else {
-                    Err(ErrorKind::FailedToInitializePort(port).into())
-                }
+                Ok(Arc::new(PmdPort {
+                    connected: true,
+                    port,
+                    rxqs: 1,
+                    txqs: 1,
+                    should_close: false,
+                    stats_rx: vec![Arc::new(PortStats::new())],
+                    stats_tx: vec![Arc::new(PortStats::new())],
+                }))
             }
             _ => Err(ErrorKind::BadVdev(String::from(name)).into()),
         }
@@ -298,24 +290,20 @@ impl PmdPort {
     ) -> Result<Arc<PmdPort>> {
         let cannonical_spec = PmdPort::cannonicalize_pci(spec);
         let port = unsafe { attach_pmd_device((cannonical_spec[..]).as_ptr()) };
-        if port >= 0 {
-            println!("Going to try and use port {}", port);
-            PmdPort::init_dpdk_port(
-                port,
-                rxqs,
-                txqs,
-                rx_cores,
-                tx_cores,
-                nrxd,
-                ntxd,
-                loopback,
-                tso,
-                csumoffload,
-            )
-            .chain_err(|| ErrorKind::BadDev(String::from(spec)))
-        } else {
-            Err(ErrorKind::BadDev(String::from(spec)).into())
-        }
+        println!("Going to try and use port {}", port);
+        PmdPort::init_dpdk_port(
+            port,
+            rxqs,
+            txqs,
+            rx_cores,
+            tx_cores,
+            nrxd,
+            ntxd,
+            loopback,
+            tso,
+            csumoffload,
+        )
+        .chain_err(|| ErrorKind::BadDev(String::from(spec)))
     }
 
     fn null_port() -> Result<Arc<PmdPort>> {
