@@ -138,14 +138,13 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
         .transform(box move |p| {
             let mut matched = false;
 
-            let f = p.read_metadata();
+            let flow = p.read_metadata();
 
-            if f.proto == 6 {
+            if flow.proto == 6 {
                 matched = true;
             }
 
             if matched {
-                let flow = f.unwrap();
                 let rev_flow = flow.reverse_flow();
                 let _seq = p.get_header().seq_num();
                 let _tcph = p.get_header();
@@ -171,8 +170,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                             // We received an expected packet
                             debug!("Pkt match expected seq #, update the flow entry...");
                             //debug!("{:?}", p.get_payload());
-                            tlsf_update(flow, payload_cache.entry(flow), &p.get_payload());
-                            seqnum_map.entry(flow).and_modify(|e| {
+                            tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
+                            seqnum_map.entry(*flow).and_modify(|e| {
                                 *e = *e + _payload_size as u32;
                                 ()
                             });
@@ -186,8 +185,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                                 let (_, entry_expected_seqno) = *tmp_seqnum_map.get(&flow).unwrap();
                                 if _seq == entry_expected_seqno {
                                     debug!("OOO: seq # of current pkt matches the expected seq # of the entry in tpc");
-                                    tlsf_update(flow, tmp_payload_cache.entry(flow), &p.get_payload());
-                                    tmp_seqnum_map.entry(flow).and_modify(|(_, entry_expected_seqno)| {
+                                    tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
+                                    tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
                                         *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
                                     });
                                 } else {
@@ -195,8 +194,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                                 }
                             } else {
                                 debug!("OOO: We are adding an entry in the tpc!");
-                                tmp_seqnum_map.insert(flow, (_seq, _seq + _payload_size as u32));
-                                tmp_payload_cache.insert(flow, p.get_payload().to_vec());
+                                tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
+                                tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                             }
                         } else {
                             debug!("Oops: pkt seq # is even smaller then the expected #");
@@ -227,8 +226,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                                     ServerHello(_) => {
                                         // capture the sequence number
                                         debug!("Got ServerHello, insert the flow entry");
-                                        seqnum_map.insert(flow, _seq + _payload_size as u32);
-                                        payload_cache.insert(flow, p.get_payload().to_vec());
+                                        seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                                        payload_cache.insert(*flow, p.get_payload().to_vec());
                                     }
                                     ClientKeyExchange(_) => {
                                         let dns_name = name_cache.remove(&rev_flow);
