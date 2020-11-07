@@ -15,6 +15,16 @@ pub const TOTAL_MEASURED_PKT: usize = 100_000_000;
 pub const INST_MEASURE_TIME: u64 = 601;
 pub const APP_MEASURE_TIME: u64 = 610;
 
+pub fn fake_flow() -> Flow {
+    Flow {
+        src_ip: 0 as u32,
+        dst_ip: 0 as u32,
+        src_port: 0 as u16,
+        dst_port: 0 as u16,
+        proto: 0 as u8,
+    }
+}
+
 /// Read various params from setup.
 ///
 /// Currently returns: *setup* (which setup it is), *iter* (which iteration it

@@ -131,8 +131,11 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow,
+            }
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
