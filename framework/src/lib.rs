@@ -22,8 +22,6 @@
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
 
-// extern crate getopts;
-
 #[macro_use]
 extern crate lazy_static;
 
@@ -34,6 +32,7 @@ extern crate error_chain;
 // #[cfg(feature = "sctp")]
 // extern crate sctp;
 
+// extern crate getopts;
 // extern crate byteorder;
 // extern crate fnv;
 // extern crate libc;
