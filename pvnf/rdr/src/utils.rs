@@ -81,7 +81,7 @@ pub fn rdr_scheduler_ng(
                     _ => println!("Error: unknown user browsing error type"),
                 },
                 Err(e) => match e {
-                    ConnectionClosed => {
+                    _ConnectionClosed => {
                         num_of_closed += 1;
                         num_of_visit += 1;
                     }

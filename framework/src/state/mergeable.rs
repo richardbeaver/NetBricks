@@ -105,6 +105,7 @@ impl<T: AddAssign<T> + Default + Clone> MergeableStoreCP<T> {
         self.flow_counters.is_empty()
     }
 }
+
 /// A generic store for associating some merge-able type with each flow but with data path counts.
 /// Contains the counts on the data path.
 #[derive(Clone, Debug)]

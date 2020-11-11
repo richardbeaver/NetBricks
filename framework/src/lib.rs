@@ -32,8 +32,8 @@ extern crate error_chain;
 // #[cfg(feature = "sctp")]
 // extern crate sctp;
 
-// extern crate getopts;
 // extern crate byteorder;
+// extern crate getopts;
 // extern crate fnv;
 // extern crate libc;
 // extern crate net2;

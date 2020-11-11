@@ -17,7 +17,6 @@ use e2d2::allocators::CacheAligned;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::*;
-use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::pvn::measure::*;
 use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::*;
