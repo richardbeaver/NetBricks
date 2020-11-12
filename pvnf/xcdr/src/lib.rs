@@ -18,7 +18,6 @@ extern crate y4m;
 
 use crate::utils::*;
 use e2d2::allocators::CacheAligned;
-
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
@@ -28,10 +27,7 @@ use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use faktory::{Producer};
 use std::collections::HashMap;
-
-
 use std::sync::{Arc, Mutex};
-
 use std::time::{Duration, Instant};
 
 pub mod utils;
@@ -78,7 +74,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // job id
     let mut job_id = 0;
 
-    let mut pivot = 1 as u128 + time_span;
+    let mut pivot = 1 + time_span;
 
     let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
@@ -119,15 +115,15 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             2,
             box move |p| {
                 pkt_count += 1;
+                // f Flow { src_ip: 2457012302, dst_ip: 3232235524, src_port: 58111, dst_port: 443, proto: 17 }
                 let f = p.read_metadata();
-
                 let mut matched = false;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
                 let match_src_ip = 3_232_235_524 as u32;
-                let match_src_port = 58_111;
+                let match_src_port = 443;
                 let match_dst_ip = 2_457_012_302 as u32;
-                let match_dst_port = 443;
+                let match_dst_port = 58_111;
 
                 if f.proto == 17 {
                     if f.src_ip == match_src_ip
@@ -206,7 +202,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
             if time_diff == Duration::new(0, 0) {
                 time_diff = now.elapsed();
                 println!("update time diff before crash: {:?}", time_diff);
-                pivot = pivot + time_diff.as_millis();
+                pivot += time_diff.as_millis();
                 println!("update pivot: {}", pivot);
             }
             let time_elapsed = now.elapsed().as_millis();
