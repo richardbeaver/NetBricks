@@ -1,7 +1,7 @@
-/// Core part of Zero-Copy Software Isolation.
-///
-/// Using _Unique types_ in the implementation of data structure for packets thus we don't need to
-/// worry about packet isolation.
+//! Core part of Zero-Copy Software Isolation.
+//!
+//! Using _Unique types_ in the implementation of data structure for packets thus we don't need to
+//! worry about packet isolation.
 use std::alloc::{alloc_zeroed, dealloc, Layout};
 use std::fmt;
 use std::mem::size_of;

@@ -11,6 +11,7 @@ use std::time::Instant;
 pub const EPSILON: usize = 1000;
 /// Number of packets to ignore before starting measurement. Currently deprecated.
 pub const NUM_TO_IGNORE: usize = 0;
+
 /// Estimated number of packets for allocating large size array for RDR NF.
 pub const RDR_MEASURED_PKT: usize = 100_000_000;
 /// Estimated number of packets for allocating large size array.
