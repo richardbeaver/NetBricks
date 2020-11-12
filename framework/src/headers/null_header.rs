@@ -1,12 +1,13 @@
 use super::EndOffset;
 use std::fmt;
 
+/// Null header.
 #[derive(Default)]
 #[repr(C, packed)]
 pub struct NullHeader;
 
 impl fmt::Display for NullHeader {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "null")
     }
 }

@@ -1,3 +1,5 @@
+//! Configuration options for NetBricks.
+
 pub use self::config_reader::*;
 pub use self::flag_reader::*;
 use std::fmt;
@@ -6,6 +8,7 @@ mod flag_reader;
 
 /// `NetBricks` control configuration. In theory all applications create one of these, either through the use of
 /// `read_configuration` or manually using args.
+#[derive(Debug)]
 pub struct NetbricksConfiguration {
     /// Name, this is passed on to DPDK. If you want to run multiple DPDK apps, this needs to be unique per application.
     pub name: String,
@@ -62,7 +65,7 @@ impl NetbricksConfiguration {
 }
 
 impl fmt::Display for NetbricksConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
             "Configuration: name: {} mempool size: {} core cache: {} primary core: {}\n Ports:",
@@ -86,6 +89,7 @@ impl fmt::Display for NetbricksConfiguration {
 }
 
 /// Configuration for each port (network device) in `NetBricks`.
+#[derive(Debug)]
 pub struct PortConfiguration {
     /// Name. The exact semantics vary by backend. For DPDK, we allow things of the form:
     ///    <PCI ID> : Hardware device with PCI ID
@@ -101,8 +105,11 @@ pub struct PortConfiguration {
     pub rxd: i32,
     /// Number of TX descriptors to use.
     pub txd: i32,
+    /// Loopback option.
     pub loopback: bool,
+    /// TCP segmentation offload option.
     pub tso: bool,
+    /// TCP checksum option.
     pub csum: bool,
 }
 
@@ -122,6 +129,7 @@ impl Default for PortConfiguration {
 }
 
 impl PortConfiguration {
+    /// Initialize PortConfiguration from name.
     pub fn new_with_name(name: &str) -> PortConfiguration {
         PortConfiguration {
             name: String::from(name),
@@ -129,6 +137,7 @@ impl PortConfiguration {
         }
     }
 
+    /// Initialize PortConfiguration from name, rx queues and tx queues.
     pub fn new_with_queues(name: &str, rx_queues: &[i32], tx_queues: &[i32]) -> PortConfiguration {
         PortConfiguration {
             rx_queues: Vec::from(rx_queues),
@@ -139,7 +148,7 @@ impl PortConfiguration {
 }
 
 impl fmt::Display for PortConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let rx_queues_str_vec: Vec<_> = self.rx_queues.iter().map(|q| q.to_string()).collect();
         let rx_queue_str = rx_queues_str_vec.join(" ");
         let tx_queues_str_vec: Vec<_> = self.tx_queues.iter().map(|q| q.to_string()).collect();

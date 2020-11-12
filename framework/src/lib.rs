@@ -1,5 +1,8 @@
 //! A New NFV framework that tries to provide optimization to developers and isolation between NFs.
-
+#![deny(missing_docs)]
+// Consider disable missing debug because dpdk bindgen and several components in framework.
+// #![warn(missing_debug_implementations)]
+#![warn(rust_2018_idioms, broken_intra_doc_links)]
 #![recursion_limit = "1024"]
 #![feature(llvm_asm)]
 #![feature(log_syntax)]
@@ -18,60 +21,48 @@
 // Need this since PMD port construction triggers too many arguments.
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
-// Try to deny missing doc?
-#![deny(missing_docs)]
-extern crate byteorder;
-extern crate fnv;
+
+// extern crate getopts;
+
 #[macro_use]
 extern crate lazy_static;
-extern crate libc;
-extern crate net2;
-extern crate regex;
-#[cfg(feature = "sctp")]
-extern crate sctp;
-extern crate twox_hash;
-// TOML for scheduling configuration
-extern crate toml;
-// UUID for SHM naming
-extern crate uuid;
-
-// For cache aware allocation
-extern crate alloc;
 
 // Better error handling.
 #[macro_use]
 extern crate error_chain;
 
-#[cfg(unix)]
-extern crate nix;
-#[doc(hidden)]
+// #[cfg(feature = "sctp")]
+// extern crate sctp;
+
+// extern crate byteorder;
+// extern crate fnv;
+// extern crate libc;
+// extern crate net2;
+// extern crate regex;
+// extern crate twox_hash;
+// TOML for scheduling configuration
+// extern crate toml;
+// UUID for SHM naming
+// extern crate uuid;
+// For cache aware allocation
+// extern crate alloc;
+// #[cfg(unix)]
+// extern crate nix;
+
 pub mod allocators;
-#[doc(hidden)]
 pub mod common;
-#[doc(hidden)]
 pub mod config;
-#[doc(hidden)]
 pub mod control;
-#[doc(hidden)]
 pub mod headers;
-#[doc(hidden)]
 pub mod interface;
+pub mod operators;
+pub mod pvn;
+pub mod queues;
+pub mod scheduler;
+pub mod shared_state;
+pub mod state;
+pub mod utils;
 
 #[allow(dead_code)]
 mod native;
 mod native_include;
-
-pub mod operators;
-#[doc(hidden)]
-pub mod state;
-
-#[doc(hidden)]
-pub mod pvn;
-#[doc(hidden)]
-pub mod queues;
-#[doc(hidden)]
-pub mod scheduler;
-#[doc(hidden)]
-pub mod shared_state;
-#[doc(hidden)]
-pub mod utils;

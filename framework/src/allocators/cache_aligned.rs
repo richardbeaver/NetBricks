@@ -1,13 +1,12 @@
-/// Core part of Zero-Copy Software Isolation.
-///
-/// Using _Unique types_ in the implementation of data structure for packets thus we don't need to
-/// worry about packet isolation.
-///
+//! Core part of Zero-Copy Software Isolation.
+//!
+//! Using _Unique types_ in the implementation of data structure for packets thus we don't need to
+//! worry about packet isolation.
 use std::alloc::{alloc_zeroed, dealloc, Layout};
 use std::fmt;
 use std::mem::size_of;
 use std::ops::{Deref, DerefMut};
-use std::ptr::{self, NonNull, Unique};
+use std::ptr::{self, Unique};
 
 const CACHE_LINE_SIZE: usize = 64;
 unsafe fn allocate_cache_line(size: usize) -> *mut u8 {
@@ -15,6 +14,7 @@ unsafe fn allocate_cache_line(size: usize) -> *mut u8 {
 }
 
 /// Data structure that uses Unique Types.
+#[derive(Debug)]
 pub struct CacheAligned<T: Sized> {
     ptr: Unique<T>,
 }
@@ -44,6 +44,7 @@ impl<T: Sized> DerefMut for CacheAligned<T> {
 }
 
 impl<T: Sized> CacheAligned<T> {
+    /// Allocate CacheAligned with unique pointer.
     pub fn allocate(src: T) -> CacheAligned<T> {
         unsafe {
             let alloc = allocate_cache_line(size_of::<T>()) as *mut T;
@@ -74,7 +75,7 @@ impl<T: Sized> fmt::Display for CacheAligned<T>
 where
     T: fmt::Display,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::fmt(&*self, f)
     }
 }

@@ -1,7 +1,6 @@
-extern crate getopts;
-use self::getopts::{Matches, Options};
 use super::{read_configuration, NetbricksConfiguration, PortConfiguration};
 use crate::common::print_error;
+use getopts::{Matches, Options};
 use std::collections::HashMap;
 use std::env;
 use std::process;
@@ -87,7 +86,7 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
     };
 
     let configuration = if matches.opt_present("duration") {
-        let duration = matches.opt_strs("d");
+        let _duration = matches.opt_strs("d");
 
         NetbricksConfiguration {
             duration: None,

@@ -14,6 +14,7 @@ use std::sync::Arc;
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.
+#[derive(Debug)]
 pub struct PmdPort {
     connected: bool,
     should_close: bool,
@@ -25,10 +26,11 @@ pub struct PmdPort {
 }
 
 /// A port queue represents a single queue for a physical port, and should be used to send and receive data.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PortQueue {
     // The Arc cost here should not affect anything, since we are really not doing anything to make it go in and out of
     // scope.
+    /// Port for the port queue.
     pub port: Arc<PmdPort>,
     stats_rx: Arc<CacheAligned<PortStats>>,
     stats_tx: Arc<CacheAligned<PortStats>>,
@@ -49,7 +51,7 @@ impl Drop for PmdPort {
 
 /// Print information about PortQueue
 impl fmt::Display for PortQueue {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "port: {} ({}) rxq: {} txq: {}",
@@ -83,10 +85,12 @@ impl PortQueue {
         }
     }
 
+    /// TXQ.
     pub fn txq(&self) -> i32 {
         self.txq
     }
 
+    /// RXQ.
     pub fn rxq(&self) -> i32 {
         self.rxq
     }
@@ -114,7 +118,7 @@ impl PacketRx for PortQueue {
     }
 }
 
-// Utility function to go from Rust bools to C ints. Allowing match bools since this looks nicer to me.
+/// Utility function to go from Rust bools to C ints. Allowing match bools since this looks nicer to me.
 #[cfg_attr(feature = "dev", allow(match_bool))]
 #[inline]
 fn i32_from_bool(x: bool) -> i32 {
@@ -151,6 +155,7 @@ impl PmdPort {
         self.txqs
     }
 
+    /// Initialize the queue pair.
     pub fn new_queue_pair(port: &Arc<PmdPort>, rxq: i32, txq: i32) -> Result<CacheAligned<PortQueue>> {
         if rxq > port.rxqs || rxq < 0 {
             Err(ErrorKind::BadRxQueue(port.port, rxq).into())
@@ -386,6 +391,7 @@ impl PmdPort {
         }
     }
 
+    /// Initialize Port queue with params.
     pub fn new_with_queues(
         name: &str,
         rxqs: i32,
@@ -398,12 +404,14 @@ impl PmdPort {
         )
     }
 
+    /// Initialize Port queue with RX and TX cores.
     pub fn new_with_cores(name: &str, rx_core: i32, tx_core: i32) -> Result<Arc<PmdPort>> {
         let rx_vec = vec![rx_core];
         let tx_vec = vec![tx_core];
         PmdPort::new_with_queues(name, 1, 1, &rx_vec[..], &tx_vec[..])
     }
 
+    /// Initialize Port queue.
     pub fn new(name: &str, core: i32) -> Result<Arc<PmdPort>> {
         PmdPort::new_with_cores(name, core, core)
     }
@@ -419,6 +427,7 @@ impl PmdPort {
         }
     }
 
+    /// Get the MAC address.
     #[inline]
     pub fn mac_address(&self) -> MacAddress {
         let mut address = MacAddress { addr: [0; 6] };
