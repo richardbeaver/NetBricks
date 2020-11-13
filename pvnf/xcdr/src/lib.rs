@@ -25,7 +25,7 @@ use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::*;
 use e2d2::pvn::xcdr::{xcdr_read_setup, xcdr_retrieve_param};
 use e2d2::scheduler::Scheduler;
-use faktory::{Producer};
+use faktory::Producer;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -47,11 +47,11 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // Specific setup config for this run
 
     // setup for this run
-    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst, measure_time) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
-    // faktory job queue
+    /// faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
 
     // Measurement code
@@ -59,7 +59,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
 
-    // start timestamps will be a vec protected with arc and mutex.
+    /// start timestamps will be a vec protected with arc and mutex.
     let start_ts = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
     let mut stop_ts_not_matched: HashMap<usize, Instant> = HashMap::with_capacity(EPSILON);
     let stop_ts_matched = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(EPSILON)));
@@ -69,14 +69,12 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
 
-    // pkt count
+    /// pkt count
     let mut pkt_count = 0;
-    // job id
+    /// job id
     let mut job_id = 0;
 
     let mut pivot = 1 + time_span;
-
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
     let mut cur = Instant::now();
@@ -88,16 +86,15 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
         .transform(box move |_p| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let end = Instant::now();
+                let start = Instant::now();
                 if inst {
-                    w.push(end);
+                    w.push(start);
                 }
             }
         })

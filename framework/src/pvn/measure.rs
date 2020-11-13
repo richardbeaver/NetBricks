@@ -1,9 +1,8 @@
 //! Utils functions for measuring the PVN NFs.
 use crate::utils::Flow;
 use serde_json::{from_reader, Value};
-use statrs::statistics::OrderStatistics;
-use statrs::statistics::Variance;
 use statrs::statistics::{Max, Mean, Median, Min};
+use statrs::statistics::{OrderStatistics, Variance};
 use std::collections::HashMap;
 use std::fs::File;
 use std::time::Instant;
@@ -12,14 +11,16 @@ use std::time::Instant;
 pub const EPSILON: usize = 1000;
 /// Number of packets to ignore before starting measurement. Currently deprecated.
 pub const NUM_TO_IGNORE: usize = 0;
+/// Estimated number of packets for allocating large size array for RDR NF.
+pub const RDR_MEASURED_PKT: usize = 100_000_000;
 /// Estimated number of packets for allocating large size array.
-pub const TOTAL_MEASURED_PKT: usize = 100_000_000;
-// pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
+pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
 
-/// Time for the Inst experiment.
+/// Time for the long experiment with instrumentation.
 pub const INST_MEASURE_TIME: u64 = 601;
-// pub const INST_MEASURE_TIME: u64 = 60;
-/// Time for the App experiment.
+/// Time for the short experiment with instrumentation.
+pub const SHORT_MEASURE_TIME: u64 = 61;
+/// Time for the application experiment.
 pub const APP_MEASURE_TIME: u64 = 610;
 
 /// Fake flow when retrieving flow failed.
@@ -36,8 +37,9 @@ pub fn fake_flow() -> Flow {
 /// Read various params from setup.
 ///
 /// Currently returns: *setup* (which setup it is), *iter* (which iteration it
-/// is), and *inst* (instrumentation for retrieving latencies for every packet).
-pub fn read_setup_param(file_path: String) -> Option<(String, String, bool)> {
+/// is), *inst* (instrumentation for retrieving latencies for every packet),
+/// and *expr running time* (how long the NF will run).
+pub fn read_setup_param(file_path: String) -> Option<(String, String, bool, u64)> {
     let file = File::open(file_path.clone()).expect("file should open read only");
     let read_json = file_path + "should be proper JSON";
     let json: Value = from_reader(file).expect(&read_json);
@@ -72,9 +74,25 @@ pub fn read_setup_param(file_path: String) -> Option<(String, String, bool)> {
         _ => None,
     };
 
+    let mode: Option<String> = match serde_json::from_value(json.get("mode").expect("file should have setup").clone()) {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+    let expr_time = match &*mode.unwrap() {
+        "short" => Some(SHORT_MEASURE_TIME),
+        "long" => Some(INST_MEASURE_TIME),
+        _ => None,
+    };
+
     if setup.is_some() && iter.is_some() && inst_val.is_some() {
-        println!("Setup: {:?}, Iter: {:?}, Inst mode: {:?}", setup, iter, inst_val);
-        Some((setup.unwrap(), iter.unwrap(), inst_val.unwrap()))
+        println!(
+            "Setup: {:?}, Iter: {:?}, Inst mode: {:?}, Expr mode: {:?}",
+            setup, iter, inst_val, expr_time
+        );
+        Some((setup.unwrap(), iter.unwrap(), inst_val.unwrap()), expr_time.unwrap())
     } else {
         None
     }

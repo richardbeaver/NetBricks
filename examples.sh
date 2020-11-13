@@ -4,9 +4,9 @@ export examples=(
 	# test/framework-test
 	# test/delay-test
 	# test/shutdown-test
-	# test/lpm
+	test/lpm
 	# test/lpm-embedded
-	# test/nat
+	test/nat
 	# test/tcp-check
 	# test/sctp-test
 	# test/config-test
@@ -17,9 +17,9 @@ export examples=(
 	# test/tcp_payload
 	# test/macswap
 	# ZCSI examples
-	# test/acl-fw
+	test/acl-fw
 	# test/tcp-reconstruction
-	# test/maglev
+	test/maglev
 	# test/chain-test
 	# test/lpm-test
 	# test/packet_test

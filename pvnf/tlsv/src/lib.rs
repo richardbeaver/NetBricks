@@ -15,7 +15,6 @@ extern crate log;
 
 use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::allocators::CacheAligned;
-
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::{Batch, CompositionBatch, ReceiveBatch};
@@ -24,9 +23,7 @@ use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
-
 use std::sync::{Arc, Mutex};
-
 use std::time::{Duration, Instant};
 
 pub mod utils;
@@ -63,37 +60,37 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
 //     sched: &mut S,
 // ) -> CompositionBatch
 pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
-    let (_, _, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (_, _, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
-    // New payload cache.
-    //
-    // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
-    // naive implementation of TCP out-of-order segments, for a more comprehensive version you
-    // should visit something like [assembler in
-    // smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
-    // buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
+    /// New payload cache.
+    ///
+    /// Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
+    /// naive implementation of TCP out-of-order segments, for a more comprehensive version you
+    /// should visit something like [assembler in
+    /// smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
+    /// buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
-    // Temporary payload cache.
+    /// Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
-    // New map to keep track of the expected seq #
+    /// New map to keep track of the expected seq #
     let mut seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
-    // Temporary map to keep track of the expected seq #
+    /// Temporary map to keep track of the expected seq #
     let mut tmp_seqnum_map = HashMap::<Flow, (u32, u32)>::with_hasher(Default::default());
-    // TLS connection with invalid certs.
+    /// TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
-    // DNS name cache.
+    /// DNS name cache.
     let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
 
-    // Cert count
+    /// Cert count
     let mut cert_count = 0;
-    // pkt count
+    /// pkt count
     let mut pkt_count = 0;
 
-    // Measurement code
-    //
-    // start timestamps will be a vec protected with arc and mutex.
+    /// Measurement code
+    ///
+    /// start timestamps will be a vec protected with arc and mutex.
     let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
     let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
         TOTAL_MEASURED_PKT + EPSILON,
@@ -105,8 +102,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
 
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
-
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
@@ -116,13 +111,12 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let end = Instant::now();
+                let start = Instant::now();
                 if inst {
-                    w.push(end);
+                    w.push(start);
                 }
             }
 
-            // p.get_mut_header().swap_addresses();
             p.get_mut_header();
         })
         .parse::<MacHeader>()

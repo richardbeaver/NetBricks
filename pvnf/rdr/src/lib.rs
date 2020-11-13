@@ -16,7 +16,6 @@ extern crate tiny_http;
 
 use crate::utils::*;
 use e2d2::allocators::CacheAligned;
-
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::*;
@@ -26,10 +25,8 @@ use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::*;
 use headless_chrome::Browser;
 use std::collections::HashMap;
-
 use std::sync::{Arc, Mutex};
-
-use std::time::{Instant};
+use std::time::Instant;
 
 pub mod utils;
 
@@ -64,7 +61,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     _sched: &mut S,
 ) -> CompositionBatch {
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -119,8 +116,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
 
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
-
     let now = Instant::now();
     println!("Timer started");
 
@@ -130,9 +125,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let end = Instant::now();
+                let start = Instant::now();
                 if inst {
-                    w.push(end);
+                    w.push(start);
                 }
             }
         })
@@ -149,6 +144,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         .transform(box move |p| {
             let mut matched = false;
             let f = p.read_metadata();
+
             // NOTE: the following ip addr and port are hardcode based on the trace we are
             // replaying let match_ip = 3_232_235_524 as u32; // 192.168.0.4 let match_port = 443;
             // let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {

@@ -20,7 +20,6 @@ extern crate transmission_rpc;
 
 use crate::utils::*;
 use e2d2::allocators::CacheAligned;
-
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
@@ -29,11 +28,8 @@ use e2d2::pvn::measure::*;
 use e2d2::pvn::p2p::{p2p_fetch_workload, p2p_load_json, p2p_read_rand_seed, p2p_read_type, p2p_retrieve_param};
 use e2d2::scheduler::Scheduler;
 use std::collections::HashMap;
-
-
 use std::sync::{Arc, Mutex};
-
-use std::time::{Instant};
+use std::time::Instant;
 use tokio::runtime::Runtime;
 
 pub mod utils;
@@ -45,7 +41,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     sched: &mut S,
 ) -> CompositionBatch {
     // setup for this run
-    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
 
@@ -67,8 +63,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
 
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
-
     // pkt count
     let mut pkt_count = 0;
 
@@ -84,15 +78,16 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // for the purpose of simulating multi-container extension in Firefox and multiple users. We
     // also need to maintain a content cache for the bulk HTTP request and response pairs.
 
-    // group packets into MAC, TCP and UDP packet.
     let mut groups = parent
         .transform(box move |_p| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
-                let _w = t1_1.lock().unwrap();
-                let _start = Instant::now();
-                // w.push(start);
+                let w = t1_1.lock().unwrap();
+                let start = Instant::now();
+                if inst {
+                    w.push(start);
+                }
             }
         })
         .parse::<MacHeader>()
