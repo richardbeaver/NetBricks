@@ -20,7 +20,7 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
     let inst = false;
 
     // XCDR setup
-    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst, measure_time) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
@@ -41,7 +41,7 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
     let mut time_diff = Duration::new(0, 0);
 
     // P2P setup
-    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, _, _) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -117,7 +117,7 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                     }
                 }
 
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();

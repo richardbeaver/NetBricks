@@ -14,7 +14,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     sched: &mut S,
 ) -> CompositionBatch {
     // setup for this run
-    let (p2p_setup, p2p_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
 
@@ -38,8 +38,6 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
     // pkt count
     let mut pkt_count = 0;
-
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let mut workload_exec = true;
     let _pivot = 0 as usize;

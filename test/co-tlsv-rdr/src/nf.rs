@@ -13,7 +13,7 @@ use tlsv::validator;
 pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
     let tlsv = validator(parent);
 
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -162,7 +162,7 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",

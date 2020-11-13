@@ -20,7 +20,7 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
     let inst = false;
 
     // RDR setup
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -29,7 +29,7 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");
-    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, _, _) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
@@ -163,7 +163,7 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                     }
                 }
 
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -240,7 +240,7 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",

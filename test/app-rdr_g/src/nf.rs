@@ -13,7 +13,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
@@ -65,8 +65,6 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut num_of_timeout = 0;
     let mut num_of_closed = 0;
     let mut num_of_visit = 0;
-
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let mut pivot = 1;
     let now = Instant::now();

@@ -88,7 +88,7 @@ pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<A
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == MEASURE_TIME {
+            if now.elapsed().as_secs() == SHORT_MEASURE_TIME {
                 // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
                 let now = Instant::now();
                 // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);

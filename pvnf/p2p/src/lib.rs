@@ -83,7 +83,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
-                let w = t1_1.lock().unwrap();
+                let mut w = t1_1.lock().unwrap();
                 let start = Instant::now();
                 if inst {
                     w.push(start);

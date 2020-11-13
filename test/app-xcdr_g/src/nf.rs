@@ -23,7 +23,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     // Specific setup config for this run
 
     // setup for this run
-    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst, measure_time) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
@@ -51,8 +51,6 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
     let mut job_id = 0;
 
     let mut pivot = 1 as u128 + time_span;
-
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
     let mut cur = Instant::now();

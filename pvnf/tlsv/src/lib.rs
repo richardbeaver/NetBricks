@@ -63,34 +63,34 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
     let (_, _, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
-    /// New payload cache.
-    ///
-    /// Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
-    /// naive implementation of TCP out-of-order segments, for a more comprehensive version you
-    /// should visit something like [assembler in
-    /// smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
-    /// buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
+    // New payload cache.
+    //
+    // Here impl the new data structure for handling reassembling packets in TCP. Note that it is a
+    // naive implementation of TCP out-of-order segments, for a more comprehensive version you
+    // should visit something like [assembler in
+    // smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
+    // buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333)
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
 
-    /// Temporary payload cache.
+    // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
-    /// New map to keep track of the expected seq #
+    // New map to keep track of the expected seq #
     let mut seqnum_map = HashMap::<Flow, u32>::with_hasher(Default::default());
-    /// Temporary map to keep track of the expected seq #
+    // Temporary map to keep track of the expected seq #
     let mut tmp_seqnum_map = HashMap::<Flow, (u32, u32)>::with_hasher(Default::default());
-    /// TLS connection with invalid certs.
+    // TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
-    /// DNS name cache.
+    // DNS name cache.
     let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
 
-    /// Cert count
+    // Cert count
     let mut cert_count = 0;
-    /// pkt count
+    // pkt count
     let mut pkt_count = 0;
 
-    /// Measurement code
-    ///
-    /// start timestamps will be a vec protected with arc and mutex.
+    // Measurement code
+    //
+    // start timestamps will be a vec protected with arc and mutex.
     let start_ts_1 = Arc::new(Mutex::new(Vec::<Instant>::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
     let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
         TOTAL_MEASURED_PKT + EPSILON,

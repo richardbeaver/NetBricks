@@ -1,6 +1,6 @@
 use e2d2::headers::{MacHeader, NullHeader};
-use e2d2::measure::*;
 use e2d2::operators::{Batch, CompositionBatch};
+use e2d2::pvn::measure::*;
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::{ipv4_extract_flow, Flow};
 use fnv::FnvHasher;
@@ -88,7 +88,7 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == MEASURE_TIME {
+            if now.elapsed().as_secs() == SHORT_MEASURE_TIME {
                 // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
                 let now = Instant::now();
                 // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);

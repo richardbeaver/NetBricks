@@ -16,7 +16,7 @@ use std::io::Result;
 pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     println!("fetch param");
     let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
-    let (p2p_setup, iter, _) = read_setup_param(fp_setup).unwrap();
+    let (p2p_setup, iter, _, _) = read_setup_param(fp_setup).unwrap();
     let mut map = HashMap::new();
 
     println!("type: {}, setup: {}, iter: {}", p2p_type, p2p_setup, iter);

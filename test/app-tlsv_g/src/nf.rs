@@ -15,7 +15,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
-    let (_, _, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (_, _, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
     // New payload cache.
@@ -56,8 +56,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let t1_2 = Arc::clone(&start_ts_1);
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
-
-    let measure_time = if inst { INST_MEASURE_TIME } else { APP_MEASURE_TIME };
 
     let now = Instant::now();
 

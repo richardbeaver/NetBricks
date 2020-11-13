@@ -40,7 +40,7 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");
-    let (setup_val, port, expr_num, inst) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let (setup_val, port, expr_num, inst, measure_time) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(setup_val).unwrap();
     println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
     // faktory job queue
@@ -135,7 +135,7 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                     }
                 }
 
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();

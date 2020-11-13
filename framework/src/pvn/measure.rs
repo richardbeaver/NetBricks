@@ -87,12 +87,12 @@ pub fn read_setup_param(file_path: String) -> Option<(String, String, bool, u64)
         _ => None,
     };
 
-    if setup.is_some() && iter.is_some() && inst_val.is_some() {
+    if setup.is_some() && iter.is_some() && inst_val.is_some() && expr_time.is_some() {
         println!(
             "Setup: {:?}, Iter: {:?}, Inst mode: {:?}, Expr mode: {:?}",
             setup, iter, inst_val, expr_time
         );
-        Some((setup.unwrap(), iter.unwrap(), inst_val.unwrap()), expr_time.unwrap())
+        Some((setup.unwrap(), iter.unwrap(), inst_val.unwrap(), expr_time.unwrap()))
     } else {
         None
     }

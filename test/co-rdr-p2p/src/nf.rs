@@ -17,12 +17,12 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
     sched: &mut S,
 ) -> CompositionBatch {
     // RDR setup
-    let (rdr_setup, rdr_iter, inst) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
 
     // P2P setup
-    let (p2p_setup, p2p_iter, _) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let (p2p_setup, p2p_iter, _, _) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -131,7 +131,7 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
                     }
                 }
 
-                if now.elapsed().as_secs() >= APP_MEASURE_TIME && latency_exec == true {
+                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -208,7 +208,7 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= APP_MEASURE_TIME && metric_exec == true {
+            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",

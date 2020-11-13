@@ -4,10 +4,17 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::time::Instant;
 
-/// Read setup for transcoder NF. This function returns <setup, port, expr number>.
+/// Time for the long experiment with instrumentation.
+pub const INST_MEASURE_TIME: u64 = 601;
+/// Time for the short experiment with instrumentation.
+pub const SHORT_MEASURE_TIME: u64 = 61;
+/// Time for the application experiment.
+pub const APP_MEASURE_TIME: u64 = 610;
+
+/// Read setup for transcoder NF. This function returns <setup, port, expr number, inst, measure time>.
 ///
 /// We need to get the port number for faktory queue besides the setup value.
-pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String, bool)> {
+pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String, bool, u64)> {
     let file = File::open(file_path).expect("file should open read only");
     let json: Value = from_reader(file).expect("file should be proper JSON");
 
@@ -50,12 +57,26 @@ pub fn xcdr_read_setup(file_path: String) -> Option<(usize, String, String, bool
         _ => None,
     };
 
-    if port.is_some() && setup.is_some() && expr_num.is_some() && inst_val.is_some() {
+    let mode: Option<String> = match serde_json::from_value(json.get("mode").expect("file should have setup").clone()) {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+    let expr_time = match &*mode.unwrap() {
+        "short" => Some(SHORT_MEASURE_TIME),
+        "long" => Some(INST_MEASURE_TIME),
+        _ => None,
+    };
+
+    if port.is_some() && setup.is_some() && expr_num.is_some() && inst_val.is_some() && expr_time.is_some() {
         return Some((
             setup.unwrap().parse::<usize>().unwrap(),
             port.unwrap().to_string(),
             expr_num.unwrap().to_string(),
             inst_val.unwrap(),
+            expr_time.unwrap(),
         ));
     } else {
         println!("Setup: {:?} and Port: {:?} have None values", setup, port);
