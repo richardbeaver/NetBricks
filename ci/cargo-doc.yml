@@ -7,7 +7,7 @@ parameters:
   job_post-steps: []                # Custom steps running after job
 
   # global parameters
-  rust: nightly                 # Version of rust. Could be [stable, beta, nightly, 1.31, nightly-2018-08-01 ... ]
+  rust: nightly-2020-10-01          # Version of rust. Could be [stable, beta, nightly, 1.31, nightly-2018-08-01 ... ]
 
   # parameters from `cargo doc --help`
   quiet: false                # No output printed to stdout
@@ -141,6 +141,7 @@ jobs:
 
   # Final run
   - script: |
+      sudo apt-get remove -y clang-9 llvm-9
       sudo apt-get update
       sudo apt-get autoremove -y
       sudo apt-get install -y apt-utils build-essential pciutils linux-headers-`uname -r` python python3 libssl-dev

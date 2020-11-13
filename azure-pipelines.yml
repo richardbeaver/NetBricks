@@ -1,5 +1,5 @@
 trigger:
-  - dev
+  - expr
 
 resources:
   repositories:
@@ -15,7 +15,7 @@ stages:
     # Deploy doc
     - template: ci/deploy-doc.yml
       parameters:
-        branch: dev
+        branch: expr
         job_name: build_deploy_doc
         github:
           user: jethrosun
