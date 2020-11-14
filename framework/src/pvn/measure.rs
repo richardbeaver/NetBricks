@@ -14,7 +14,7 @@ pub const NUM_TO_IGNORE: usize = 0;
 /// Estimated number of packets for allocating large size array for RDR NF.
 pub const RDR_MEASURED_PKT: usize = 100_000_000;
 /// Estimated number of packets for allocating large size array.
-pub const TOTAL_MEASURED_PKT: usize = 300_000_000;
+pub const TOTAL_MEASURED_PKT: usize = 250_000_000;
 
 /// Time for the long experiment with instrumentation.
 pub const INST_MEASURE_TIME: u64 = 601;

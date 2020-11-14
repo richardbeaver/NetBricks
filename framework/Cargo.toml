@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["Aurojit Panda <apanda@cs.berkeley.edu>"]
 build = "build.rs"
 edition = "2018"
+license = "ISC"
 
 [lib]
 doctest = false
