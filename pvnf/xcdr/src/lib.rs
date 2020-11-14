@@ -1,15 +1,14 @@
-//! A Remote Dependency Resolution (RDR) proxy network function will employ a headless browser and
-//! fetch the top-level HTML based on the HTTP (or even HTTPS) request. The exact implementation is
-//! in `nf.rs`.
+//! A video transcoder network function that sends requests to transcode videos to a (Faktory)
+//! job queue. Note that this NF only appends jobs into the job queue thus a job queue (Faktory
+//! docker container) and a consumer backend which fetches requests and execute the transcoding
+//! jobs need to run in parallel.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate crossbeam;
 extern crate e2d2;
 extern crate failure;
 extern crate faktory;
-extern crate fnv;
 extern crate getopts;
-extern crate rand;
 extern crate resize;
 extern crate rustc_serialize;
 extern crate serde_json;

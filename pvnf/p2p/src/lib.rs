@@ -1,15 +1,14 @@
-//! A Remote Dependency Resolution (RDR) proxy network function will employ a headless browser and
-//! fetch the top-level HTML based on the HTTP (or even HTTPS) request. The exact implementation is
-//! in `nf.rs`.
+//! A P2P network function that uses BitTorrenting to peer and download content. The implementation
+//! contains a few ways to execute the logic but the running one is within a controlled peering
+//! environment, i.e., a seeder node and three leecher nodes (maybe more) are running beside the NF
+//! peering the content. The seeder is configured to be a private tracker and all the nodes are
+//! within the same LAN so it guarantees that the peering only happens with our nodes.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate crossbeam;
 extern crate e2d2;
 extern crate failure;
-extern crate fnv;
-extern crate fork;
 extern crate getopts;
-extern crate rand;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
@@ -236,7 +235,7 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     merge(vec![pipe, groups.get_group(1).unwrap().compose()]).compose()
 }
 
-/// Test for the rdr proxy network function to schedule pipelines.
+/// Test for the p2p downloader network function to schedule pipelines.
 pub fn p2p_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
     for port in &ports {
         println!(

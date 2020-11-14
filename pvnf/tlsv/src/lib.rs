@@ -1,6 +1,6 @@
-//! A TLS validator network function will identify the TLS handshake messages and extract the
-//! certificates. The NF will run a configurable TLS version and enforce the validation of the
-//! certs. The exact implementation is in `nf.rs`.
+//! A TLS validator network function which will identify the TLS handshake messages, extract the
+//! certificates from the network traffic, and validate the certificates. The NF can run with a
+//! configurable TLS version and enforce the validation of the certs.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
@@ -10,8 +10,6 @@ extern crate rustls;
 extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
-#[macro_use]
-extern crate log;
 
 use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::allocators::CacheAligned;

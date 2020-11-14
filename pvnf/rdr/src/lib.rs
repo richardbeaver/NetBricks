@@ -1,11 +1,9 @@
 //! A Remote Dependency Resolution (RDR) proxy network function will employ a headless browser and
-//! fetch the top-level HTML based on the HTTP (or even HTTPS) request. The exact implementation is
-//! in `nf.rs`.
+//! fetch the top-level HTML based on the HTTP (or even HTTPS) request.
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
 extern crate failure;
-extern crate fnv;
 extern crate getopts;
 extern crate headless_chrome;
 extern crate rshttp;
