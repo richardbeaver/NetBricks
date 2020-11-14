@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 pub fn append_job_faktory(
     pivot: u128,
     faktory_conn: Arc<Mutex<faktory::Producer<TcpStream>>>,
-    core_id: usize,
+    _core_id: usize,
     expr_num: &str,
 ) {
     let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
