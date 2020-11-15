@@ -24,13 +24,13 @@ export examples=(
 	# test/lpm-test
 	# test/packet_test
 	# PVN application
-	test/app-tlsv_g
+	# test/app-tlsv_g
 	test/app-tlsv_t
-	test/app-rdr_g
+	# test/app-rdr_g
 	test/app-rdr_t
-	test/app-p2p_g
+	# test/app-p2p_g
 	test/app-p2p_t
-	test/app-xcdr_g
+	# test/app-xcdr_g
 	test/app-xcdr_t
 	# PVN NF libraries
 	pvnf/tlsv
