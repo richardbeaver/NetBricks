@@ -13,6 +13,7 @@ use std::time::{Duration, Instant};
 
 #[derive(Clone, Default)]
 struct Unit;
+
 #[derive(Clone, Copy, Default)]
 struct FlowUsed {
     pub flow: Flow,
@@ -21,6 +22,7 @@ struct FlowUsed {
 }
 
 type FnvHash = BuildHasherDefault<FnvHasher>;
+
 pub fn nat<T: 'static + Batch<Header = NullHeader>>(
     parent: T,
     _s: &mut dyn Scheduler,
@@ -59,29 +61,34 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
         .transform(box move |pkt| {
             // let hdr = pkt.get_mut_header();
             let payload = pkt.get_mut_payload();
-            if let Some(flow) = ipv4_extract_flow(payload) {
-                let found = match port_hash.get(&flow) {
-                    Some(s) => {
-                        s.ipv4_stamp_flow(payload);
-                        true
-                    }
-                    None => false,
-                };
-                if !found {
-                    if next_port < MAX_PORT {
-                        let assigned_port = next_port; //FIXME.
-                        next_port += 1;
-                        flow_vec[assigned_port as usize].flow = flow;
-                        flow_vec[assigned_port as usize].used = true;
-                        let mut outgoing_flow = flow.clone();
-                        outgoing_flow.src_ip = ip;
-                        outgoing_flow.src_port = assigned_port;
-                        let rev_flow = outgoing_flow.reverse_flow();
+            let f = pkt.flow();
 
-                        port_hash.insert(flow, outgoing_flow);
-                        port_hash.insert(rev_flow, flow.reverse_flow());
+            // wrap the nat part around since we only have ipv4_extract_flow
+            if f.proto == 4 {
+                if let Some(flow) = ipv4_extract_flow(payload) {
+                    let found = match port_hash.get(&flow) {
+                        Some(s) => {
+                            s.ipv4_stamp_flow(payload);
+                            true
+                        }
+                        None => false,
+                    };
+                    if !found {
+                        if next_port < MAX_PORT {
+                            let assigned_port = next_port; //FIXME.
+                            next_port += 1;
+                            flow_vec[assigned_port as usize].flow = flow;
+                            flow_vec[assigned_port as usize].used = true;
+                            let mut outgoing_flow = flow.clone();
+                            outgoing_flow.src_ip = ip;
+                            outgoing_flow.src_port = assigned_port;
+                            let rev_flow = outgoing_flow.reverse_flow();
 
-                        outgoing_flow.ipv4_stamp_flow(payload);
+                            port_hash.insert(flow, outgoing_flow);
+                            port_hash.insert(rev_flow, flow.reverse_flow());
+
+                            outgoing_flow.ipv4_stamp_flow(payload);
+                        }
                     }
                 }
             }
