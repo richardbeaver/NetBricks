@@ -10,6 +10,8 @@ extern crate rustls;
 extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
+#[macro_use]
+extern crate log;
 
 use self::utils::{do_client_key_exchange, get_server_name, on_frame, tlsf_update};
 use e2d2::allocators::CacheAligned;

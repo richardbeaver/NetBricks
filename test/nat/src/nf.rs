@@ -1,4 +1,4 @@
-use e2d2::headers::{MacHeader, NullHeader};
+use e2d2::headers::{IpHeader, MacHeader, NullHeader};
 use e2d2::operators::{Batch, CompositionBatch};
 use e2d2::pvn::measure::*;
 use e2d2::scheduler::Scheduler;
@@ -58,10 +58,10 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
             }
         })
         .parse::<MacHeader>()
+        .parse::<IpHeader>()
         .transform(box move |pkt| {
-            // let hdr = pkt.get_mut_header();
+            let f = pkt.get_header().flow().clone().unwrap();
             let payload = pkt.get_mut_payload();
-            let f = pkt.flow();
 
             // wrap the nat part around since we only have ipv4_extract_flow
             if f.proto == 4 {
