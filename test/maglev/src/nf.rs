@@ -111,7 +111,7 @@ pub fn maglev<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if pkt_count > NUM_TO_IGNORE {
                 let now = Instant::now();
                 let mut w = start1.lock().unwrap();
-                println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
+                // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
                 w.push(now);
             }
         })
