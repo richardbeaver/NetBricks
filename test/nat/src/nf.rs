@@ -58,8 +58,10 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
             }
         })
         .parse::<MacHeader>()
-        .parse::<IpHeader>()
         .transform(box move |pkt| {
+            // FIXME: this part might crash if the replayed trace satisfies some condition, need to
+            // fix
+            //
             // let f = pkt.get_header().flow().clone().unwrap();
             let payload = pkt.get_mut_payload();
 
