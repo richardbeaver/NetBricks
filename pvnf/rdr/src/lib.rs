@@ -217,13 +217,11 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             if now.elapsed().as_secs() >= measure_time && inst && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
-                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?},
-                    num_of_closed: {:?}, num_of_visit: {:?}",
+                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
                     num_of_ok, num_of_err, num_of_timeout, num_of_closed, num_of_visit,
                 );
                 println!(
-                    "Metric: Browsing Time:
-                    {:?}\n",
+                    "Metric: Browsing Time: {:?}\n",
                     elapsed_time
                 );
 
@@ -232,8 +230,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 let w1 = t1_2.lock().unwrap();
                 let w2 = t2_2.lock().unwrap();
                 println!(
-                    "# of start
-                    ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
                     w1.len(),
                     stop_ts_not_matched.len(),
                     w2.len(),
