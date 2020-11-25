@@ -9,7 +9,6 @@ extern crate e2d2;
 extern crate failure;
 extern crate faktory;
 extern crate getopts;
-extern crate resize;
 extern crate rustc_serialize;
 extern crate serde_json;
 extern crate time;

@@ -8,7 +8,6 @@ extern crate e2d2;
 extern crate failure;
 extern crate faktory;
 extern crate fnv;
-extern crate getopts;
 extern crate rand;
 extern crate resize;
 extern crate rustc_serialize;

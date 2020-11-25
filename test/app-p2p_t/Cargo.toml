@@ -7,10 +7,8 @@ edition = "2018"
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
 p2p = { path = "../../pvnf/p2p" }
-
 time = "0.2.23"
-getopts = "*"
-rand = ">=0.3"
+rand = "0.7.3"
 fnv = "*"
 rustc-serialize = "*"
 serde_json = "*"

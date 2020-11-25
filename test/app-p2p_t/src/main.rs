@@ -11,7 +11,6 @@ extern crate crossbeam;
 extern crate e2d2;
 extern crate fnv;
 extern crate fork;
-extern crate getopts;
 extern crate p2p;
 extern crate rand;
 extern crate serde_json;
