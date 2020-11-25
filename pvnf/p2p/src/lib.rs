@@ -8,7 +8,6 @@
 extern crate crossbeam;
 extern crate e2d2;
 extern crate failure;
-extern crate getopts;
 extern crate rshttp;
 extern crate rustc_serialize;
 extern crate serde_json;
