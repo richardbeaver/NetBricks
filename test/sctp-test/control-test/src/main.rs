@@ -2,28 +2,29 @@
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
-extern crate time;
 extern crate getopts;
-extern crate rand;
 extern crate nix;
-use e2d2::interface::*;
+extern crate rand;
+extern crate time;
+
+use self::control::*;
+use self::nf::*;
+use e2d2::control::tcp::*;
 use e2d2::interface::dpdk::*;
+use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::scheduler::*;
 use getopts::Options;
 use std::collections::HashMap;
 use std::env;
-use std::time::Duration;
-use std::thread;
-use std::sync::Arc;
-use self::nf::*;
-use self::control::*;
-use e2d2::control::tcp::*;
 use std::net::*;
 use std::process;
-use std::str::{FromStr};
-mod nf;
+use std::str::FromStr;
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 mod control;
+mod nf;
 
 const CONVERSION_FACTOR: f64 = 1000000000.;
 
@@ -31,17 +32,20 @@ fn recv_thread(ports: Vec<PortQueue>, core: i32, delay_arg: u64) {
     init_thread(core, core);
     println!("Receiving started");
     for port in &ports {
-        println!("Receiving port {} rxq {} txq {} on core {} delay {}",
-                 port.port.mac_address(),
-                 port.rxq(),
-                 port.txq(),
-                 core,
-                 delay_arg);
+        println!(
+            "Receiving port {} rxq {} txq {} on core {} delay {}",
+            port.port.mac_address(),
+            port.rxq(),
+            port.txq(),
+            core,
+            delay_arg
+        );
     }
 
-    let pipelines: Vec<_> = ports.iter()
-                                 .map(|port| delay(ReceiveBatch::new(port.clone()), delay_arg).send(port.clone()))
-                                 .collect();
+    let pipelines: Vec<_> = ports
+        .iter()
+        .map(|port| delay(ReceiveBatch::new(port.clone()), delay_arg).send(port.clone()))
+        .collect();
     println!("Running {} pipelines", pipelines.len());
     let mut sched = StandaloneScheduler::new();
     for pipeline in pipelines {
@@ -73,23 +77,25 @@ fn main() {
         process::exit(0)
     }
 
-    let delay_arg = matches.opt_str("d")
-                           .unwrap_or_else(|| String::from("100"))
-                           .parse()
-                           .expect("Could not parse delay");
+    let delay_arg = matches
+        .opt_str("d")
+        .unwrap_or_else(|| String::from("100"))
+        .parse()
+        .expect("Could not parse delay");
 
     let cores_str = matches.opt_strs("c");
-    let master_core = matches.opt_str("m")
-                             .unwrap_or_else(|| String::from("0"))
-                             .parse()
-                             .expect("Could not parse master core spec");
+    let master_core = matches
+        .opt_str("m")
+        .unwrap_or_else(|| String::from("0"))
+        .parse()
+        .expect("Could not parse master core spec");
     println!("Using master core {}", master_core);
     let name = matches.opt_str("n").unwrap_or_else(|| String::from("recv"));
 
-    let cores: Vec<i32> = cores_str.iter()
-                                   .map(|n: &String| n.parse().ok().expect(&format!("Core cannot be parsed {}", n)))
-                                   .collect();
-
+    let cores: Vec<i32> = cores_str
+        .iter()
+        .map(|n: &String| n.parse().ok().expect(&format!("Core cannot be parsed {}", n)))
+        .collect();
 
     fn extract_cores_for_port(ports: &[String], cores: &[i32]) -> HashMap<String, Vec<i32>> {
         let mut cores_for_port = HashMap::<String, Vec<i32>>::new();
@@ -116,26 +122,28 @@ fn main() {
     for port in &ports_to_activate {
         let cores = cores_for_port.get(*port).unwrap();
         let queues = cores.len() as i32;
-        let pmd_port = PmdPort::new_with_queues(*port, queues, queues, cores, cores)
-                           .expect("Could not initialize port");
+        let pmd_port =
+            PmdPort::new_with_queues(*port, queues, queues, cores, cores).expect("Could not initialize port");
         for (idx, core) in cores.iter().enumerate() {
             let queue = idx as i32;
-            queues_by_core.entry(*core)
-                          .or_insert(vec![])
-                          .push(PmdPort::new_queue_pair(&pmd_port, queue, queue).unwrap());
+            queues_by_core
+                .entry(*core)
+                .or_insert(vec![])
+                .push(PmdPort::new_queue_pair(&pmd_port, queue, queue).unwrap());
         }
         ports.push(pmd_port);
     }
 
     const _BATCH: usize = 1 << 10;
     const _CHANNEL_SIZE: usize = 256;
-    let _thread: Vec<_> = queues_by_core.iter()
-                                        .map(|(core, ports)| {
-                                            let c = core.clone();
-                                            let p: Vec<_> = ports.iter().map(|p| p.clone()).collect();
-                                            std::thread::spawn(move || recv_thread(p, c, delay_arg))
-                                        })
-                                        .collect();
+    let _thread: Vec<_> = queues_by_core
+        .iter()
+        .map(|(core, ports)| {
+            let c = core.clone();
+            let p: Vec<_> = ports.iter().map(|p| p.clone()).collect();
+            std::thread::spawn(move || recv_thread(p, c, delay_arg))
+        })
+        .collect();
     let mut pkts_so_far = (0, 0);
     let mut last_printed = 0.;
     const MAX_PRINT_INTERVAL: f64 = 30.;
@@ -160,10 +168,12 @@ fn main() {
             let pkts = (rx, tx);
             let rx_pkts = pkts.0 - pkts_so_far.0;
             if rx_pkts > 0 || now - last_printed > MAX_PRINT_INTERVAL {
-                println!("{:.2} OVERALL RX {:.2} TX {:.2}",
-                         now - start,
-                         rx_pkts as f64 / (now - start),
-                         (pkts.1 - pkts_so_far.1) as f64 / (now - start));
+                println!(
+                    "{:.2} OVERALL RX {:.2} TX {:.2}",
+                    now - start,
+                    rx_pkts as f64 / (now - start),
+                    (pkts.1 - pkts_so_far.1) as f64 / (now - start)
+                );
                 last_printed = now;
                 start = now;
                 pkts_so_far = pkts;

@@ -6,7 +6,6 @@
 extern crate e2d2;
 extern crate failure;
 extern crate fnv;
-extern crate getopts;
 extern crate headless_chrome;
 extern crate rdr;
 extern crate rshttp;

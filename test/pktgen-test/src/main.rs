@@ -5,7 +5,6 @@
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
-extern crate getopts;
 extern crate log;
 extern crate rand;
 extern crate rustls;

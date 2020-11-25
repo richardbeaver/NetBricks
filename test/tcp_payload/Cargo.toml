@@ -6,7 +6,6 @@ authors = ["Steven H. Wang <wang.steven.h@gmail.com>"]
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
 time = ">=0.1.0"
-getopts = "*"
 rand = ">=0.3"
 fnv = "*"
 twox-hash = "*"

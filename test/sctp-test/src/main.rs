@@ -2,11 +2,11 @@
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
-extern crate getopts;
 extern crate nix;
 extern crate rand;
 extern crate sctp;
 extern crate time;
+
 use self::control::*;
 use self::nf::*;
 use e2d2::config::{basic_opts, read_matches};

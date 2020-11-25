@@ -2,7 +2,6 @@
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
-extern crate getopts;
 extern crate rand;
 extern crate time;
 use self::nf::*;

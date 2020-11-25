@@ -2,9 +2,9 @@
 #![feature(asm)]
 extern crate e2d2;
 extern crate fnv;
-extern crate getopts;
 extern crate rand;
 extern crate time;
+
 use self::nf::*;
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::*;
