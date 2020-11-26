@@ -1,12 +1,9 @@
 use dotenv::dotenv;
-
 use futures::{
     future::BoxFuture,
     stream::{FuturesUnordered, StreamExt},
 };
 use std::env;
-
-
 use std::io::{self, Write};
 use std::process::Command;
 use transmission_rpc::types::{BasicAuth, Result, RpcResponse};
@@ -19,7 +16,6 @@ use transmission_rpc::TransClient;
 pub fn create_transmission_client() -> Result<TransClient> {
     println!("debug: create transmission client");
     dotenv().ok();
-    // env_logger::init();
 
     // setup session
     let url: String = env::var("TURL")?;
