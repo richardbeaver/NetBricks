@@ -1,6 +1,7 @@
 # [NetBricks](http://netbricks.io/) is a Rust based framework for NFV development. 
 [![Documentation](https://docs.rs/e2de/badge.svg)](https://www.khoury.northeastern.edu/home/jethrosun/crates/NetBricks/)
 [![Build Status](https://dev.azure.com/jethrosun/NetBricks/_apis/build/status/jethrosun.NetBricks?repoName=jethrosun%2FNetBricks&branchName=expr)](https://dev.azure.com/jethrosun/NetBricks/_build/latest?definitionId=2&repoName=jethrosun%2FNetBricks&branchName=expr)
+[![Dependency status](https://deps.rs/repo/github/jethrosun/NetBricks/status.svg)](https://deps.rs/repo/github/jethrosun/NetBricks)
 
 Please refer to the
 [paper](https://people.eecs.berkeley.edu/~apanda/assets/papers/osdi16.pdf)
