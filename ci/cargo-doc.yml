@@ -155,6 +155,9 @@ jobs:
       sudo mount -t hugetlbfs nodev /mnt/huge
     displayName: 'Configure the hugepage for DPDK'
   - script: |
+      llvm-config --version
+    displayName: 'Check llvm version'
+  - script: |
       ./build.sh
     displayName: 'Build NetBricks'
   - script: cargo doc --all --document-private-items --bins
