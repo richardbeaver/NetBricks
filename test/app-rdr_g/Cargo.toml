@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-time = "0.1.42"
+time = "0.2"
 fnv = "*"
 twox-hash = "*"
 log = "0.4"

@@ -8,7 +8,7 @@ edition = "2018"
 e2d2 = { path = "../../framework", features = ["performance"] }
 rdr = { path = "../../pvnf/rdr" }
 p2p = { path = "../../pvnf/p2p" }
-time = "0.2.22"
+time = "0.2"
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
 tokio = { version = "0.2", features = ["macros"] }
 
