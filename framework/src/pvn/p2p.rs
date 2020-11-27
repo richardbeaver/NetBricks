@@ -23,33 +23,32 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     match &*p2p_type {
         // FIXME: nothing get matched???
         "app_p2p-controlled" => {
-            println!("\tparam: got controlled");
-            map.insert("1", 1);
-            map.insert("2", 2);
-            map.insert("3", 4);
-            map.insert("4", 6);
-            map.insert("5", 8);
-            map.insert("6", 10);
+            map.insert(1, 1);
+            map.insert(2, 2);
+            map.insert(3, 4);
+            map.insert(4, 6);
+            map.insert(5, 8);
+            map.insert(6, 10);
         }
         "app_p2p" => {
-            map.insert("1", 1);
-            map.insert("2", 10);
-            map.insert("3", 50);
-            map.insert("4", 100);
-            map.insert("5", 150);
-            map.insert("6", 200);
+            map.insert(1, 1);
+            map.insert(2, 10);
+            map.insert(3, 50);
+            map.insert(4, 100);
+            map.insert(5, 150);
+            map.insert(6, 200);
         }
         "app_p2p-ext" => {
-            map.insert("11", 1);
-            map.insert("12", 1);
-            map.insert("13", 1);
-            map.insert("14", 1);
-            map.insert("15", 1);
-            map.insert("16", 1);
-            map.insert("17", 1);
-            map.insert("18", 1);
-            map.insert("19", 1);
-            map.insert("20", 1);
+            map.insert(11, 1);
+            map.insert(12, 1);
+            map.insert(13, 1);
+            map.insert(14, 1);
+            map.insert(15, 1);
+            map.insert(16, 1);
+            map.insert(17, 1);
+            map.insert(18, 1);
+            map.insert(19, 1);
+            map.insert(20, 1);
         }
         //
         _ => {
@@ -65,7 +64,7 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
             // map.insert("6", 10);
         }
     }
-    map.remove(&*p2p_type)
+    map.remove(&param.setup)
 }
 
 /// Retrieve the p2p type param in the pvn setup config file.
@@ -185,20 +184,20 @@ pub fn p2p_load_json(fp_workload: String, _p2p_torrents: Vec<i64>) -> Vec<String
 }
 
 /// Retrieve the p2p random seed from rand_seed file.
-pub fn p2p_read_rand_seed(num_of_torrents: usize, iter: String) -> Result<Vec<i64>> {
+pub fn p2p_read_rand_seed(num_of_torrents: usize, iter: String, p2p_type: String) -> Result<Vec<i64>> {
     println!("num_of_torrents: {:?}, iter: {:?}", num_of_torrents, iter);
     let rand_seed_file = "/home/jethros/dev/pvn/utils/rand_number/rand.json";
     let mut rand_vec = Vec::new();
     let file = File::open(rand_seed_file).expect("rand seed file should open read only");
     let json_data: Value = from_reader(file).expect("file should be proper JSON");
 
-    match json_data.get("p2p") {
+    match json_data.get(p2p_type) {
         Some(p2p_data) => match p2p_data.get(&num_of_torrents.clone().to_string()) {
             Some(setup_data) => match setup_data.get(iter.clone()) {
                 Some(data) => {
                     for x in data.as_array().unwrap() {
-                        rand_vec.push(x.as_i64().unwrap());
-                        println!("P2P torrent: {:?}", x.as_i64().unwrap());
+                        rand_vec.push(x.as_i64().unwrap() + 1);
+                        println!("P2P torrent: {:?}", x.as_i64().unwrap() + 1);
                     }
                 }
                 None => println!("No rand data for iter {:?} for torrent {:?}", iter, num_of_torrents),

@@ -112,8 +112,9 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                 // https://wiki.wireshark.org/BitTorrent
                 let match_port = vec![6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                if f.proto == 6 && (f.src_ip == match_ip && match_port.contains(&f.dst_port))
-                    || (f.dst_ip == match_ip && match_port.contains(&f.src_port))
+                if f.proto == 6
+                    && ((f.src_ip == match_ip && match_port.contains(&f.src_port))
+                        || (f.dst_ip == match_ip && match_port.contains(&f.dst_port)))
                 {
                     matched = true
                 }
@@ -180,9 +181,11 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, param.iter.to_string(), "p2p_controlled".to_string())
+                                .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, param.setup);
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
                         // workload_exec = false;
@@ -190,7 +193,8 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, param.iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();

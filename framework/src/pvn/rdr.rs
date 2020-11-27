@@ -88,7 +88,7 @@ pub fn rdr_read_rand_seed(num_of_users: usize, iter: usize) -> Result<Vec<i64>> 
 
     match json_data.get("rdr") {
         Some(rdr_data) => match rdr_data.get(&num_of_users.clone().to_string()) {
-            Some(setup_data) => match setup_data.get(iter) {
+            Some(setup_data) => match setup_data.get(iter.to_string()) {
                 Some(data) => {
                     for x in data.as_array().unwrap() {
                         rand_vec.push(x.as_i64().unwrap());
