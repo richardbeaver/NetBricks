@@ -1,6 +1,7 @@
 #![feature(box_syntax)]
 #![feature(asm)]
 extern crate e2d2;
+extern crate rustls;
 extern crate time;
 
 use crate::nf::tlsv_xcdr_test;

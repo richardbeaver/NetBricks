@@ -147,7 +147,7 @@ jobs:
       sudo apt-get install -y apt-utils build-essential pciutils linux-headers-`uname -r` python python3 libssl-dev
       sudo apt-get install -y libgnutls30 libcurl4-gnutls-dev cmake bash libpcap-dev libnuma-dev libelf-dev
       sudo apt-get install -y libssl-dev pkg-config libgnutls-openssl-dev libcurl4-gnutls-dev libsctp-dev gcc
-      sudo apt-get install -y clang-6.0 cmake musl-tools libssl-dev libevent-dev
+      sudo apt-get install -y llvm clang-6.0 cmake musl-tools libssl-dev libevent-dev
     displayName: 'Install necessary deps'
   - script: |
       sudo sysctl -w vm.nr_hugepages=256

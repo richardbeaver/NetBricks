@@ -10,6 +10,7 @@ tlsv = { path = "../../pvnf/tlsv" }
 p2p = { path = "../../pvnf/p2p" }
 time = "0.2"
 tokio = { version = "0.2", features = ["macros"] }
+rustls = { version = "0.19", features = ["dangerous_configuration"] }
 webpki = "*"
 webpki-roots = "*"
 
