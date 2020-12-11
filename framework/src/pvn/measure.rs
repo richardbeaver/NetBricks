@@ -68,7 +68,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
     };
     let setup = setup.unwrap().parse::<usize>();
 
-    let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have setup").clone()) {
+    let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have iter").clone()) {
         Ok(val) => Some(val),
         Err(e) => {
             println!("Malformed JSON response: {}", e);
@@ -77,7 +77,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
     };
     let iter = iter.unwrap().parse::<usize>();
 
-    let inst: Option<String> = match serde_json::from_value(json.get("inst").expect("file should have setup").clone()) {
+    let inst: Option<String> = match serde_json::from_value(json.get("inst").expect("file should have inst").clone()) {
         Ok(val) => Some(val),
         Err(e) => {
             println!("Malformed JSON response: {}", e);
@@ -90,7 +90,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
         _ => None,
     };
 
-    let mode: Option<String> = match serde_json::from_value(json.get("mode").expect("file should have setup").clone()) {
+    let mode: Option<String> = match serde_json::from_value(json.get("mode").expect("file should have mode").clone()) {
         Ok(val) => Some(val),
         Err(e) => {
             println!("Malformed JSON response: {}", e);
