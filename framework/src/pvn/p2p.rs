@@ -6,58 +6,40 @@ use std::fs::File;
 use std::io::Result;
 
 fn construct_p2p_workload() -> Option<(
-    HashMap<&'static str, &'static str>,
-    HashMap<&'static str, &'static str>,
-    HashMap<&'static str, &'static str>,
+    HashMap<&'static str, String>,
+    HashMap<&'static str, String>,
+    HashMap<&'static str, String>,
 )> {
-    let mut p2p_ext_map: HashMap<&str, &str> = HashMap::new();
-    p2p_ext_map.insert("11", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-1.json");
-    p2p_ext_map.insert("12", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-2.json");
-    p2p_ext_map.insert("13", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-3.json");
-    p2p_ext_map.insert("14", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-4.json");
-    p2p_ext_map.insert("15", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-5.json");
-    p2p_ext_map.insert("16", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-6.json");
-    p2p_ext_map.insert("17", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-7.json");
-    p2p_ext_map.insert("18", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-8.json");
-    p2p_ext_map.insert("19", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-9.json");
-    p2p_ext_map.insert(
-        "20",
-        "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-10.json",
-    );
+    let mut p2p_ext_map: HashMap<&str, String> = HashMap::new();
+    let single_wl = "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-";
+    p2p_ext_map.insert("11", single_wl.clone().to_owned() + "1.json");
+    p2p_ext_map.insert("12", single_wl.clone().to_owned() + "2.json");
+    p2p_ext_map.insert("13", single_wl.clone().to_owned() + "3.json");
+    p2p_ext_map.insert("14", single_wl.clone().to_owned() + "4.json");
+    p2p_ext_map.insert("15", single_wl.clone().to_owned() + "5.json");
+    p2p_ext_map.insert("16", single_wl.clone().to_owned() + "6.json");
+    p2p_ext_map.insert("17", single_wl.clone().to_owned() + "7.json");
+    p2p_ext_map.insert("18", single_wl.clone().to_owned() + "8.json");
+    p2p_ext_map.insert("19", single_wl.clone().to_owned() + "9.json");
+    p2p_ext_map.insert("20", single_wl.to_owned() + "10.json");
 
-    let mut p2p_controlled_map: HashMap<&str, &str> = HashMap::new();
-    p2p_controlled_map.insert(
-        "1",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
-    p2p_controlled_map.insert(
-        "2",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
-    p2p_controlled_map.insert(
-        "3",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
-    p2p_controlled_map.insert(
-        "4",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
-    p2p_controlled_map.insert(
-        "5",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
-    p2p_controlled_map.insert(
-        "6",
-        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-    );
+    let mut p2p_controlled_map: HashMap<&str, String> = HashMap::new();
+    let control_wl = "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json";
+    p2p_controlled_map.insert("1", control_wl.to_owned());
+    p2p_controlled_map.insert("2", control_wl.to_owned());
+    p2p_controlled_map.insert("3", control_wl.to_owned());
+    p2p_controlled_map.insert("4", control_wl.to_owned());
+    p2p_controlled_map.insert("5", control_wl.to_owned());
+    p2p_controlled_map.insert("6", control_wl.to_owned());
 
-    let mut p2p_general_map: HashMap<&str, &str> = HashMap::new();
-    p2p_general_map.insert("1", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-    p2p_general_map.insert("2", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-    p2p_general_map.insert("3", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-    p2p_general_map.insert("4", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-    p2p_general_map.insert("5", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-    p2p_general_map.insert("6", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    let mut p2p_general_map: HashMap<&str, String> = HashMap::new();
+    let p2p_wl = "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json";
+    p2p_general_map.insert("1", p2p_wl.to_owned());
+    p2p_general_map.insert("2", p2p_wl.to_owned());
+    p2p_general_map.insert("3", p2p_wl.to_owned());
+    p2p_general_map.insert("4", p2p_wl.to_owned());
+    p2p_general_map.insert("5", p2p_wl.to_owned());
+    p2p_general_map.insert("6", p2p_wl.to_owned());
 
     Some((p2p_ext_map, p2p_controlled_map, p2p_general_map))
 }
@@ -152,7 +134,7 @@ pub fn p2p_read_type(fp_setup: String) -> Option<String> {
 }
 
 /// Retrieve the corresponding workload based on pvn setup config file.
-pub fn p2p_fetch_workload(fp_setup: String) -> Option<&'static str> {
+pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
     println!("fetch worklaod");
     let (mut p2p_ext_map, mut p2p_controlled_map, mut p2p_general_map) = construct_p2p_workload().unwrap();
 

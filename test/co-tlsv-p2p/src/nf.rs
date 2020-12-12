@@ -248,13 +248,13 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                                                 )
                                             }
                                         }
-                                        None => eprintln!("We are missing the dns name from the client hello",),
+                                        None => {} // eprintln!("We are missing the dns name from the client hello",),
                                     }
                                 }
-                                _ => eprintln!("Other kinds of payload",),
+                                _ => {} //eprintln!("Other kinds of payload",),
                             }
                         }
-                        None => eprintln!("Get none for matching payload",),
+                        None => {} //eprintln!("Get none for matching payload",),
                     }
                 }
             } else {
@@ -300,7 +300,7 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 match &*p2p_type {
                     // use our shell wrapper to interact with qBitTorrent
                     // FIXME: it would be nicer if we can employ a Rust crate for this
-                    "app_p2p-controlled" => {
+                    "app_p2p-controlled" | "chain_tlsv_p2p" | "chain_rdr_p2p" | "chain_xcdr_p2p" => {
                         println!("match p2p controlled before btrun");
                         let p2p_torrents = p2p_read_rand_seed(
                             num_of_torrents,

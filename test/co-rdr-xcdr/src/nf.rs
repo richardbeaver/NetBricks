@@ -131,9 +131,9 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 let rdr_match_port = 443_u16;
 
                 let xcdr_match_src_ip = 3_232_235_524_u32;
-                let xcdr_match_src_port = 58_111;
+                let xcdr_match_src_port = 443;
                 let xcdr_match_dst_ip = 2_457_012_302_u32;
-                let xcdr_match_dst_port = 443;
+                let xcdr_match_dst_port = 58_111;
 
                 // Match RDR packets to group 1 and XCDR packets to group 2, the rest to group 0
                 if f.proto == 6
@@ -154,6 +154,7 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                     matched = 2
                 }
 
+                // this is currently disabled for coexist instances
                 if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
@@ -229,6 +230,12 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 );
                 println!("Metric: Browsing Time: {:?}\n", elapsed_time);
                 metric_exec = false;
+
+                // Measurement: metric for the performance of the XCDR
+                println!("Pivot/span: {:?}", pivot / time_span);
+                let w = latv_1.lock().unwrap();
+                println!("Metric: {:?}", w);
+
             }
 
             // Measurement: instrumentation to collect latency metrics

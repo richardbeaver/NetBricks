@@ -135,6 +135,11 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 }
 
                 if now.elapsed().as_secs() >= xcdr_param.expr_time && latency_exec {
+                    // perf XCDR
+                    println!("Pivot/span: {:?}", pivot / time_span);
+                    let w = latv_1.lock().unwrap();
+                    println!("Metric: {:?}", w);
+
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -230,7 +235,7 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 match &*p2p_type {
                     // use our shell wrapper to interact with qBitTorrent
                     // FIXME: it would be nicer if we can employ a Rust crate for this
-                    "app_p2p-controlled" => {
+                    "app_p2p-controlled" | "chain_tlsv_p2p" | "chain_rdr_p2p" | "chain_xcdr_p2p" => {
                         println!("match p2p controlled before btrun");
                         let p2p_torrents = p2p_read_rand_seed(
                             num_of_torrents,
