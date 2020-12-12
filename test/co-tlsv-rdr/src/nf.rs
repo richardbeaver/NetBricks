@@ -86,24 +86,22 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Com
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+             let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .transform(box move |p| {
             let mut matched = false;
+            let f = p.read_metadata();
 
             let match_ip =  180_907_852_u32; // 10.200.111.76
-            let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                Some((src, dst, p)) => (src, dst, p),
-                None => (&0, &0, &0),
-            };
 
-            if *proto == 6 && (
-                 *src_ip == match_ip || *dst_ip == match_ip ){
+            // Because it is a TLSV RDR chain, we only consider the RDR case here
+            if f.proto == 6 && (
+                 f.src_ip == match_ip || f.dst_ip == match_ip ){
                     matched = true
                 }
 

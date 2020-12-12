@@ -110,25 +110,20 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
             3,
             box move |p| {
                 pkt_count += 1;
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
+                let f = p.read_metadata();
 
-                // 0 means the packet doesn't match RDR or P2P
+                // 0 means the packet doesn't match RDR or XCDR
                 let mut matched = 0;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
@@ -140,21 +135,21 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                 let xcdr_match_dst_ip = 2_457_012_302_u32;
                 let xcdr_match_dst_port = 443;
 
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
-                if *proto == 6
-                    && (*src_ip == match_ip || *dst_ip == match_ip)
-                    && (src_port == rdr_match_port || dst_port == rdr_match_port)
+                // Match RDR packets to group 1 and XCDR packets to group 2, the rest to group 0
+                if f.proto == 6
+                    && (f.src_ip == match_ip || f.dst_ip == match_ip)
+                    && (f.src_port == rdr_match_port || f.dst_port == rdr_match_port)
                 {
                     matched = 1
-                } else if *proto == 17
-                    && ((*src_ip == xcdr_match_src_ip
-                        && src_port == xcdr_match_src_port
-                        && *dst_ip == xcdr_match_dst_ip
-                        && dst_port == xcdr_match_dst_port)
-                        || (*src_ip == xcdr_match_dst_ip
-                            && src_port == xcdr_match_dst_port
-                            && *dst_ip == xcdr_match_src_ip
-                            && dst_port == xcdr_match_src_port))
+                } else if f.proto == 17
+                    && ((f.src_ip == xcdr_match_src_ip
+                        && f.src_port == xcdr_match_src_port
+                        && f.dst_ip == xcdr_match_dst_ip
+                        && f.dst_port == xcdr_match_dst_port)
+                        || (f.src_ip == xcdr_match_dst_ip
+                            && f.src_port == xcdr_match_dst_port
+                            && f.dst_ip == xcdr_match_src_ip
+                            && f.dst_port == xcdr_match_src_port))
                 {
                     matched = 2
                 }

@@ -5,6 +5,96 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Result;
 
+fn construct_p2p_workload() -> Option<(
+    HashMap<&'static str, &'static str>,
+    HashMap<&'static str, &'static str>,
+    HashMap<&'static str, &'static str>,
+)> {
+    let mut p2p_ext_map: HashMap<&str, &str> = HashMap::new();
+    p2p_ext_map.insert("11", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-1.json");
+    p2p_ext_map.insert("12", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-2.json");
+    p2p_ext_map.insert("13", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-3.json");
+    p2p_ext_map.insert("14", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-4.json");
+    p2p_ext_map.insert("15", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-5.json");
+    p2p_ext_map.insert("16", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-6.json");
+    p2p_ext_map.insert("17", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-7.json");
+    p2p_ext_map.insert("18", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-8.json");
+    p2p_ext_map.insert("19", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-9.json");
+    p2p_ext_map.insert(
+        "20",
+        "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-10.json",
+    );
+
+    let mut p2p_controlled_map: HashMap<&str, &str> = HashMap::new();
+    p2p_controlled_map.insert(
+        "1",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+    p2p_controlled_map.insert(
+        "2",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+    p2p_controlled_map.insert(
+        "3",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+    p2p_controlled_map.insert(
+        "4",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+    p2p_controlled_map.insert(
+        "5",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+    p2p_controlled_map.insert(
+        "6",
+        "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
+    );
+
+    let mut p2p_general_map: HashMap<&str, &str> = HashMap::new();
+    p2p_general_map.insert("1", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    p2p_general_map.insert("2", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    p2p_general_map.insert("3", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    p2p_general_map.insert("4", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    p2p_general_map.insert("5", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+    p2p_general_map.insert("6", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+
+    Some((p2p_ext_map, p2p_controlled_map, p2p_general_map))
+}
+
+fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, HashMap<usize, usize>)> {
+    let mut p2p_ext_map: HashMap<usize, usize> = HashMap::new();
+    let mut p2p_controlled_map: HashMap<usize, usize> = HashMap::new();
+    let mut p2p_general_map: HashMap<usize, usize> = HashMap::new();
+
+    p2p_ext_map.insert(11, 1);
+    p2p_ext_map.insert(12, 1);
+    p2p_ext_map.insert(13, 1);
+    p2p_ext_map.insert(14, 1);
+    p2p_ext_map.insert(15, 1);
+    p2p_ext_map.insert(16, 1);
+    p2p_ext_map.insert(17, 1);
+    p2p_ext_map.insert(18, 1);
+    p2p_ext_map.insert(19, 1);
+    p2p_ext_map.insert(20, 1);
+
+    p2p_controlled_map.insert(1, 1);
+    p2p_controlled_map.insert(2, 2);
+    p2p_controlled_map.insert(3, 4);
+    p2p_controlled_map.insert(4, 6);
+    p2p_controlled_map.insert(5, 8);
+    p2p_controlled_map.insert(6, 10);
+
+    p2p_general_map.insert(1, 1);
+    p2p_general_map.insert(2, 10);
+    p2p_general_map.insert(3, 50);
+    p2p_general_map.insert(4, 100);
+    p2p_general_map.insert(5, 150);
+    p2p_general_map.insert(6, 200);
+
+    Some((p2p_ext_map, p2p_controlled_map, p2p_general_map))
+}
+
 /// Get the number of torrents for the current p2p experiments.
 ///
 /// 1 torrent job in total -- 3% pktgen sending rate
@@ -17,54 +107,30 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     println!("fetch param");
     let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
     let param = read_setup_param(fp_setup).unwrap();
-    let mut map = HashMap::new();
+
+    let (mut p2p_ext_map, mut p2p_controlled_map, mut p2p_general_map) = construct_p2p_job().unwrap();
 
     println!("type: {}, setup: {}, iter: {}", p2p_type, param.setup, param.iter);
     match &*p2p_type {
-        // FIXME: nothing get matched???
-        "app_p2p-controlled" => {
-            map.insert(1, 1);
-            map.insert(2, 2);
-            map.insert(3, 4);
-            map.insert(4, 6);
-            map.insert(5, 8);
-            map.insert(6, 10);
+        "app_p2p-controlled" => return p2p_controlled_map.remove(&param.setup),
+        "app_p2p" => return p2p_general_map.remove(&param.setup),
+        "app_p2p-ext" => return p2p_general_map.remove(&param.setup),
+        // chain
+        "chain_rdr_p2p" => {
+            return p2p_controlled_map.remove(&param.setup);
         }
-        "app_p2p" => {
-            map.insert(1, 1);
-            map.insert(2, 10);
-            map.insert(3, 50);
-            map.insert(4, 100);
-            map.insert(5, 150);
-            map.insert(6, 200);
+        "chain_tlsv_p2p" => {
+            return p2p_controlled_map.remove(&param.setup);
         }
-        "app_p2p-ext" => {
-            map.insert(11, 1);
-            map.insert(12, 1);
-            map.insert(13, 1);
-            map.insert(14, 1);
-            map.insert(15, 1);
-            map.insert(16, 1);
-            map.insert(17, 1);
-            map.insert(18, 1);
-            map.insert(19, 1);
-            map.insert(20, 1);
+        "chain_xcdr_p2p" => {
+            return p2p_controlled_map.remove(&param.setup);
         }
         //
         _ => {
-            println!(
-                "\tCurrent P2P type: {:?} doesn't match to any param we know. The rest is a hack",
-                p2p_type
-            );
-            // map.insert("1", 1);
-            // map.insert("2", 2);
-            // map.insert("3", 4);
-            // map.insert("4", 6);
-            // map.insert("5", 8);
-            // map.insert("6", 10);
+            println!("\tP2P type: {:?} doesn't match to any param.", p2p_type);
+            return None;
         }
     }
-    map.remove(&param.setup)
 }
 
 /// Retrieve the p2p type param in the pvn setup config file.
@@ -88,7 +154,7 @@ pub fn p2p_read_type(fp_setup: String) -> Option<String> {
 /// Retrieve the corresponding workload based on pvn setup config file.
 pub fn p2p_fetch_workload(fp_setup: String) -> Option<&'static str> {
     println!("fetch worklaod");
-    let mut map: HashMap<&str, &str> = HashMap::new();
+    let (mut p2p_ext_map, mut p2p_controlled_map, mut p2p_general_map) = construct_p2p_workload().unwrap();
 
     // load setup param
     let file = File::open(fp_setup.clone()).expect("file should open read only");
@@ -116,60 +182,31 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<&'static str> {
     match p2p_type.clone().unwrap().as_ref() {
         "app_p2p-ext" => {
             println!("Got p2p_ext");
-            map.insert("11", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-1.json");
-            map.insert("12", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-2.json");
-            map.insert("13", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-3.json");
-            map.insert("14", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-4.json");
-            map.insert("15", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-5.json");
-            map.insert("16", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-6.json");
-            map.insert("17", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-7.json");
-            map.insert("18", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-8.json");
-            map.insert("19", "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-9.json");
-            map.insert(
-                "20",
-                "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-10.json",
-            );
+            return p2p_ext_map.remove(&*setup.unwrap());
         }
         "app_p2p-controlled" => {
             println!("\tworkload: Got p2p_controlled");
-            map.insert(
-                "1",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
-            map.insert(
-                "2",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
-            map.insert(
-                "3",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
-            map.insert(
-                "4",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
-            map.insert(
-                "5",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
-            map.insert(
-                "6",
-                "/home/jethros/dev/pvn/utils/workloads/p2p_controlled_workload.json",
-            );
+            return p2p_controlled_map.remove(&*setup.unwrap());
         }
         "app_p2p" => {
             println!("Got p2p_general");
-            map.insert("1", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-            map.insert("2", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-            map.insert("3", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-            map.insert("4", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-            map.insert("5", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
-            map.insert("6", "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json");
+            return p2p_general_map.remove(&*setup.unwrap());
         }
-        &_ => println!("\tUnknown p2p type: {:?}, unable to fetch workload", p2p_type.unwrap()),
+        // chain
+        "chain_rdr_p2p" => {
+            return p2p_controlled_map.remove(&*setup.unwrap());
+        }
+        "chain_tlsv_p2p" => {
+            return p2p_controlled_map.remove(&*setup.unwrap());
+        }
+        "chain_xcdr_p2p" => {
+            return p2p_controlled_map.remove(&*setup.unwrap());
+        }
+        &_ => {
+            println!("\tP2P type: {:?}, unable to fetch workload", p2p_type.unwrap());
+            return None;
+        }
     }
-
-    map.remove(&*setup.unwrap())
 }
 
 /// Parse the given p2p json workload.

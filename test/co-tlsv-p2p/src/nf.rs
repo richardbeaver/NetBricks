@@ -82,32 +82,31 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
             3,
             box move |p| {
                 pkt_count += 1;
-                let f = *p.read_metadata();
+                let f = p.read_metadata();
 
                 // 0 means the packet doesn't match RDR or P2P
                 let mut matched = 0;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
                 let match_ip = 180_907_852_u32; // 10.200.111.76
-                let rdr_match_port = 443_u16;
-                // https://wiki.wireshark.org/BitTorrent
+                                                // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                // warning: borrow of packed field is unsafe and requires unsafe function or block (error E0133)
-                let src_port = f.src_port;
-                let dst_port = f.dst_port;
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                // Match TLS packets to group 1 and P2P packets to group 2, the rest to group 0
                 if f.proto == 6 {
                     if (f.src_ip == match_ip || f.dst_ip == match_ip)
-                        && (p2p_match_port.contains(&src_port) || p2p_match_port.contains(&dst_port))
+                        && (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port))
                     {
                         matched = 2
                     } else {
@@ -303,17 +302,23 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, p2p_param.setup);
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
-                        workload_exec = false;
+                        // workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();

@@ -97,8 +97,11 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header().flow().unwrap();
-            f
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .group_by(
             3,
@@ -110,14 +113,13 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                 let mut matched = 0;
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
-                let match_ip = 180_907_852 as u32; // 10.200.111.76
-                let rdr_match_port = 443 as u16;
-                let xcdr_match_src_ip = 3_232_235_524 as u32;
+                let match_ip = 180_907_852_u32; // 10.200.111.76
+                let xcdr_match_src_ip = 3_232_235_524_u32;
                 let xcdr_match_src_port = 58_111;
-                let xcdr_match_dst_ip = 2_457_012_302 as u32;
+                let xcdr_match_dst_ip = 2_457_012_302_u32;
                 let xcdr_match_dst_port = 443;
 
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                // Match TLS packets to group 1 and XCDR packets to group 2, the rest to group 0
                 if f.proto == 6 {
                     matched = 1
                 } else if f.proto == 17

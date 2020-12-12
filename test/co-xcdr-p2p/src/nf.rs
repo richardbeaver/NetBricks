@@ -88,8 +88,11 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let f = p.get_header().flow().unwrap();
-            f
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .group_by(
             3,
@@ -99,15 +102,30 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
 
                 // 0 means the packet doesn't match RDR or P2P
                 let mut matched = 0;
+
                 // NOTE: the following ip addr and port are hardcode based on the trace we are
                 // replaying
+                let match_src_ip = 3_232_235_524_u32;
+                let match_src_port = 443;
+                let match_dst_ip = 2_457_012_302_u32;
+                let match_dst_port = 58_111;
+
                 let match_ip = 180_907_852_u32; // 10.200.111.76
 
                 // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
-                if f.proto == 17 {
+                // Match XCDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                if f.proto == 17
+                    && ((f.src_ip == match_src_ip
+                        && f.src_port == match_src_port
+                        && f.dst_ip == match_dst_ip
+                        && f.dst_port == match_dst_port)
+                        || (f.src_ip == match_dst_ip
+                            && f.src_port == match_dst_port
+                            && f.dst_ip == match_src_ip
+                            && f.dst_port == match_src_port))
+                {
                     matched = 1
                 } else if (f.proto == 6)
                     && (f.src_ip == match_ip || f.dst_ip == match_ip)
@@ -214,17 +232,23 @@ pub fn xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, p2p_param.setup);
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
-                        workload_exec = false;
+                        // workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();

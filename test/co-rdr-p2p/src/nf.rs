@@ -93,23 +93,18 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
             3,
             box move |p| {
                 pkt_count += 1;
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
+                let f = p.read_metadata();
 
                 // 0 means the packet doesn't match RDR or P2P
                 let mut matched = 0;
@@ -121,11 +116,13 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
                 // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
-                if (*proto == 6) && (*src_ip == match_ip || *dst_ip == match_ip) {
-                    if src_port == rdr_match_port || dst_port == rdr_match_port {
-                        matched = 1
-                    } else if p2p_match_port.contains(&src_port) || p2p_match_port.contains(&dst_port) {
+                if f.proto == 6 {
+                    if p2p_match_port.contains(&f.src_port)
+                        || p2p_match_port.contains(&f.dst_port) && (f.src_ip == match_ip && f.dst_ip == match_ip)
+                    {
                         matched = 2
+                    } else {
+                        matched = 1
                     }
                 }
 
@@ -232,16 +229,23 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, p2p_param.setup);
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
+                        // workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
