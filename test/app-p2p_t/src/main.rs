@@ -12,7 +12,6 @@ extern crate e2d2;
 extern crate fnv;
 extern crate fork;
 extern crate p2p;
-extern crate rand;
 extern crate serde_json;
 extern crate time;
 extern crate transmission_rpc;
