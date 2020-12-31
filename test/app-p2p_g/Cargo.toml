@@ -19,7 +19,7 @@ serde_json = "*"
 sha1 = "0.2.0"
 crossbeam = "0.7.3"
 transmission-rpc = "0.2.3"
-tokio = { version = "0.2", features = ["macros"] }
+tokio = { version = "1.0", features = ["full"] }
 dotenv = "0.15.0"
 futures = "0.3"
 fork = "0.1.17"
