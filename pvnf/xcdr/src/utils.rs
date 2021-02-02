@@ -11,12 +11,8 @@ pub fn append_job_faktory(
 ) {
     let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
     let width_height = "360x24";
-    let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
-    // println!(
-    //     "faktory: {:?}",
-    //     // "app-xcdr_".to_owned() + &core_id.to_string() + "-" + expr_num,
-    //     "app-xcdr_".to_owned() + expr_num,
-    // );
+    // let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
+    let outfile = "/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
 
     faktory_conn
         .lock()
