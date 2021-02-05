@@ -115,53 +115,53 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
     }
 }
 
+// /// Return the time span between submitting jobs to the faktory job queue
+// /// based on the setup value for running transcoder experiments.
+// ///
+// /// n = 1 / (u * 1.13/10)
+// pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
+//     let mut time_span = 0;
+//     let mut map = HashMap::new();
+//     // n: number of video jobs per second
+//     map.insert(1, 1);
+//     map.insert(2, 6);
+//     map.insert(3, 11);
+//     map.insert(4, 23);
+//     map.insert(5, 57);
+//     map.insert(6, 111);
+//
+//     // if setup_val <= 3 {
+//     // maps to milli second
+//     time_span = 1_000 / map.remove(&setup_val).unwrap();
+//     println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
+//     // } else if 3 < setup_val && setup_val <= 6 {
+//     //     // maps to micro second
+//     //     time_span = 1_000_000 / map.remove(&setup_val).unwrap();
+//     //     println!("setup: {:?} maps to time span: {:?} microsecond", setup_val, time_span);
+//     // } else {
+//     //     println!("setup value doesn't match to a valid param");
+//     // }
+//
+//     Some(time_span as u128)
+// }
+
 /// Return the time span between submitting jobs to the faktory job queue
 /// based on the setup value for running transcoder experiments.
 ///
-/// n = 1 / (u * 1.13/10)
-pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
-    let mut time_span = 0;
-    let mut map = HashMap::new();
-    // n: number of video jobs per second
-    map.insert(1, 1);
-    map.insert(2, 6);
-    map.insert(3, 11);
-    map.insert(4, 23);
-    map.insert(5, 57);
-    map.insert(6, 111);
-
-    // if setup_val <= 3 {
-    // maps to milli second
-    time_span = 1_000 / map.remove(&setup_val).unwrap();
-    println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
-    // } else if 3 < setup_val && setup_val <= 6 {
-    //     // maps to micro second
-    //     time_span = 1_000_000 / map.remove(&setup_val).unwrap();
-    //     println!("setup: {:?} maps to time span: {:?} microsecond", setup_val, time_span);
-    // } else {
-    //     println!("setup value doesn't match to a valid param");
-    // }
-
-    Some(time_span as u128)
-}
-
-/// Return the time span between submitting jobs to the faktory job queue
-/// based on the setup value for running transcoder experiments.
-///
-/// We configure the number of users per setup: 10, 20, 50, 100, 150, 200. We
+/// We configure the number of users per setup: 10, 50, 100, 200, 500, 1000. We
 /// calculate the time duration between submitted jobs as follows:
-///     jobs_submitted_per_second = (number_of_users * 12MB/second) / video_unit [10MB]
+///     jobs_submitted_per_second = (number_of_users * 1.13MB/second) / video_unit [10MB]
 ///     duration = 1 second [1000 milliseconds] / jobs_submitted_per_second
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
     map.insert(1, 10);
-    map.insert(2, 20);
-    map.insert(3, 40);
-    map.insert(4, 80);
-    map.insert(5, 100);
-    map.insert(6, 150);
+    map.insert(2, 50);
+    map.insert(3, 100);
+    map.insert(4, 200);
+    map.insert(5, 500);
+    map.insert(6, 1000);
 
-    let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 12 / 10;
+    let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 1.13 / 10;
     let time_span = 1_000 / jobs_submitted_per_second;
     println!(
         "setup: {:?} maps to time span: {:?} millisecond",
