@@ -118,33 +118,29 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
 /// Return the time span between submitting jobs to the faktory job queue
 /// based on the setup value for running transcoder experiments.
 ///
-/// 50 videos per second -- 1% pktgen sending rate
-/// 100 videos per second -- 2% pktgen sending rate
-/// 500 videos per second -- 10% pktgen sending rate
-/// 1000 videos per second -- 20% pktgen sending rate
-/// 2500 videos per second -- 50% pktgen sending rate
-/// 5000 videos per second -- 100% pktgen sending rate
+/// n = 1 / (u * 1.13/10)
 pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut time_span = 0;
     let mut map = HashMap::new();
-    map.insert(1, 50);
-    map.insert(2, 100);
-    map.insert(3, 500);
-    map.insert(4, 1000);
-    map.insert(5, 2500);
-    map.insert(6, 5000);
+    // n: number of video jobs per second
+    map.insert(1, 1);
+    map.insert(2, 6);
+    map.insert(3, 11);
+    map.insert(4, 23);
+    map.insert(5, 57);
+    map.insert(6, 111);
 
-    if setup_val <= 3 {
-        // maps to milli second
-        time_span = 1_000 / map.remove(&setup_val).unwrap();
-        println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
-    } else if 3 < setup_val && setup_val <= 6 {
-        // maps to micro second
-        time_span = 1_000_000 / map.remove(&setup_val).unwrap();
-        println!("setup: {:?} maps to time span: {:?} microsecond", setup_val, time_span);
-    } else {
-        println!("setup value doesn't match to a valid param");
-    }
+    // if setup_val <= 3 {
+    // maps to milli second
+    time_span = 1_000 / map.remove(&setup_val).unwrap();
+    println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
+    // } else if 3 < setup_val && setup_val <= 6 {
+    //     // maps to micro second
+    //     time_span = 1_000_000 / map.remove(&setup_val).unwrap();
+    //     println!("setup: {:?} maps to time span: {:?} microsecond", setup_val, time_span);
+    // } else {
+    //     println!("setup value doesn't match to a valid param");
+    // }
 
     Some(time_span as u128)
 }
