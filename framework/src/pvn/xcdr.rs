@@ -154,15 +154,22 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
 ///     duration = 1 second [1000 milliseconds] / jobs_submitted_per_second
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
-    map.insert(1, 10);
-    map.insert(2, 50);
-    map.insert(3, 100);
-    map.insert(4, 200);
-    map.insert(5, 500);
-    map.insert(6, 1000);
+    // map.insert(1, 10);
+    // map.insert(2, 50);
+    // map.insert(3, 100);
+    // map.insert(4, 200);
+    // map.insert(5, 500);
+    // map.insert(6, 1000);
+    // let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 1.13 / 10;
+    // let time_span = 1_000 / jobs_submitted_per_second;
 
-    let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 1.13 / 10;
-    let time_span = 1_000 / jobs_submitted_per_second;
+    map.insert(1, 1);
+    map.insert(2, 6);
+    map.insert(3, 11);
+    map.insert(4, 23);
+    map.insert(5, 57);
+    map.insert(6, 111);
+    let time_span = 1_000 / map.remove(&setup_val).unwrap();
     println!(
         "setup: {:?} maps to time span: {:?} millisecond",
         setup_val, time_span as u128

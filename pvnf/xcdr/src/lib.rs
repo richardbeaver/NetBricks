@@ -29,8 +29,6 @@ use std::time::{Duration, Instant};
 
 pub mod utils;
 
-// const CONVERSION_FACTOR: f64 = 1_000_000_000.;
-
 pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
