@@ -260,34 +260,37 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
             }
 
             if now.elapsed().as_secs() >= param.expr_time && metric_exec {
-                println!("pkt count {:?}", pkt_count);
-                // let mut total_duration = Duration::new(0, 0);
-                let total_time1 = Duration::new(0, 0);
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    w2.len(),
-                    stop_ts_tcp.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
-                    stop_ts_tcp.len(),
-                    actual_stop_ts.len()
-                );
+                if param.inst {
+                    println!("pkt count {:?}", pkt_count);
+                    // let mut total_duration = Duration::new(0, 0);
+                    let total_time1 = Duration::new(0, 0);
+                    let w1 = t1_2.lock().unwrap();
+                    let w2 = t2_2.lock().unwrap();
+                    println!(
+                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                        w1.len(),
+                        w2.len(),
+                        stop_ts_tcp.len(),
+                    );
+                    let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
+                    let num = actual_stop_ts.len();
+                    println!(
+                        "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
+                        stop_ts_tcp.len(),
+                        actual_stop_ts.len()
+                    );
 
-                println!("Latency results start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    tmp_results.push(since_the_epoch.as_nanos());
+                    println!("Latency results start: {:?}", num);
+                    let mut tmp_results = Vec::<u128>::with_capacity(num);
+                    for i in 0..num {
+                        let stop = actual_stop_ts.get(&i).unwrap();
+                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                        tmp_results.push(since_the_epoch.as_nanos());
+                    }
+                    compute_stat(tmp_results);
+                    println!("\nLatency results end",);
                 }
-                compute_stat(tmp_results);
-                println!("\nLatency results end",);
+
                 metric_exec = false;
             }
         })
