@@ -42,6 +42,7 @@ impl Acl {
 
 pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<Acl>) -> CompositionBatch {
     // Measurement code
+    let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
 
     // pkt count
     let mut pkt_count = 0;
@@ -61,8 +62,10 @@ pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<A
             if pkt_count > NUM_TO_IGNORE {
                 let now = Instant::now();
                 let mut w = start1.lock().unwrap();
+                if param.inst {
+                    w.push(now);
+                }
                 // println!("START insert for pkt count {:?}: {:?}", pkt_count, now);
-                w.push(now);
             }
         })
         .parse::<MacHeader>()
@@ -85,7 +88,7 @@ pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<A
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == SHORT_MEASURE_TIME {
+            if now.elapsed().as_secs() == SHORT_MEASURE_TIME && param.inst {
                 // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
                 let now = Instant::now();
                 // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
@@ -114,7 +117,9 @@ pub fn acl_match<T: 'static + Batch<Header = NullHeader>>(parent: T, acls: Vec<A
                 } else {
                     let now = Instant::now();
                     // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
-                    stop_ts.push(now);
+                    if param.inst {
+                        stop_ts.push(now);
+                    }
                 }
             }
 
