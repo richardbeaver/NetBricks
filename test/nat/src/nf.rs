@@ -99,7 +99,7 @@ pub fn nat<T: 'static + Batch<Header = NullHeader>>(
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() == SHORT_MEASURE_TIMEi && param.inst {
+            if now.elapsed().as_secs() == SHORT_MEASURE_TIME && param.inst {
                 // if pkt_count == TOTAL_MEASURED_PKT + NUM_TO_IGNORE {
                 let now = Instant::now();
                 // println!("STOP pkt # {:?}, stop time {:?}", pkt_count, now);
