@@ -16,9 +16,11 @@ use self::utils::{get_server_name, on_frame, ordered_validate, tlsf_update, unor
 use e2d2::allocators::CacheAligned;
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
+use e2d2::operators::merge;
 use e2d2::operators::{Batch, CompositionBatch, ReceiveBatch};
 use e2d2::pvn::measure::*;
 use e2d2::scheduler::Scheduler;
+
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::cmp::Ordering;
@@ -42,9 +44,8 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
     // create a pipeline for each port
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| validator(ReceiveBatch::new(port.clone())).send(port.clone()))
+        .map(|port| validator(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
-
     println!("Running {} pipelines", pipelines.len());
 
     // schedule pipelines
@@ -63,7 +64,11 @@ pub fn validator_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>,
 /// smoltcp](https://github.com/m-labs/smoltcp/blob/master/src/storage/assembler.rs) and [ring
 /// buffer](https://github.com/m-labs/smoltcp/blob/master/src/storage/ring_buffer.rs#L238-L333). 2.
 /// Store packets that could be part of the TLS handshake (that we care about).
-pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
+// pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T)
+pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+    parent: T,
+    sched: &mut S,
+) -> CompositionBatch {
     let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let mut metric_exec = true;
 
@@ -92,12 +97,14 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
     let stop_ts_non_tcp = Arc::new(Mutex::new(HashMap::<usize, Instant>::with_capacity(
         TOTAL_MEASURED_PKT + EPSILON,
     )));
-    let mut stop_ts_tcp: Vec<Instant> = Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON);
+    let mut stop_ts_tcp = Arc::new(Mutex::new(Vec::with_capacity(TOTAL_MEASURED_PKT + EPSILON)));
 
     let t1_1 = Arc::clone(&start_ts_1);
     let t1_2 = Arc::clone(&start_ts_1);
     let t2_1 = Arc::clone(&stop_ts_non_tcp);
     let t2_2 = Arc::clone(&stop_ts_non_tcp);
+    let t3_1 = Arc::clone(&stop_ts_tcp);
+    let t3_2 = Arc::clone(&stop_ts_tcp);
 
     let now = Instant::now();
 
@@ -139,53 +146,48 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                     matched = 1
                 } else {
                     if pkt_count > NUM_TO_IGNORE {
-                        let end = Instant::now();
+                        let mut w = t2_1.lock().unwrap();
                         if param.inst {
-                            stop_ts_tcp.push(end);
+                            w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
                         }
                     }
                     matched = 2
                 }
 
-                if now.elapsed().as_secs() >= param.expr_time && latency_exec {
-                    // perf of XCDR
-                    println!("Pivot/span: {:?}", pivot / time_span);
-                    let w = latv_1.lock().unwrap();
-                    println!("Metric: {:?}", w);
+                if now.elapsed().as_secs() >= param.expr_time && metric_exec {
+                    if param.inst {
+                        println!("pkt count {:?}", pkt_count);
+                        // let mut total_duration = Duration::new(0, 0);
+                        let total_time1 = Duration::new(0, 0);
+                        let w1 = t1_2.lock().unwrap();
+                        let w2 = t2_2.lock().unwrap();
+                        let w3 = t3_2.lock().unwrap();
+                        println!(
+                            "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                            w1.len(),
+                            w2.len(),
+                            w3.len(),
+                        );
+                        let actual_stop_ts = merge_ts(pkt_count - 1, w3.clone(), w2.clone());
+                        let num = actual_stop_ts.len();
+                        println!(
+                            "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
+                            w3.len(),
+                            actual_stop_ts.len()
+                        );
 
-                    println!("pkt count {:?}", pkt_count);
-                    let w1 = t1_2.lock().unwrap();
-                    let w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        stop_ts_not_matched.len(),
-                        w2.len(),
-                    );
-                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                    let num = actual_stop_ts.len();
-                    println!(
-                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                        w2.len(),
-                        actual_stop_ts.len()
-                    );
-                    println!("Latency results start: {:?}", num);
-                    let mut tmp_results = Vec::<u128>::with_capacity(num);
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                        tmp_results.push(since_the_epoch.as_nanos());
+                        println!("Latency results start: {:?}", num);
+                        let mut tmp_results = Vec::<u128>::with_capacity(num);
+                        for i in 0..num {
+                            let stop = actual_stop_ts.get(&i).unwrap();
+                            let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                            tmp_results.push(since_the_epoch.as_nanos());
+                        }
+                        compute_stat(tmp_results);
+                        println!("\nLatency results end",);
                     }
-                    compute_stat(tmp_results);
-                    println!("\nLatency results end",);
-                    latency_exec = false;
-                }
 
-                if pkt_count > NUM_TO_IGNORE && matched == 0 {
-                    let end = Instant::now();
-                    if xcdr_param.inst {
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
+                    metric_exec = false;
                 }
 
                 matched
@@ -323,9 +325,9 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
             }
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_3.lock().unwrap();
+                let mut w = t3_1.lock().unwrap();
                 let end = Instant::now();
-                if xcdr_param.inst {
+                if param.inst {
                     w.push(end);
                 }
             }
