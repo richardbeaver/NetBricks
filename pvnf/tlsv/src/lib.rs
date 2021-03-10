@@ -102,18 +102,17 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
     let now = Instant::now();
 
     // group packets into MAC, TCP and UDP packet.
-    parent
-        .transform(box move |p| {
+    let mut groups = parent
+        .transform(box move |_| {
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
-                let start = Instant::now();
+                let end = Instant::now();
                 if param.inst {
-                    w.push(start);
+                    w.push(end);
                 }
             }
-            p.get_mut_header();
         })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
@@ -124,79 +123,154 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                 None => fake_flow(),
             }
         })
+        .group_by(
+            3,
+            box move |p| {
+                pkt_count += 1;
+                let f = p.read_metadata();
+
+                // 0 means the packet doesn't match RDR or P2P
+                let mut matched = 0;
+                // NOTE: the following ip addr and port are hardcode based on the trace we are
+                // replaying
+
+                // Match TLS packets to group 1 and XCDR packets to group 2, the rest to group 0
+                if f.proto == 6 {
+                    matched = 1
+                } else {
+                    if pkt_count > NUM_TO_IGNORE {
+                        let end = Instant::now();
+                        if param.inst {
+                            stop_ts_tcp.push(end);
+                        }
+                    }
+                    matched = 2
+                }
+
+                if now.elapsed().as_secs() >= param.expr_time && latency_exec {
+                    // perf of XCDR
+                    println!("Pivot/span: {:?}", pivot / time_span);
+                    let w = latv_1.lock().unwrap();
+                    println!("Metric: {:?}", w);
+
+                    println!("pkt count {:?}", pkt_count);
+                    let w1 = t1_2.lock().unwrap();
+                    let w2 = t2_2.lock().unwrap();
+                    println!(
+                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
+                        w1.len(),
+                        stop_ts_not_matched.len(),
+                        w2.len(),
+                    );
+                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
+                    let num = actual_stop_ts.len();
+                    println!(
+                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
+                        w2.len(),
+                        actual_stop_ts.len()
+                    );
+                    println!("Latency results start: {:?}", num);
+                    let mut tmp_results = Vec::<u128>::with_capacity(num);
+                    for i in 0..num {
+                        let stop = actual_stop_ts.get(&i).unwrap();
+                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
+                        tmp_results.push(since_the_epoch.as_nanos());
+                    }
+                    compute_stat(tmp_results);
+                    println!("\nLatency results end",);
+                    latency_exec = false;
+                }
+
+                if pkt_count > NUM_TO_IGNORE && matched == 0 {
+                    let end = Instant::now();
+                    if xcdr_param.inst {
+                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
+                    }
+                }
+
+                matched
+            },
+            sched,
+        );
+
+    let tlsv_pipe = groups
+        .get_group(1)
+        .unwrap()
+        .metadata(box move |p| {
+            let flow = p.get_header().flow().unwrap();
+            flow
+        })
         .parse::<TcpHeader>()
         .transform(box move |p| {
-            let mut matched = false;
             let flow = p.read_metadata();
+            let rev_flow = flow.reverse_flow();
+            let _seq = p.get_header().seq_num();
+            let _tcph = p.get_header();
+            let _payload_size = p.payload_size();
 
-            if flow.proto == 6 {
-                matched = true;
-            }
-
-            if matched {
-                let rev_flow = flow.reverse_flow();
-                let seq = p.get_header().seq_num();
-                let payload_size = p.payload_size();
-
-                if !unsafe_connection.contains(&flow) {
-                    if payload_cache.contains_key(&flow) {
-                        // The rest of the TLS server hello handshake should be captured here.
-                        match seq.cmp(seqnum_map.get(&flow).unwrap()) {
+            // FIXME: The else part should be written as a filter and it should exec before all these..
+            if !unsafe_connection.contains(flow) {
+                // check if the flow is recognized
+                if payload_cache.contains_key(flow) {
+                    // The rest of the TLS server hello handshake should be captured here.
+                    // Check if this packet is not expected, ie, is a out of order segment.
+                    match _seq.cmp(seqnum_map.get(&flow).unwrap()) {
+                        Ordering::Equal => {
                             // We received an expected packet
-                            Ordering::Equal => {
-                                tlsf_update(payload_cache.entry(*flow), &p.get_payload());
-                                seqnum_map.entry(*flow).and_modify(|e| {
-                                    *e += payload_size as u32;
-                                });
-                            }
+                            //debug!("{:?}", p.get_payload());
+                            tlsf_update(payload_cache.entry(*flow), &p.get_payload());
+                            seqnum_map.entry(*flow).and_modify(|e| {
+                                *e += _payload_size as u32;
+                            });
+                        }
+                        Ordering::Greater => {
                             // We received a out-of-order TLS segment
-                            Ordering::Greater => {
-                                // We need to check if we should update the entry in the tmp payload cache
-                                if tmp_payload_cache.contains_key(&flow) {
-                                    // Check if we should update the entry in the tmp payload cache
-                                    let (_, entry_expected_seqno) = *tmp_seqnum_map.get(&flow).unwrap();
-                                    if seq == entry_expected_seqno {
-                                        tlsf_update(tmp_payload_cache.entry(*flow), &p.get_payload());
-                                        tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
-                                            *entry_expected_seqno += payload_size as u32;
-                                        });
-                                    }
+                            // We need to check if we should update the entry in the tmp payload cache
+                            if tmp_payload_cache.contains_key(flow) {
+                                // Check if we should update the entry in the tmp payload cache
+                                let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
+                                if _seq == entry_expected_seqno {
+                                    tlsf_update(tmp_payload_cache.entry(*flow), &p.get_payload());
+                                    tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
+                                        *entry_expected_seqno += _payload_size as u32;
+                                    });
                                 } else {
-                                    tmp_seqnum_map.insert(*flow, (seq, seq + payload_size as u32));
-                                    tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                                 }
-                            }
-                            Ordering::Less => {
-                                debug!("Oops: pkt seq # is even smaller then the expected #");
-                                // I think we need to remove the unrelated packets
+                            } else {
+                                tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
+                                tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
                             }
                         }
-                    } else {
-                        match on_frame(&p.get_payload()) {
-                            Some((handshake, _)) => {
-                                match handshake.payload {
-                                    ClientHello(_) => {
-                                        let server_name = match get_server_name(&p.get_payload()) {
-                                            Some(n) => n,
-                                            None => {
-                                                // FIXME: tmp hack
-                                                let name_ref =
-                                                    webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-                                                webpki::DNSName::from(name_ref)
-                                            }
-                                        };
-                                        name_cache
-                                            .entry(rev_flow)
-                                            .and_modify(|e| *e = server_name.clone())
-                                            .or_insert(server_name);
-                                    }
-                                    ServerHello(_) => {
-                                        seqnum_map.insert(*flow, seq + payload_size as u32);
-                                        payload_cache.insert(*flow, p.get_payload().to_vec());
-                                    }
-                                    ClientKeyExchange(_) => {
-                                        let dns_name = name_cache.remove(&rev_flow);
-                                        if let Some(name) = dns_name {
+                        Ordering::Less => {}
+                    }
+                } else {
+                    match on_frame(&p.get_payload()) {
+                        Some((handshake, _)) => {
+                            match handshake.payload {
+                                ClientHello(_) => {
+                                    let server_name = match get_server_name(&p.get_payload()) {
+                                        Some(n) => n,
+                                        None => {
+                                            // FIXME: tmp hack
+                                            let name_ref =
+                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            webpki::DNSName::from(name_ref)
+                                        }
+                                    };
+                                    name_cache
+                                        .entry(rev_flow)
+                                        .and_modify(|e| *e = server_name.clone())
+                                        .or_insert(server_name);
+                                }
+                                ServerHello(_) => {
+                                    // capture the sequence number
+                                    seqnum_map.insert(*flow, _seq + _payload_size as u32);
+                                    payload_cache.insert(*flow, p.get_payload().to_vec());
+                                }
+                                ClientKeyExchange(_) => {
+                                    let dns_name = name_cache.remove(&rev_flow);
+                                    match dns_name {
+                                        Some(name) => {
                                             if tmp_payload_cache.contains_key(&rev_flow) {
                                                 unordered_validate(
                                                     name,
@@ -219,34 +293,23 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                                                 )
                                             }
                                         }
+                                        None => {} //eprintln!("We are missing the dns name from the client hello",),
                                     }
-                                    _ => {} //info!("Other kinds of payload",),
                                 }
+                                _ => {} //eprintln!("Other kinds of payload",),
                             }
-                            None => {} //info!("Get none for matching payload",),
                         }
-                    }
-                } else {
-                    // Disabled for now, we can enable it when we are finished.
-
-                    // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
-                    // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
-                    // let _ = unsafe_connection.take(flow);
-                    // let tcph = p.get_mut_header();
-                    // tcph.set_rst_flag();
-                }
-
-                if pkt_count > NUM_TO_IGNORE {
-                    let end = Instant::now();
-                    if param.inst {
-                        stop_ts_tcp.push(end);
+                        None => {} // eprintln!("Get none for matching payload",),
                     }
                 }
-            } else if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
-                if param.inst {
-                    w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
-                }
+            } else {
+                // Disabled for now, we can enable it when we are finished.
+
+                // info!("Pkt #{} belong to a unsafe flow!\n", _seq);
+                // info!("{:?} is marked as unsafe connection so we have to reset\n", flow);
+                // let _ = unsafe_connection.take(flow);
+                // let tcph = p.get_mut_header();
+                // tcph.set_rst_flag();
             }
 
             pkt_count += 1;
@@ -259,40 +322,16 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>>(parent: T) -> Composit
                 );
             }
 
-            if now.elapsed().as_secs() >= param.expr_time && metric_exec {
-                if param.inst {
-                    println!("pkt count {:?}", pkt_count);
-                    // let mut total_duration = Duration::new(0, 0);
-                    let total_time1 = Duration::new(0, 0);
-                    let w1 = t1_2.lock().unwrap();
-                    let w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        w2.len(),
-                        stop_ts_tcp.len(),
-                    );
-                    let actual_stop_ts = merge_ts(pkt_count - 1, stop_ts_tcp.clone(), w2.clone());
-                    let num = actual_stop_ts.len();
-                    println!(
-                        "stop ts tcp len: {:?}, actual_stop_ts len: {:?}",
-                        stop_ts_tcp.len(),
-                        actual_stop_ts.len()
-                    );
-
-                    println!("Latency results start: {:?}", num);
-                    let mut tmp_results = Vec::<u128>::with_capacity(num);
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                        tmp_results.push(since_the_epoch.as_nanos());
-                    }
-                    compute_stat(tmp_results);
-                    println!("\nLatency results end",);
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_3.lock().unwrap();
+                let end = Instant::now();
+                if xcdr_param.inst {
+                    w.push(end);
                 }
-
-                metric_exec = false;
             }
         })
-        .compose()
+        .reset()
+        .compose();
+
+    merge(vec![groups.get_group(0).unwrap().compose(), tlsv_pipe]).compose()
 }
