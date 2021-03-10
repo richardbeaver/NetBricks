@@ -41,7 +41,7 @@ export examples=(
 	# test/co-tlsv-rdr
 	# test/co-rdr-p2p
 	# test/co-rdr-xcdr
-	# test/co-tlsv-p2p
+	test/co-tlsv-p2p
 	# test/co-tlsv-xcdr
 	# test/co-xcdr-p2p
 )
