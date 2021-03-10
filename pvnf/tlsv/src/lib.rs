@@ -131,7 +131,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
             }
         })
         .group_by(
-            3,
+            2,
             box move |p| {
                 pkt_count += 1;
                 let f = p.read_metadata();
@@ -143,7 +143,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 
                 // Match TLS packets to group 1 and XCDR packets to group 2, the rest to group 0
                 if f.proto == 6 {
-                    matched = 1
+                    matched = 1;
                 } else {
                     if pkt_count > NUM_TO_IGNORE {
                         let mut w = t2_1.lock().unwrap();
@@ -151,7 +151,6 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                             w.insert(pkt_count - NUM_TO_IGNORE, Instant::now());
                         }
                     }
-                    matched = 2
                 }
 
                 if now.elapsed().as_secs() >= param.expr_time && metric_exec {
