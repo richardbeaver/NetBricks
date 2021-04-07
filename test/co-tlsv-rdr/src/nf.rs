@@ -10,8 +10,11 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tlsv::validator;
 
-pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>>(parent: T) -> CompositionBatch {
-    let tlsv = validator(parent);
+pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
+    parent: T,
+    sched: &mut S,
+) -> CompositionBatch {
+    let tlsv = validator(parent, sched);
 
     let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();

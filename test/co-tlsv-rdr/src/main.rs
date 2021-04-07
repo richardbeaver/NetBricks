@@ -35,7 +35,7 @@ where
 
     let pipelines: Vec<_> = ports
         .iter()
-        .map(|port| tlsv_rdr_chain(ReceiveBatch::new(port.clone())).send(port.clone()))
+        .map(|port| tlsv_rdr_chain(ReceiveBatch::new(port.clone()), sched).send(port.clone()))
         .collect();
     println!("Running {} pipelines", pipelines.len());
     for pipeline in pipelines {
