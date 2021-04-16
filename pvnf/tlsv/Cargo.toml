@@ -10,8 +10,8 @@ rand = "0.8.0"
 fnv = "*"
 twox-hash = "*"
 rustls = { version = "0.19", features = ["dangerous_configuration"] }
-webpki = "*"
-webpki-roots = "*"
+webpki = "0.21.0"
+webpki-roots = "0.21.0"
 log = "0.4"
 
 [features]
