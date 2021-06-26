@@ -37,6 +37,7 @@ cscope*
 test/*/out
 test/*/output
 
+.DS_Store
 
 torrent_files/*
 experiments
