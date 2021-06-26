@@ -44,4 +44,6 @@ export examples=(
 	test/co-tlsv-p2p
 	test/co-tlsv-xcdr
 	test/co-xcdr-p2p
+	# New coresident NFs
+	test/co-rdr-xcdr-p2p
 )
