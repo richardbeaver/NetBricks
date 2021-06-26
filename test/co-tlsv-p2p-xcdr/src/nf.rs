@@ -9,6 +9,7 @@ use e2d2::utils::Flow;
 use faktory::{Job, Producer};
 use p2p::utils::*;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -21,7 +22,6 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
     sched: &mut S,
 ) -> CompositionBatch {
     // TLSV setup
-    //
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
     // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
@@ -37,23 +37,23 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
     let mut cert_count = 0;
 
     // P2P setup
-    let (p2p_setup, p2p_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let p2p_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
     let mut workload_exec = true;
 
     // XCDR setup
-    let latencyv = Arc::new(Mutex::new(Vec::<u128>::new()));
-    let latv_1 = Arc::clone(&latencyv);
-    let latv_2 = Arc::clone(&latencyv);
-    println!("Latency vec uses millisecond");
     let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
     println!(
         "Setup: {:?} port: {:?},  expr_num: {:?}",
         xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
     );
+    let latencyv = Arc::new(Mutex::new(Vec::<u128>::new()));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
 
     // faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
@@ -83,6 +83,8 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
     let t2_3 = Arc::clone(&stop_ts_matched);
+    let t2_4 = Arc::clone(&stop_ts_matched);
+    let t2_5 = Arc::clone(&stop_ts_matched);
 
     // Pkt counter. We keep track of every packet.
     let mut pkt_count = 0;
@@ -99,9 +101,6 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .parse::<MacHeader>()
@@ -157,7 +156,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                     matched = 3
                 }
 
-                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
+                if now.elapsed().as_secs() >= p2p_param.expr_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -188,9 +187,6 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
 
                 if pkt_count > NUM_TO_IGNORE && matched == 0 {
                     let end = Instant::now();
-                    if inst {
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
                 }
 
                 matched
@@ -213,31 +209,33 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 // check if the flow is recognized
                 if payload_cache.contains_key(flow) {
                     // Check if this packet is not expected, ie, is a out of order segment.
-                    if _seq == *seqnum_map.get(flow).unwrap() {
-                        // We received an expected packet
-                        tlsf_update(*flow, payload_cache.entry(*flow), &p.get_payload());
-                        seqnum_map.entry(*flow).and_modify(|e| {
-                            *e = *e + _payload_size as u32;
-                            ()
-                        });
-                    } else if _seq > *seqnum_map.get(flow).unwrap() {
-                        // We received a out-of-order TLS segment
-                        // We need to check if we should update the entry in the tmp payload cache
-                        if tmp_payload_cache.contains_key(flow) {
-                            // Check if we should update the entry in the tmp payload cache
-                            let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
-                            if _seq == entry_expected_seqno {
-                                tlsf_update(*flow, tmp_payload_cache.entry(*flow), &p.get_payload());
-                                tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
-                                    *entry_expected_seqno = *entry_expected_seqno + _payload_size as u32;
-                                });
-                            } else {
-                            }
-                        } else {
-                            tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
-                            tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
+                    match _seq.cmp(seqnum_map.get(&flow).unwrap()) {
+                        Ordering::Equal => {
+                            // We received an expected packet
+                            tlsf_update(payload_cache.entry(*flow), &p.get_payload());
+                            seqnum_map.entry(*flow).and_modify(|e| {
+                                *e += _payload_size as u32;
+                            });
                         }
-                    } else {
+                        Ordering::Greater => {
+                            // We received a out-of-order TLS segment
+                            // We need to check if we should update the entry in the tmp payload cache
+                            if tmp_payload_cache.contains_key(flow) {
+                                // Check if we should update the entry in the tmp payload cache
+                                let (_, entry_expected_seqno) = *tmp_seqnum_map.get(flow).unwrap();
+                                if _seq == entry_expected_seqno {
+                                    tlsf_update(tmp_payload_cache.entry(*flow), &p.get_payload());
+                                    tmp_seqnum_map.entry(*flow).and_modify(|(_, entry_expected_seqno)| {
+                                        *entry_expected_seqno += _payload_size as u32;
+                                    });
+                                } else {
+                                }
+                            } else {
+                                tmp_seqnum_map.insert(*flow, (_seq, _seq + _payload_size as u32));
+                                tmp_payload_cache.insert(*flow, p.get_payload().to_vec());
+                            }
+                        }
+                        Ordering::Less => {}
                     }
                 } else {
                     match on_frame(&p.get_payload()) {
@@ -266,24 +264,36 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                 ClientKeyExchange(_) => {
                                     let dns_name = name_cache.remove(&rev_flow);
                                     match dns_name {
-                                        Some(name) => do_client_key_exchange(
-                                            name,
-                                            flow,
-                                            &rev_flow,
-                                            &mut cert_count,
-                                            &mut unsafe_connection,
-                                            &mut tmp_payload_cache,
-                                            &mut tmp_seqnum_map,
-                                            &mut payload_cache,
-                                            &mut seqnum_map,
-                                        ),
-                                        None => eprintln!("We are missing the dns name from the client hello",),
+                                        Some(name) => {
+                                            if tmp_payload_cache.contains_key(&rev_flow) {
+                                                unordered_validate(
+                                                    name,
+                                                    &flow,
+                                                    &mut cert_count,
+                                                    &mut unsafe_connection,
+                                                    &mut tmp_payload_cache,
+                                                    &mut tmp_seqnum_map,
+                                                    &mut payload_cache,
+                                                    &mut seqnum_map,
+                                                )
+                                            } else {
+                                                ordered_validate(
+                                                    name,
+                                                    &flow,
+                                                    &mut cert_count,
+                                                    &mut unsafe_connection,
+                                                    &mut payload_cache,
+                                                    &mut seqnum_map,
+                                                )
+                                            }
+                                        }
+                                        None => {} // eprintln!("We are missing the dns name from the client hello",),
                                     }
                                 }
-                                _ => eprintln!("Other kinds of payload",),
+                                _ => {} //eprintln!("Other kinds of payload",),
                             }
                         }
-                        None => eprintln!("Get none for matching payload",),
+                        None => {} //eprintln!("Get none for matching payload",),
                     }
                 }
             } else {
@@ -309,9 +319,6 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()
@@ -329,27 +336,29 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 match &*p2p_type {
                     // use our shell wrapper to interact with qBitTorrent
                     // FIXME: it would be nicer if we can employ a Rust crate for this
-                    "app_p2p-controlled" => {
+                    "app_p2p-controlled" | "chain_tlsv_p2p" | "chain_rdr_p2p" | "chain_xcdr_p2p" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, p2p_setup.clone());
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
-                        workload_exec = false;
+                        // workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
-                        match rt.block_on(add_all_torrents(
-                            num_of_torrents,
-                            workload.clone(),
-                            torrents_dir.to_string(),
-                        )) {
+                        match rt.block_on(add_all_torrents(num_of_torrents, workload, torrents_dir.to_string())) {
                             Ok(_) => println!("Add torrents success"),
                             Err(e) => println!("Add torrents failed with {:?}", e),
                         }
@@ -372,11 +381,8 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             // println!("pkt count {:?}", pkt_count);
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_4.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()
@@ -415,11 +421,8 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_5.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()

@@ -10,7 +10,7 @@ pub use self::deparsed_batch::DeparsedBatch;
 pub use self::filter_batch::FilterBatch;
 use self::filter_batch::FilterFn;
 pub use self::group_by::*;
-use self::iterator::BatchIterator;
+pub use self::iterator::BatchIterator;
 pub use self::map_batch::MapBatch;
 use self::map_batch::MapFn;
 pub use self::merge_batch::MergeBatch;

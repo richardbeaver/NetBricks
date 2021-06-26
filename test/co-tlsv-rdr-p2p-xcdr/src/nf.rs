@@ -3,22 +3,27 @@ use e2d2::operators::{merge, Batch, CompositionBatch};
 use e2d2::pvn::measure::*;
 use e2d2::pvn::p2p::*;
 use e2d2::pvn::rdr::*;
+use e2d2::pvn::xcdr::*;
 use e2d2::scheduler::Scheduler;
 use e2d2::utils::Flow;
+use faktory::{Job, Producer};
+use headless_chrome::Browser;
 use p2p::utils::*;
+use rdr::utils::*;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use tlsv::utils::*;
+use tlsv::validator_tcp;
 use tokio::runtime::Runtime;
+use xcdr::utils::*;
 
 pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,
     sched: &mut S,
 ) -> CompositionBatch {
     // TLSV setup
-    //
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
     // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
@@ -34,28 +39,28 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
     let mut cert_count = 0;
 
     // P2P setup
-    let (p2p_setup, p2p_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let p2p_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
     let mut workload_exec = true;
 
     // RDR setup
-    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
+    let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
 
     // XCDR setup
-    let latencyv = Arc::new(Mutex::new(Vec::<u128>::new()));
-    let latv_1 = Arc::clone(&latencyv);
-    let latv_2 = Arc::clone(&latencyv);
-    println!("Latency vec uses millisecond");
     let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
     let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
     println!(
         "Setup: {:?} port: {:?},  expr_num: {:?}",
         xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
     );
+    let latencyv = Arc::new(Mutex::new(Vec::<u128>::new()));
+    let latv_1 = Arc::clone(&latencyv);
+    let latv_2 = Arc::clone(&latencyv);
+    println!("Latency vec uses millisecond");
 
     // faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
@@ -85,6 +90,8 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
     let t2_3 = Arc::clone(&stop_ts_matched);
+    let t2_4 = Arc::clone(&stop_ts_matched);
+    let t2_5 = Arc::clone(&stop_ts_matched);
 
     // Workloads:
     let workload_path = "/home/jethros/dev/pvn/utils/workloads/rdr_pvn_workloads/rdr_pvn_workload_5.json";
@@ -125,9 +132,6 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .parse::<MacHeader>()
@@ -151,6 +155,10 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                 let rdr_match_port = 443 as u16;
                 // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
+                let xcdr_match_src_ip = 3_232_235_524 as u32;
+                let xcdr_match_src_port = 58_111;
+                let xcdr_match_dst_ip = 2_457_012_302 as u32;
+                let xcdr_match_dst_port = 443;
 
                 // warning: borrow of packed field is unsafe and requires unsafe function or block (error E0133)
                 let src_port = f.src_port;
@@ -177,40 +185,12 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                     matched = 3
                 }
 
-                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
-                    println!("pkt count {:?}", pkt_count);
-                    let w1 = t1_2.lock().unwrap();
-                    let w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        stop_ts_not_matched.len(),
-                        w2.len(),
-                    );
-                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                    let num = actual_stop_ts.len();
-                    println!(
-                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                        w2.len(),
-                        actual_stop_ts.len()
-                    );
-                    println!("Latency results start: {:?}", num);
-                    let mut tmp_results = Vec::<u128>::with_capacity(num);
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                        tmp_results.push(since_the_epoch.as_nanos());
-                    }
-                    compute_stat(tmp_results);
-                    println!("\nLatency results end",);
+                if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec == true {
                     latency_exec = false;
                 }
 
                 if pkt_count > NUM_TO_IGNORE && matched == 0 {
                     let end = Instant::now();
-                    if inst {
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
                 }
 
                 matched
@@ -220,41 +200,7 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
 
     let tlsv = validator_tcp(groups.get_group(1).unwrap());
     let tlsv_rdr_pipe = tlsv
-        .transform(box move |_| {
-            pkt_count += 1;
-
-            if pkt_count > NUM_TO_IGNORE {
-                let mut w = t1_1.lock().unwrap();
-                let end = Instant::now();
-                if inst{
-                    w.push(end);
-                }
-            }
-        })
-        .parse::<MacHeader>()
-        .parse::<IpHeader>()
-        .metadata(box move |p| {
-             let f = p.get_header().flow();
-            match f {
-                Some(f) => f,
-                None => fake_flow(),
-            }
-        })
-        .parse::<TcpHeader>()
         .transform(box move |p| {
-            let mut matched = false;
-            let f = p.read_metadata();
-
-            let match_ip =  180_907_852_u32; // 10.200.111.76
-
-            // Because it is a TLSV RDR chain, we only consider the RDR case here
-            if f.proto == 6 && (
-                 f.src_ip == match_ip || f.dst_ip == match_ip ){
-                    matched = true
-                }
-
-            // Scheduling browsing jobs.
-            if matched {
                 // Scheduling browsing jobs.
                 // FIXME: This is not ideal as we are not actually schedule browse.
                 let cur_time = now.elapsed().as_secs() as usize;
@@ -279,21 +225,11 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
                     let end = Instant::now();
-                    if inst{
-                        w.push(end);
-                    }
                 }
-            } else if pkt_count > NUM_TO_IGNORE {
-                    // Insert the timestamp as
-                    let end = Instant::now();
-                    if inst{
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
-            }
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= expr_time && metric_exec {
+            if now.elapsed().as_secs() >= rdr_param.expr_time && metric_exec {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
@@ -303,34 +239,7 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
 
                 println!("pkt count {:?}", pkt_count);
 
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    stop_ts_not_matched.len(),
-                    w2.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                    w2.len(),
-                    actual_stop_ts.len()
-                );
-                println!("Latency results start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    tmp_results.push(since_the_epoch.as_nanos());
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
-                }
-                compute_stat(tmp_results);
-                println!("\nLatency results end",);
                 metric_exec = false;
-                // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
         }).compose();
 
@@ -346,27 +255,29 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                 match &*p2p_type {
                     // use our shell wrapper to interact with qBitTorrent
                     // FIXME: it would be nicer if we can employ a Rust crate for this
-                    "app_p2p-controlled" => {
+                    "app_p2p-controlled" | "chain_tlsv_p2p" | "chain_rdr_p2p" | "chain_xcdr_p2p" => {
                         println!("match p2p controlled before btrun");
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        // let _ = bt_run_torrents(fp_workload, num_of_torrents);
-                        let _ = bt_run_torrents(fp_workload, p2p_setup.clone());
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
-                        workload_exec = false;
+                        // workload_exec = false;
                     }
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
-                        match rt.block_on(add_all_torrents(
-                            num_of_torrents,
-                            workload.clone(),
-                            torrents_dir.to_string(),
-                        )) {
+                        match rt.block_on(add_all_torrents(num_of_torrents, workload, torrents_dir.to_string())) {
                             Ok(_) => println!("Add torrents success"),
                             Err(e) => println!("Add torrents failed with {:?}", e),
                         }
@@ -389,11 +300,8 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
             // println!("pkt count {:?}", pkt_count);
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_3.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()
@@ -432,11 +340,8 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_4.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()

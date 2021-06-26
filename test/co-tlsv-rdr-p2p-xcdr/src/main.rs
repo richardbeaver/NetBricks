@@ -5,7 +5,7 @@ extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
 
-use crate::nf::tlsv_p2p_test;
+use crate::nf::tlsv_rdr_p2p_xcdr_test;
 use e2d2::allocators::CacheAligned;
 use e2d2::config::*;
 use e2d2::interface::*;
@@ -52,7 +52,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
-        Err(f) => panic!(f.to_string()),
+        Err(f) => panic!("{}", f.to_string()),
     };
     let configuration = read_matches(&matches, &opts);
 

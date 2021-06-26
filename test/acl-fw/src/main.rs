@@ -60,7 +60,7 @@ fn main() {
     let opts = basic_opts();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
-        Err(f) => panic!(f.to_string()),
+        Err(f) => panic!("{}", f.to_string()),
     };
     let configuration = read_matches(&matches, &opts);
     let duration = configuration.duration;

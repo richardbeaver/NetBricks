@@ -13,7 +13,6 @@
 #![feature(box_syntax)]
 #![feature(min_specialization)]
 #![feature(slice_concat_ext)]
-#![feature(const_fn)]
 #![feature(ptr_internals)] // FIXME: Figure out if this is really the right thing here.
 #![feature(allocator_api)] // Used for cache alignment.
 #![feature(integer_atomics)]

@@ -20,21 +20,24 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
     sched: &mut S,
 ) -> CompositionBatch {
     // RDR setup
-    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
+    let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
 
     // XCDR setup
+    let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
+    println!(
+        "Setup: {:?} port: {:?},  expr_num: {:?}",
+        xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
+    );
     let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");
-    let (setup_val, port, expr_num, _, _) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let time_span = xcdr_retrieve_param(setup_val).unwrap();
-    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
     // P2P setup
-    let (p2p_setup, p2p_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let p2p_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -170,7 +173,7 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                     }
                 }
 
-                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
+                if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
                     let w1 = t1_2.lock().unwrap();
                     let w2 = t2_2.lock().unwrap();
@@ -244,7 +247,7 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= measure_time && metric_exec == true {
+            if now.elapsed().as_secs() >= rdr_param.expr_time && metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
@@ -282,10 +285,10 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                 let mut w = latv_2.lock().unwrap();
                 w.push(t);
 
-                let core_id = job_id % setup_val;
+                let core_id = job_id % xcdr_param.setup;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
-                append_job_faktory(pivot, c, core_id, &expr_num);
+                append_job_faktory(pivot, c, core_id, xcdr_param.expr_num);
                 // println!("job: {}, core id: {}", job_id, core_id);
 
                 cur = Instant::now();
@@ -317,9 +320,14 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                     // FIXME: it would be nicer if we can employ a Rust crate for this
                     "app_p2p-controlled" | "chain_tlsv_p2p" | "chain_rdr_p2p" | "chain_xcdr_p2p" => {
                         println!("match p2p controlled before btrun");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
+                        let p2p_torrents = p2p_read_rand_seed(
+                            num_of_torrents,
+                            p2p_param.iter.to_string(),
+                            "p2p_controlled".to_string(),
+                        )
+                        .unwrap();
 
-                        let _ = bt_run_torrents(fp_workload, p2p_setup.clone());
+                        let _ = bt_run_torrents(p2p_torrents);
 
                         println!("bt run is not blocking");
                         // workload_exec = false;
@@ -327,7 +335,8 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                     // use the transmission rpc for general and ext workload
                     "app_p2p" | "app_p2p-ext" => {
                         println!("match p2p general or ext ");
-                        let p2p_torrents = p2p_read_rand_seed(num_of_torrents, p2p_iter.to_string()).unwrap();
+                        let p2p_torrents =
+                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
@@ -342,6 +351,7 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                     }
                     _ => println!("Current P2P type: {:?} doesn't match to any workload we know", p2p_type),
                 }
+
                 workload_exec = false;
             }
 

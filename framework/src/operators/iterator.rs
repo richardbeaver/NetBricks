@@ -3,6 +3,7 @@ use crate::interface::Packet;
 use std::cell::Cell;
 use std::marker::PhantomData;
 
+/// Packet descriptor.
 pub struct PacketDescriptor<T: EndOffset, M: Sized + Send> {
     pub packet: Packet<T, M>,
 }
@@ -18,13 +19,16 @@ pub struct PacketDescriptor<T: EndOffset, M: Sized + Send> {
 /// packets to be modified and apply this modification later. Everything about iterator invalidation is likely to change
 /// later.
 pub trait BatchIterator {
+    /// Header
     type Header: EndOffset;
+    /// Metadata
     type Metadata: Sized + Send;
 
     /// Returns the starting index for the packet batch. This allows for cases where the head of the batch is not at
     /// index 0.
     fn start(&mut self) -> usize;
 
+    /// Next payload.
     unsafe fn next_payload(&mut self, idx: usize) -> Option<PacketDescriptor<Self::Header, Self::Metadata>>;
 }
 

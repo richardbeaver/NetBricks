@@ -4,12 +4,17 @@ use e2d2::pvn::measure::*;
 use e2d2::pvn::rdr::*;
 use e2d2::pvn::xcdr::*;
 use e2d2::scheduler::Scheduler;
+use e2d2::utils::Flow;
 use faktory::{Job, Producer};
 use headless_chrome::Browser;
 use rdr::utils::*;
-use std::collections::HashMap;
+use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use tlsv::utils::*;
+use tlsv::validator_tcp;
 use xcdr::utils::*;
 
 pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
@@ -32,18 +37,21 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
     let mut cert_count = 0;
 
     // RDR setup
-    let (rdr_setup, rdr_iter, inst, measure_time) = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_setup).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_iter).unwrap();
+    let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
 
     // XCDR setup
+    let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
+    let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
+    println!(
+        "Setup: {:?} port: {:?},  expr_num: {:?}",
+        xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
+    );
     let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");
-    let (setup_val, port, expr_num, _, _) = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let time_span = xcdr_retrieve_param(setup_val).unwrap();
-    println!("Setup: {:?} port: {:?},  expr_num: {:?}", setup_val, port, expr_num);
 
     // faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
@@ -74,6 +82,7 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
     let t2_1 = Arc::clone(&stop_ts_matched);
     let t2_2 = Arc::clone(&stop_ts_matched);
     let t2_3 = Arc::clone(&stop_ts_matched);
+    let t2_4 = Arc::clone(&stop_ts_matched);
 
     // Pkt counter. We keep track of every packet.
     let mut pkt_count = 0;
@@ -114,31 +123,20 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t1_1.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let src_ip = p.get_header().src();
-            let dst_ip = p.get_header().dst();
-            let proto = p.get_header().protocol();
-
-            Some((src_ip, dst_ip, proto))
+            let flow = p.get_header().flow().unwrap();
+            flow
         })
         .parse::<TcpHeader>()
         .group_by(
             3,
             box move |p| {
                 pkt_count += 1;
-                let (src_ip, dst_ip, proto): (&u32, &u32, &u8) = match p.read_metadata() {
-                    Some((src, dst, p)) => (src, dst, p),
-                    None => (&0, &0, &0),
-                };
-                let src_port = p.get_header().src_port();
-                let dst_port = p.get_header().dst_port();
+                let f = p.read_metadata().clone();
 
                 // 0 means the packet doesn't match RDR or P2P
                 let mut matched = 0;
@@ -153,62 +151,35 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let xcdr_match_dst_port = 443;
 
                 // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
-                if *proto == 6 {
-                    if *src_ip == match_ip || *dst_ip == match_ip {
-                        if src_port == rdr_match_port || dst_port == rdr_match_port {
+                if f.proto == 6 {
+                    if f.src_ip == match_ip || f.dst_ip == match_ip {
+                        if f.src_port == rdr_match_port || f.dst_port == rdr_match_port {
                             matched = 1
                         }
                     }
-                } else if *proto == 17 {
-                    if *src_ip == xcdr_match_src_ip
-                        && src_port == xcdr_match_src_port
-                        && *dst_ip == xcdr_match_dst_ip
-                        && dst_port == xcdr_match_dst_port
+                } else if f.proto == 17 {
+                    if f.src_ip == xcdr_match_src_ip
+                        && f.src_port == xcdr_match_src_port
+                        && f.dst_ip == xcdr_match_dst_ip
+                        && f.dst_port == xcdr_match_dst_port
                     {
                         matched = 2
-                    } else if *src_ip == xcdr_match_dst_ip
-                        && src_port == xcdr_match_dst_port
-                        && *dst_ip == xcdr_match_src_ip
-                        && dst_port == xcdr_match_src_port
+                    } else if f.src_ip == xcdr_match_dst_ip
+                        && f.src_port == xcdr_match_dst_port
+                        && f.dst_ip == xcdr_match_src_ip
+                        && f.dst_port == xcdr_match_src_port
                     {
                         matched = 2
                     }
                 }
 
-                if now.elapsed().as_secs() >= measure_time && latency_exec == true {
+                if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec == true {
                     println!("pkt count {:?}", pkt_count);
-                    let w1 = t1_2.lock().unwrap();
-                    let w2 = t2_2.lock().unwrap();
-                    println!(
-                        "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                        w1.len(),
-                        stop_ts_not_matched.len(),
-                        w2.len(),
-                    );
-                    let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                    let num = actual_stop_ts.len();
-                    println!(
-                        "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                        w2.len(),
-                        actual_stop_ts.len()
-                    );
-                    println!("Latency results start: {:?}", num);
-                    let mut tmp_results = Vec::<u128>::with_capacity(num);
-                    for i in 0..num {
-                        let stop = actual_stop_ts.get(&i).unwrap();
-                        let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                        tmp_results.push(since_the_epoch.as_nanos());
-                    }
-                    compute_stat(tmp_results);
-                    println!("\nLatency results end",);
                     latency_exec = false;
                 }
 
                 if pkt_count > NUM_TO_IGNORE && matched == 0 {
                     let end = Instant::now();
-                    if inst {
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
                 }
 
                 matched
@@ -216,82 +187,38 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             sched,
         );
 
-    let tlsv = validator(groups.get_group(1).unwrap(), TcpHeader);
+    let tlsv = validator_tcp(groups.get_group(1).unwrap());
     let tlsv_rdr_pipe = tlsv
-        .transform(box move |_| {
-            pkt_count += 1;
-
-            if pkt_count > NUM_TO_IGNORE {
-                let mut w = t1_1.lock().unwrap();
-                let end = Instant::now();
-                if inst{
-                    w.push(end);
-                }
-            }
-        })
-        .parse::<MacHeader>()
-        .parse::<IpHeader>()
-        .metadata(box move |p| {
-             let f = p.get_header().flow();
-            match f {
-                Some(f) => f,
-                None => fake_flow(),
-            }
-        })
-        .parse::<TcpHeader>()
         .transform(box move |p| {
-            let mut matched = false;
-            let f = p.read_metadata();
-
-            let match_ip =  180_907_852_u32; // 10.200.111.76
-
-            // Because it is a TLSV RDR chain, we only consider the RDR case here
-            if f.proto == 6 && (
-                 f.src_ip == match_ip || f.dst_ip == match_ip ){
-                    matched = true
-                }
-
             // Scheduling browsing jobs.
-            if matched {
-                // Scheduling browsing jobs.
-                // FIXME: This is not ideal as we are not actually schedule browse.
-                let cur_time = now.elapsed().as_secs() as usize;
-                if rdr_workload.contains_key(&cur_time) {
-                    // println!("pivot {:?}", cur_time);
-                    let min = cur_time / 60;
-                    let rest_sec = cur_time % 60;
-                    if let Some(wd) = rdr_workload.remove(&cur_time) {
-                        println!("{:?} min, {:?} second", min, rest_sec);
-                        if let Some((oks, errs, timeouts, closeds, visits, elapsed)) = rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
-                                num_of_ok += oks;
-                                num_of_err += errs;
-                                num_of_timeout += timeouts;
-                                num_of_closed += closeds;
-                                num_of_visit += visits;
-                                elapsed_time.push(elapsed);
-                        };
+            // FIXME: This is not ideal as we are not actually schedule browse.
+            let cur_time = now.elapsed().as_secs() as usize;
+            if rdr_workload.contains_key(&cur_time) {
+                // println!("pivot {:?}", cur_time);
+                let min = cur_time / 60;
+                let rest_sec = cur_time % 60;
+                if let Some(wd) = rdr_workload.remove(&cur_time) {
+                    println!("{:?} min, {:?} second", min, rest_sec);
+                    if let Some((oks, errs, timeouts, closeds, visits, elapsed)) = rdr_scheduler_ng(&cur_time, &rdr_users, wd, &browser_list) {
+                            num_of_ok += oks;
+                            num_of_err += errs;
+                            num_of_timeout += timeouts;
+                            num_of_closed += closeds;
+                            num_of_visit += visits;
+                            elapsed_time.push(elapsed);
                     };
-                }
+                };
+            }
 
-                // Measurement: instrumentation to collect latency metrics
-                if pkt_count > NUM_TO_IGNORE {
-                    let mut w = t2_1.lock().unwrap();
-                    let end = Instant::now();
-                    if inst{
-                        w.push(end);
-                    }
-                }
-            } else if pkt_count > NUM_TO_IGNORE {
-                    // Insert the timestamp as
-                    let end = Instant::now();
-                    if inst{
-                        stop_ts_not_matched.insert(pkt_count - NUM_TO_IGNORE, end);
-                    }
+            // Measurement: instrumentation to collect latency metrics
+            if pkt_count > NUM_TO_IGNORE {
+                let mut w = t2_3.lock().unwrap();
+                let end = Instant::now();
             }
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= expr_time && metric_exec {
+            if now.elapsed().as_secs() >= rdr_param.expr_time && metric_exec {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
@@ -300,33 +227,6 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 println!("Metric: Browsing Time: {:?}\n", elapsed_time);
 
                 println!("pkt count {:?}", pkt_count);
-
-                let w1 = t1_2.lock().unwrap();
-                let w2 = t2_2.lock().unwrap();
-                println!(
-                    "# of start ts\n w1 {:#?}, hashmap {:#?}, # of stop ts: {:#?}",
-                    w1.len(),
-                    stop_ts_not_matched.len(),
-                    w2.len(),
-                );
-                let actual_stop_ts = merge_ts(pkt_count - 1, w2.clone(), stop_ts_not_matched.clone());
-                let num = actual_stop_ts.len();
-                println!(
-                    "stop ts matched len: {:?}, actual_stop_ts len: {:?}",
-                    w2.len(),
-                    actual_stop_ts.len()
-                );
-                println!("Latency results start: {:?}", num);
-                let mut tmp_results = Vec::<u128>::with_capacity(num);
-                for i in 0..num {
-                    let stop = actual_stop_ts.get(&i).unwrap();
-                    let since_the_epoch = stop.checked_duration_since(w1[i]).unwrap();
-                    tmp_results.push(since_the_epoch.as_nanos());
-                    // print!("{:?}, ", since_the_epoch1);
-                    // total_time1 = total_time1 + since_the_epoch1;
-                }
-                compute_stat(tmp_results);
-                println!("\nLatency results end",);
                 metric_exec = false;
                 // println!("avg processing time 1 is {:?}", total_time1 / num as u32);
             }
@@ -351,10 +251,10 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let mut w = latv_2.lock().unwrap();
                 w.push(t);
 
-                let core_id = job_id % setup_val;
+                let core_id = job_id % xcdr_param.setup;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
-                append_job_faktory(pivot, c, core_id, &expr_num);
+                append_job_faktory(pivot, c, core_id, xcdr_param.expr_num);
                 // println!("job: {}, core id: {}", job_id, core_id);
 
                 cur = Instant::now();
@@ -365,11 +265,8 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             pkt_count += 1;
 
             if pkt_count > NUM_TO_IGNORE {
-                let mut w = t2_1.lock().unwrap();
+                let mut w = t2_4.lock().unwrap();
                 let end = Instant::now();
-                if inst {
-                    w.push(end);
-                }
             }
         })
         .reset()
