@@ -107,7 +107,19 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
         "chain_xcdr_p2p" => {
             return p2p_controlled_map.remove(&param.setup);
         }
-        //
+        // coresident
+        "co_tlsv_rdr_p2p" => {
+            return p2p_controlled_map.remove(&param.setup);
+        }
+        "co_tlsv_p2p_xcdr" => {
+            return p2p_controlled_map.remove(&param.setup);
+        }
+        "co_rdr_xcdr_p2p" => {
+            return p2p_controlled_map.remove(&param.setup);
+        }
+        "co_tlsv_rdr_p2p_xcdr" => {
+            return p2p_controlled_map.remove(&param.setup);
+        }
         _ => {
             println!("\tP2P type: {:?} doesn't match to any param.", p2p_type);
             return None;
