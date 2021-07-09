@@ -1,5 +1,5 @@
 [package]
-name = "pvn-tlsv-p2p-rdr-xcdr-coexist-app"
+name = "pvn-tlsv-rdr-p2p-xcdr-coexist-app"
 version = "0.2.0"
 authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu>']
 edition = "2018"
