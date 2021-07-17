@@ -106,8 +106,11 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
@@ -389,7 +392,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
         .compose();
 
     let xcdr_pipe = groups
-        .get_group(2)
+        .get_group(3)
         .unwrap()
         .transform(box move |_| {
             // time difference

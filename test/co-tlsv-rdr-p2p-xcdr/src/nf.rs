@@ -137,12 +137,15 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
         .parse::<MacHeader>()
         .parse::<IpHeader>()
         .metadata(box move |p| {
-            let flow = p.get_header().flow().unwrap();
-            flow
+            let f = p.get_header().flow();
+            match f {
+                Some(f) => f,
+                None => fake_flow(),
+            }
         })
         .parse::<TcpHeader>()
         .group_by(
-            3,
+            4,
             box move |p| {
                 pkt_count += 1;
                 let f = p.read_metadata().clone();
