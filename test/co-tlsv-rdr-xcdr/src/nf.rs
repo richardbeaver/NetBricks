@@ -153,7 +153,10 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let xcdr_match_dst_ip = 2_457_012_302 as u32;
                 let xcdr_match_dst_port = 443;
 
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                // Match:
+                //      TLSV/RDR packets: group 1
+                //      P2P packets: group 2
+                //      rest: group 0
                 if f.proto == 6 {
                     if f.src_ip == match_ip || f.dst_ip == match_ip {
                         if f.src_port == rdr_match_port || f.dst_port == rdr_match_port {

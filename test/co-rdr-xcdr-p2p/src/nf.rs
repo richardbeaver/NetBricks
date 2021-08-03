@@ -146,13 +146,17 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                 // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
 
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                // Match:
+                //  RDR packets: group 1
+                //  P2P packets: group 2,
+                //  XCDR packets: group 3,
+                //  rest to group 0
                 if f.proto == 6 {
-                    if p2p_match_port.contains(&f.src_port)
-                        || p2p_match_port.contains(&f.dst_port) && (f.src_ip == match_ip && f.dst_ip == match_ip)
+                    if (f.src_ip == match_ip || f.dst_ip == match_ip)
+                        && (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port))
                     {
                         matched = 3
-                    } else if f.src_ip == match_ip || f.dst_ip == match_ip {
+                    } else {
                         if f.src_port == rdr_match_port || f.dst_port == rdr_match_port {
                             matched = 1
                         }

@@ -134,15 +134,15 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let xcdr_match_dst_ip = 2_457_012_302_u32;
                 let xcdr_match_dst_port = 58_111;
 
-                // warning: borrow of packed field is unsafe and requires unsafe function or block (error E0133)
-                let src_port = f.src_port;
-                let dst_port = f.dst_port;
-                // Match RDR packets to group 1 and P2P packets to group 2, the rest to group 0
+                // Match:
+                //      TLSV/RDR packets: group 1
+                //      P2P packets: group 2
+                //      rest to group 0
                 if f.proto == 6 {
-                    if f.src_ip == match_ip || f.dst_ip == match_ip {
-                        if p2p_match_port.contains(&src_port) || p2p_match_port.contains(&dst_port) {
-                            matched = 2
-                        }
+                    if (f.src_ip == match_ip || f.dst_ip == match_ip)
+                        && (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port))
+                    {
+                        matched = 2
                     } else {
                         matched = 1
                     }
