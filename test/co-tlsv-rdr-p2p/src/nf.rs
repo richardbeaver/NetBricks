@@ -146,9 +146,9 @@ pub fn tlsv_rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                     }
                 }
 
-                if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec == true {
-                    println!("pkt count {:?}", pkt_count);
-                }
+                // if now.elapsed().as_secs() >= rdr_param.expr_time && latency_exec == true {
+                //     println!("pkt count {:?}", pkt_count);
+                // }
 
                 if pkt_count > NUM_TO_IGNORE && matched == 0 {
                     let end = Instant::now();
