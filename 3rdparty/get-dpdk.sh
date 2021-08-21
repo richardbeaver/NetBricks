@@ -18,13 +18,14 @@ echo "Using configuration ${CONFIG_FILE}${CONFIG_PFX}"
 
 if [ "$MODE" = "download" ]; then
 	if [ ! -e "$DOWNLOAD_PATH" ]; then
-		echo Fetching "http://dpdk.org/browse/dpdk/snapshot/dpdk-${DPDK_VER}.tar.gz"
-		curl http://git.dpdk.org/dpdk/snapshot/dpdk-${DPDK_VER}.tar.gz -o "${DOWNLOAD_PATH}"
+		# https://fast.dpdk.org/rel/dpdk-17.11.10.tar.xz
+		echo Fetching "https://fast.dpdk.org/rel/dpdk-${DPDK_VER}.tar.xz"
+		curl https://fast.dpdk.org/rel/dpdk-${DPDK_VER}.tar.xz -o "${DOWNLOAD_PATH}"
 	fi
 	if [ ! -d "${DPDK_RESULT}" ]; then
 		mkdir -p ${DPDK_RESULT}
 	fi
-	tar zxvf "${DOWNLOAD_PATH}" -C "${DPDK_RESULT}" --strip-components=1
+	tar xf "${DOWNLOAD_PATH}" -C "${DPDK_RESULT}" --strip-components=1
 else
 	DPDK_REV="2e14846d15addd349a909176473e936f0cf79075"
 	if [ ! -d "${DPDK_RESULT}" ]; then
