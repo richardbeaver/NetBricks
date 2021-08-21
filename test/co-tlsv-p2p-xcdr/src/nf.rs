@@ -430,6 +430,14 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
 
             pkt_count += 1;
 
+            if now.elapsed().as_secs() >= xcdr_param.expr_time && metric_exec {
+                println!("Pivot/span: {:?}", pivot / time_span);
+                let w = latv_1.lock().unwrap();
+                println!("Metric: {:?}", w);
+
+                metric_exec = false;
+            }
+
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_5.lock().unwrap();
                 let end = Instant::now();

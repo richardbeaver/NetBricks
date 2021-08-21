@@ -59,7 +59,8 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
     //
     // NOTE: Store timestamps and calculate the delta to get the processing time for individual
     // packet is disabled here (TOTAL_MEASURED_PKT removed)
-    let mut metric_exec = true;
+    let mut rdr_metric_exec = true;
+    let mut xcdr_metric_exec = true;
     let mut latency_exec = true;
 
     // start timestamps will be a vec protected with arc and mutex.
@@ -251,14 +252,14 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
 
             pkt_count += 1;
 
-            if now.elapsed().as_secs() >= rdr_param.expr_time && metric_exec == true {
+            if now.elapsed().as_secs() >= rdr_param.expr_time && rdr_metric_exec == true {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
                     "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
                     num_of_ok, num_of_err, num_of_timeout, num_of_closed, num_of_visit,
                 );
                 println!("Metric: Browsing Time: {:?}\n", elapsed_time);
-                metric_exec = false;
+                rdr_metric_exec = false;
             }
 
             // Measurement: instrumentation to collect latency metrics
@@ -301,6 +302,13 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
             }
 
             pkt_count += 1;
+
+            if now.elapsed().as_secs() >= xcdr_param.expr_time && xcdr_metric_exec == true {
+                println!("Pivot/span: {:?}", pivot / time_span);
+                let w = latv_1.lock().unwrap();
+                println!("XCDR Metric: {:?}", w);
+                xcdr_metric_exec = false;
+            }
 
             if pkt_count > NUM_TO_IGNORE {
                 let mut w = t2_1.lock().unwrap();
