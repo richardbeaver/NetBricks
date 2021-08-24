@@ -149,9 +149,9 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let rdr_match_port = 443 as u16;
 
                 let xcdr_match_src_ip = 3_232_235_524 as u32;
-                let xcdr_match_src_port = 58_111;
+                let xcdr_match_src_port = 443;
                 let xcdr_match_dst_ip = 2_457_012_302 as u32;
-                let xcdr_match_dst_port = 443;
+                let xcdr_match_dst_port = 58_111;
 
                 // Match:
                 //      TLSV/RDR packets: group 1

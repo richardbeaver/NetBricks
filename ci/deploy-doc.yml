@@ -28,6 +28,7 @@ jobs:
 
     job_post-steps:
     - script: |
+        mkdir target/doc
         cp -R target/doc '$(Build.BinariesDirectory)'
       displayName: Copy generated documentaion to build directory
 

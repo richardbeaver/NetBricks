@@ -140,9 +140,9 @@ pub fn rdr_xcdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                 let rdr_match_port = 443 as u16;
 
                 let xcdr_match_src_ip = 3_232_235_524 as u32;
-                let xcdr_match_src_port = 58_111;
+                let xcdr_match_src_port = 443;
                 let xcdr_match_dst_ip = 2_457_012_302 as u32;
-                let xcdr_match_dst_port = 443;
+                let xcdr_match_dst_port = 58_111;
 
                 // https://wiki.wireshark.org/BitTorrent
                 let p2p_match_port = vec![6346, 6882, 6881, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6969];
