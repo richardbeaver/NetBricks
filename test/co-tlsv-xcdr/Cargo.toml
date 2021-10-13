@@ -9,7 +9,7 @@ e2d2 = { path = "../../framework", features = ["performance"] }
 tlsv = { path = "../../pvnf/tlsv" }
 xcdr = { path = "../../pvnf/xcdr" }
 time = "=0.2"
-rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16" }
+rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16", features = ["dangerous_configuration"] }
 webpki = "=0.21.0"
 webpki-roots = "=0.18.0"
 faktory = "=0.11"

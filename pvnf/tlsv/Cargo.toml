@@ -9,7 +9,7 @@ time = "=0.2"
 rand = "=0.8.0"
 fnv = "=1.0.7"
 twox-hash = "=1.6.0"
-rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16" }
+rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16", features = ["dangerous_configuration"] }
 webpki = "=0.21.0"
 webpki-roots = "=0.18.0"
 log = "=0.4"
