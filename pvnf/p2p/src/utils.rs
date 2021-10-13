@@ -5,7 +5,7 @@ use futures::{
     stream::{FuturesUnordered, StreamExt},
 };
 use std::env;
-use std::io::{self, Write};
+use std::io::{self, Error, Write};
 use std::process::Command;
 // use transmission_rpc::types::{BasicAuth, Result, RpcResponse};
 // use transmission_rpc::types::{Id, Nothing, TorrentAction};
@@ -77,7 +77,7 @@ use std::process::Command;
 // }
 
 /// Run BitTorrent jobs via deluge console
-pub fn bt_run_torrents(workload: Vec<i64>) -> Result<()> {
+pub fn bt_run_torrents(workload: Vec<i64>) -> Result<(), Error> {
     let mut argv = Vec::new();
     argv.push("sudo".to_string());
     argv.push("-u".to_string());

@@ -199,14 +199,15 @@ pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                         let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
 
                         let mut rt = Runtime::new().unwrap();
-                        match rt.block_on(add_all_torrents(num_of_torrents, workload, torrents_dir.to_string())) {
-                            Ok(_) => println!("Add torrents success"),
-                            Err(e) => println!("Add torrents failed with {:?}", e),
-                        }
-                        match rt.block_on(run_all_torrents()) {
-                            Ok(_) => println!("Run torrents success"),
-                            Err(e) => println!("Run torrents failed with {:?}", e),
-                        }
+                        panic!("Implementation with transmission is completely unsupported");
+                        // match rt.block_on(add_all_torrents(num_of_torrents, workload, torrents_dir.to_string())) {
+                        //     Ok(_) => println!("Add torrents success"),
+                        //     Err(e) => println!("Add torrents failed with {:?}", e),
+                        // }
+                        // match rt.block_on(run_all_torrents()) {
+                        //     Ok(_) => println!("Run torrents success"),
+                        //     Err(e) => println!("Run torrents failed with {:?}", e),
+                        // }
                     }
                     _ => println!("Current P2P type: {:?} doesn't match to any workload we know", p2p_type),
                 }
