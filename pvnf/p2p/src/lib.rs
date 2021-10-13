@@ -14,7 +14,6 @@ extern crate serde_json;
 extern crate sha1;
 extern crate time;
 extern crate tiny_http;
-extern crate transmission_rpc;
 
 use crate::utils::*;
 use e2d2::allocators::CacheAligned;

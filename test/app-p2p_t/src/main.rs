@@ -13,7 +13,6 @@ extern crate fnv;
 extern crate p2p;
 extern crate serde_json;
 extern crate time;
-extern crate transmission_rpc;
 
 use e2d2::config::{basic_opts, read_matches};
 use e2d2::interface::{PacketRx, PacketTx};
