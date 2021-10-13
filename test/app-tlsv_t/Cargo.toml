@@ -6,6 +6,7 @@ authors = ['Shuwen "Jethro" Sun <jethrosun@ccs.neu.edu']
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
 tlsv = { path = "../../pvnf/tlsv" }
+<<<<<<< HEAD
 time = "0.2"
 fnv = "*"
 twox-hash = "*"
@@ -13,6 +14,14 @@ rustls = { version = "0.19", features = ["dangerous_configuration"] }
 webpki = "0.21.0"
 webpki-roots = "0.21.0"
 log = "0.4"
+=======
+time = "=0.2"
+fnv = "=1.0.7"
+log = "=0.4"
+rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16" }
+webpki = "=0.21.0"
+webpki-roots = "=0.18.0"
+>>>>>>> ff5121d (cleanup and pinpint all dependencies)
 
 [features]
 default = []

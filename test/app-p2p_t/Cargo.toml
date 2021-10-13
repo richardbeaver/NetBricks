@@ -7,16 +7,17 @@ edition = "2018"
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
 p2p = { path = "../../pvnf/p2p" }
-time = "0.2"
-fnv = "*"
-rustc-serialize = "*"
-serde_json = "*"
-crossbeam = "0.8.0"
-transmission-rpc = "0.2.3"
-tokio = { version = "1.0", features = ["full"] }
-dotenv = "0.15.0"
-futures = "0.3"
-fork = "0.1.17"
+time = "=0.2"
+failure = "=0.1.8"
+serde_json = "=1.0.64"
+rustc-serialize = "=0.3.24"
+rand = "=0.8.0"
+fnv = "=1.0.7"
+crossbeam = "=0.8.0"
+transmission-rpc = "=0.2.3"
+tokio = { version = "=1.0", features = ["full"] }
+dotenv = "=0.15.0"
+futures = "=0.3"
 
 [features]
 default = []

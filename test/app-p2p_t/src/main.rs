@@ -10,7 +10,6 @@
 extern crate crossbeam;
 extern crate e2d2;
 extern crate fnv;
-extern crate fork;
 extern crate p2p;
 extern crate serde_json;
 extern crate time;

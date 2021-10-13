@@ -9,7 +9,7 @@ e2d2 = { path = "../../framework", features = ["performance"] }
 tlsv = { path = "../../pvnf/tlsv" }
 rdr = { path = "../../pvnf/rdr" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
-time = "0.2"
+time = "=0.2"
 
 [features]
 default = []

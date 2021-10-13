@@ -9,10 +9,10 @@ e2d2 = { path = "../../framework", features = ["performance"] }
 rdr = { path = "../../pvnf/rdr" }
 xcdr = { path = "../../pvnf/xcdr" }
 p2p = { path = "../../pvnf/p2p" }
-time = "0.2.22"
+time = "=0.2"
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
-faktory = "0.11"
-tokio = { version = "1.0", features = ["full"] }
+faktory = "=0.11"
+tokio = { version = "=1.0", features = ["full"] }
 
 [features]
 default = []

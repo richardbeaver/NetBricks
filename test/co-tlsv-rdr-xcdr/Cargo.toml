@@ -6,15 +6,21 @@ edition = "2018"
 
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
-time = "0.2.22"
+time = "=0.2"
 tlsv = { path = "../../pvnf/tlsv" }
+<<<<<<< HEAD
 webpki = "0.21"
 webpki-roots = "0.21"
 rustls = { version = "0.19", features = ["dangerous_configuration"] }
+=======
+rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16" }
+webpki = "=0.21.0"
+webpki-roots = "=0.18.0"
+>>>>>>> ff5121d (cleanup and pinpint all dependencies)
 rdr = { path = "../../pvnf/rdr" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
 xcdr = { path = "../../pvnf/xcdr" }
-faktory = "0.11"
+faktory = "=0.11"
 
 [features]
 default = []

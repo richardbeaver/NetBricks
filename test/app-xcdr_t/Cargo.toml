@@ -7,16 +7,16 @@ edition = "2018"
 [dependencies]
 e2d2 = { path = "../../framework", features = ["performance"] }
 xcdr = { path = "../../pvnf/xcdr" }
-time = "0.2"
-fnv = "*"
-twox-hash = "*"
-failure = "*"
-rustc-serialize = "*"
-serde_json = "*"
-y4m = "0.7"
-resize = "0.5"
-crossbeam = "0.8.0"
-faktory = "0.11"
+time = "=0.2"
+fnv = "=1.0.7"
+twox-hash = "=1.6.0"
+failure = "=0.1.8"
+rustc-serialize = "=0.3.24"
+serde_json = "=1.0.64"
+y4m = "=0.7"
+resize = "=0.5"
+crossbeam = "=0.8.0"
+faktory = "=0.11"
 
 [features]
 default = []
