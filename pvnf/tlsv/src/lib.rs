@@ -20,13 +20,13 @@ use e2d2::operators::merge;
 use e2d2::operators::{Batch, BatchIterator, CompositionBatch, ReceiveBatch};
 use e2d2::pvn::measure::*;
 use e2d2::scheduler::Scheduler;
-
 use e2d2::utils::Flow;
 use rustls::internal::msgs::handshake::HandshakePayload::{ClientHello, ClientKeyExchange, ServerHello};
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use webpki::{DNSName, DNSNameRef};
 
 pub mod utils;
 
@@ -82,7 +82,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     // TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
     // DNS name cache.
-    let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
+    let mut name_cache = HashMap::<Flow, DNSName>::with_hasher(Default::default());
 
     // Cert count
     let mut cert_count = 0;
@@ -252,9 +252,8 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                         Some(n) => n,
                                         None => {
                                             // FIXME: tmp hack
-                                            let name_ref =
-                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-                                            webpki::DNSName::from(name_ref)
+                                            let name_ref = DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            DNSName::from(name_ref)
                                         }
                                     };
                                     name_cache
@@ -283,14 +282,23 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                     &mut seqnum_map,
                                                 )
                                             } else {
-                                                ordered_validate(
+                                                let try = ordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
                                                     &mut unsafe_connection,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
+                                                );
+                                                if try.is_err() {
+                                                    // println!("flush everything");
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
                                             }
                                         }
                                         None => {} //eprintln!("We are missing the dns name from the client hello",),
@@ -360,7 +368,7 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
     // TLS connection with invalid certs.
     let mut unsafe_connection: HashSet<Flow> = HashSet::new();
     // DNS name cache.
-    let mut name_cache = HashMap::<Flow, webpki::DNSName>::with_hasher(Default::default());
+    let mut name_cache = HashMap::<Flow, DNSName>::with_hasher(Default::default());
 
     // Cert count
     let mut cert_count = 0;
@@ -436,9 +444,8 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
                                         Some(n) => n,
                                         None => {
                                             // FIXME: tmp hack
-                                            let name_ref =
-                                                webpki::DNSNameRef::try_from_ascii_str("github.com").unwrap();
-                                            webpki::DNSName::from(name_ref)
+                                            let name_ref = DNSNameRef::try_from_ascii_str("github.com").unwrap();
+                                            DNSName::from(name_ref)
                                         }
                                     };
                                     name_cache
@@ -467,14 +474,23 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
                                                     &mut seqnum_map,
                                                 )
                                             } else {
-                                                ordered_validate(
+                                                let try = ordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
                                                     &mut unsafe_connection,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
+                                                );
+                                                if try.is_err() {
+                                                    // println!("flush everything");
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
                                             }
                                         }
                                         None => {} //eprintln!("We are missing the dns name from the client hello",),

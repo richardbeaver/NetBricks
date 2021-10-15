@@ -9,7 +9,7 @@ use rustls::internal::msgs::{
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
-use webpki;
+use webpki::{DNSName, DNSNameRef, Time};
 use webpki_roots;
 
 // TODO: move to failure crate!
@@ -24,7 +24,7 @@ pub fn tlsf_update(e: Entry<Flow, Vec<u8>>, payload: &[u8]) {
 }
 
 /// Retrieve server name from the packet
-pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
+pub fn get_server_name(buf: &[u8]) -> Option<DNSName> {
     match on_frame(&buf) {
         Some((handshake, _)) => match handshake.payload {
             ClientHello(x) => {
@@ -54,8 +54,8 @@ pub fn get_server_name(buf: &[u8]) -> Option<webpki::DNSName> {
 }
 
 /// Retrieve current system time and use it to validate certificates
-pub fn current_time() -> Result<webpki::Time, TLSError> {
-    match webpki::Time::try_from(std::time::SystemTime::now()) {
+pub fn current_time() -> Result<Time, TLSError> {
+    match Time::try_from(std::time::SystemTime::now()) {
         Ok(current_time) => Ok(current_time),
         _ => Err(TLSError::FailedToGetCurrentTime),
     }
@@ -64,7 +64,7 @@ pub fn current_time() -> Result<webpki::Time, TLSError> {
 static V: &WebPKIVerifier = &WebPKIVerifier { time: current_time };
 
 /// Try to extract certificate
-pub fn try_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: webpki::DNSName) -> bool {
+pub fn try_extracted_cert(certs: Vec<rustls::Certificate>, dns_name: DNSName) -> bool {
     let mut anchors = RootCertStore::empty();
     anchors.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
     let result = V.verify_server_cert(&anchors, &certs[..], dns_name.as_ref(), &[]);
@@ -130,7 +130,7 @@ pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, Certifica
 /// validate the extracted certificates with out of order segments
 #[allow(clippy::too_many_arguments)]
 pub fn unordered_validate(
-    dns_name: webpki::DNSName,
+    dns_name: DNSName,
     flow: &Flow,
     cert_count: &mut usize,
     unsafe_connection: &mut HashSet<Flow>,
@@ -171,13 +171,13 @@ pub fn unordered_validate(
 
 /// validate certificates without out of order segments
 pub fn ordered_validate(
-    dns_name: webpki::DNSName,
+    dns_name: DNSName,
     flow: &Flow,
     cert_count: &mut usize,
     unsafe_connection: &mut HashSet<Flow>,
     payload_cache: &mut HashMap<Flow, Vec<u8>>,
     seqnum_map: &mut HashMap<Flow, u32>,
-) {
+) -> Result<(), CertificateNotExtractedError> {
     let rev_flow = flow.reverse_flow();
     // Retrieve the payload cache and extract the cert.
     if payload_cache.contains_key(&rev_flow) {
@@ -197,6 +197,11 @@ pub fn ordered_validate(
                 unsafe_connection.insert(*flow);
                 unsafe_connection.insert(rev_flow);
             }
+            return Ok(());
+        } else {
+            return Err(CertificateNotExtractedError);
         }
+    } else {
+        return Err(CertificateNotExtractedError);
     }
 }
