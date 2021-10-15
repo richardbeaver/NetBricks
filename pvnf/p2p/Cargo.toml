@@ -15,7 +15,7 @@ serde_json = "=1.0.64"
 sha1 = "=0.6.0"
 crossbeam = "=0.8.0"
 # transmission-rpc = "=0.2.3"
-tokio = { version = "=1.0", features = ["full"] }
+tokio = { version = "=1.0", features = ["rt"] }
 dotenv = "=0.15.0"
 futures = "=0.3"
 
