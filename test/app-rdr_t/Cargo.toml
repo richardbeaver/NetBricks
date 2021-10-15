@@ -14,7 +14,7 @@ rustc-serialize = "=0.3.24"
 rand = "=0.8.0"
 fnv = "=1.0.7"
 twox-hash = "=1.6.0"
-log = "=0.4"
+log = "=0.4.4"
 tiny_http = "=0.7"
 rshttp = { git = "https://github.com/jethrosun/http", branch = "pvn" }
 headless_chrome = { git = "https://github.com/jethrosun/rust-headless-chrome", branch = "pvn-0.9" }
