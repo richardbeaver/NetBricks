@@ -157,8 +157,8 @@ pub fn unordered_validate(
             if let Ok(chain) = certs {
                 let result = try_extracted_cert(chain, dns_name);
                 *cert_count += 1;
-                if *cert_count % 1_000_usize == 0 {
-                    println!("cert count is {}k", *cert_count / 1_000);
+                if *cert_count % 100_000_usize == 0 {
+                    println!("cert count is {}_00k", *cert_count / 100_000);
                 }
                 if !result {
                     unsafe_connection.insert(*flow);
@@ -190,8 +190,8 @@ pub fn ordered_validate(
 
             *cert_count += 1;
 
-            if *cert_count % 1_000_usize == 0 {
-                println!("cert count is {}k", *cert_count / 1_000);
+            if *cert_count % 100_000_usize == 0 {
+                println!("cert count is {}_00k", *cert_count / 100_000);
             }
             if !result {
                 unsafe_connection.insert(*flow);
