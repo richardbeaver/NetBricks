@@ -271,7 +271,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                     match dns_name {
                                         Some(name) => {
                                             if tmp_payload_cache.contains_key(&rev_flow) {
-                                                unordered_validate(
+                                                let try = unordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
@@ -280,7 +280,15 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                     &mut tmp_seqnum_map,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
+                                                );
+                                                if try.is_err() {
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
                                             } else {
                                                 let try = ordered_validate(
                                                     name,
@@ -463,7 +471,7 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
                                     match dns_name {
                                         Some(name) => {
                                             if tmp_payload_cache.contains_key(&rev_flow) {
-                                                unordered_validate(
+                                                let try = unordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
@@ -472,7 +480,15 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
                                                     &mut tmp_seqnum_map,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
+                                                );
+                                                if try.is_err() {
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
                                             } else {
                                                 let try = ordered_validate(
                                                     name,
@@ -483,7 +499,6 @@ pub fn validator_tcp<T: Batch<Header = TcpHeader> + BatchIterator<Metadata = Flo
                                                     &mut seqnum_map,
                                                 );
                                                 if try.is_err() {
-                                                    // println!("flush everything");
                                                     payload_cache.clear();
                                                     tmp_payload_cache.clear();
                                                     seqnum_map.clear();
