@@ -95,25 +95,17 @@ pub fn on_frame(rest: &[u8]) -> Option<(rustls::internal::msgs::handshake::Hands
 
 /// Parse raw bytes into tls frames.
 pub fn parse_tls_frame(buf: &[u8]) -> Result<Vec<rustls::Certificate>, CertificateNotExtractedError> {
-    // TLS Header length is 5.
-    let tls_hdr_len = 5;
+    let tls_hdr_len = 5; // TLS Header length is 5.
     let mut _version = ProtocolVersion::Unknown(0x0000);
 
-    //
     //  TLS FRAME One: ServerHello
-    //
-
     let offset1 = match on_frame(&buf) {
         Some((_handshake1, offset1)) => offset1,
         None => return Err(CertificateNotExtractedError),
     };
-
     let (_, rest) = buf.split_at(offset1 + tls_hdr_len);
 
-    //
     //  TLS FRAME Two: Certificate
-    //
-
     let (handshake2, _offset2) = match on_frame(&rest) {
         Some((handshake2, _offset2)) => (handshake2, _offset2),
         None => {
@@ -138,7 +130,7 @@ pub fn unordered_validate(
     tmp_seqnum_map: &mut HashMap<Flow, (u32, u32)>,
     payload_cache: &mut HashMap<Flow, Vec<u8>>,
     seqnum_map: &mut HashMap<Flow, u32>,
-) {
+) -> Result<(), CertificateNotExtractedError> {
     // We need to retrieve the DNS name from the entry of the current flow, and
     // also parse the entry for the reverse flow.
 
@@ -164,8 +156,15 @@ pub fn unordered_validate(
                     unsafe_connection.insert(*flow);
                     unsafe_connection.insert(rev_flow);
                 }
+                return Ok(());
+            } else {
+                return Err(CertificateNotExtractedError);
             }
+        } else {
+            return Err(CertificateNotExtractedError);
         }
+    } else {
+        return Err(CertificateNotExtractedError);
     }
 }
 
