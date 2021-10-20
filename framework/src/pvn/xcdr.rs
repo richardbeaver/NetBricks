@@ -7,7 +7,7 @@ use std::time::Instant;
 /// Time for the long experiment with instrumentation.
 pub const INST_MEASURE_TIME: u64 = 601;
 /// Time for the short experiment with instrumentation.
-pub const SHORT_MEASURE_TIME: u64 = 61;
+pub const SHORT_MEASURE_TIME: u64 = 181;
 /// Time for the application experiment.
 pub const APP_MEASURE_TIME: u64 = 610;
 
