@@ -6,13 +6,9 @@ use std::time::{Duration, Instant};
 use std::vec::Vec;
 
 /// Create the browser for RDR proxy (user browsing).
-///
-/// FIXME: Instead of using the particular forked branch we want to eventually use the official
-/// headless chrome create but set those parameters correctly here.
-pub fn browser_create(usr_data_dir: String) -> Fallible<Browser> {
+pub fn browser_create(usr_data_dir: &String) -> Fallible<Browser> {
     // /usr/bin/chromedriver
     // /usr/bin/chromium-browser
-
     let timeout = Duration::new(1000, 0);
 
     let options = LaunchOptionsBuilder::default()

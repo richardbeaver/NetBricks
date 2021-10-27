@@ -88,8 +88,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         + &param.iter.to_string()
         + ".json";
     println!("{:?}", workload_path);
-    let num_of_secs = 600;
-
+    let num_of_secs = 200;
     let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, rdr_users.clone()).unwrap();
     println!("Workload is generated",);
 
@@ -97,7 +96,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut browser_list: HashMap<i64, Browser> = HashMap::new();
 
     for user in &rdr_users {
-        let browser = browser_create(usr_data_dir).unwrap();
+        let browser = browser_create(&usr_data_dir).unwrap();
         browser_list.insert(*user, browser);
     }
     println!("{} browsers are created ", num_of_users);
