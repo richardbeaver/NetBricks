@@ -17,7 +17,7 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::pvn::measure::*;
-use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
+use e2d2::pvn::rdr::{rdr_disk, rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
 use e2d2::scheduler::*;
 use headless_chrome::Browser;
 use std::collections::HashMap;
@@ -25,8 +25,6 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 pub mod utils;
-
-// const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 /// Test for the rdr proxy network function to schedule pipelines.
 pub fn rdr_proxy_test<S: Scheduler + Sized>(ports: Vec<CacheAligned<PortQueue>>, sched: &mut S) {
@@ -60,6 +58,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(param.setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, param.iter).unwrap();
+    let usr_data_dir = rdr_usr_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // Measurement code
     //
@@ -98,7 +97,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let mut browser_list: HashMap<i64, Browser> = HashMap::new();
 
     for user in &rdr_users {
-        let browser = browser_create().unwrap();
+        let browser = browser_create(usr_data_dir).unwrap();
         browser_list.insert(*user, browser);
     }
     println!("{} browsers are created ", num_of_users);

@@ -3,8 +3,40 @@ use crate::pvn::unresolvable::curate_unresolvable_records;
 use serde_json::{from_reader, Value};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Result;
+use std::io::{Error, ErrorKind, Result};
 use std::vec::Vec;
+
+/// setup profile and user data dir with different disk setup
+pub fn rdr_read_disk(file_path: String) -> Result<String> {
+    let file = File::open(file_path.clone()).expect("file should open read only");
+    let read_json = file_path + "should be proper JSON";
+    let json: Value = from_reader(file).expect(&read_json);
+
+    let disk: Option<String> = match serde_json::from_value(json.get("disk").expect("disk setup should exist").clone())
+    {
+        Ok(val) => Some(val),
+        Err(e) => {
+            println!("Malformed JSON response: {}", e);
+            None
+        }
+    };
+    match disk {
+        // --profile-directory="C:\temp\profile" --user-data-dir="C:\temp\profile\userdata"
+        Some(val) => {
+            if val == "hdd" {
+                println!("running chrome with hdd");
+                Ok("/data/tmp/profile".to_string())
+            } else {
+                println!("running chrome with ssd");
+                Ok("/home/jethros/data/profile".to_string())
+            }
+        }
+        None => {
+            println!("unable to read disk setup");
+            Err(Error::new(ErrorKind::Other, "unable to read disk setup"))
+        }
+    }
+}
 
 /// Construct the workload from the session file.
 ///
@@ -55,20 +87,6 @@ pub fn rdr_load_workload(
 /// Retrieve the number of users based on our setup configuration.
 pub fn rdr_retrieve_users(rdr_setup: usize) -> Option<usize> {
     let mut map = HashMap::new();
-    // map.insert(1, 2);
-    // map.insert(2, 4);
-    // map.insert(3, 8);
-    // map.insert(4, 12);
-    // map.insert(5, 16);
-    // map.insert(6, 20);
-
-    // map.insert(1, 1);
-    // map.insert(2, 2);
-    // map.insert(3, 4);
-    // map.insert(4, 6);
-    // map.insert(5, 8);
-    // map.insert(6, 10);
-
     map.insert(1, 5);
     map.insert(2, 10);
     map.insert(3, 20);

@@ -9,7 +9,7 @@ use std::vec::Vec;
 ///
 /// FIXME: Instead of using the particular forked branch we want to eventually use the official
 /// headless chrome create but set those parameters correctly here.
-pub fn browser_create() -> Fallible<Browser> {
+pub fn browser_create(usr_data_dir: String) -> Fallible<Browser> {
     // /usr/bin/chromedriver
     // /usr/bin/chromium-browser
 
@@ -17,14 +17,13 @@ pub fn browser_create() -> Fallible<Browser> {
 
     let options = LaunchOptionsBuilder::default()
         .headless(true)
+        .user_data_dir(Some(usr_data_dir.to_string()))
         .idle_browser_timeout(timeout)
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
     let browser = Browser::new(options)?;
     // let tab = browser.wait_for_initial_tab()?;
     // tab.set_default_timeout(std::time::Duration::from_secs(100));
-
-    // println!("Browser created",);
     Ok(browser)
 }
 
