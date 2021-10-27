@@ -17,7 +17,7 @@ use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::*;
 use e2d2::pvn::measure::*;
-use e2d2::pvn::rdr::{rdr_disk, rdr_load_workload, rdr_read_rand_seed, rdr_retrieve_users};
+use e2d2::pvn::rdr::{rdr_load_workload, rdr_read_rand_seed, rdr_read_user_data_dir, rdr_retrieve_users};
 use e2d2::scheduler::*;
 use headless_chrome::Browser;
 use std::collections::HashMap;
@@ -58,7 +58,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(param.setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, param.iter).unwrap();
-    let usr_data_dir = rdr_usr_data_dir("/home/jethros/setup".to_string()).unwrap();
+    let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // Measurement code
     //

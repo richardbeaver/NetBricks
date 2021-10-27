@@ -7,7 +7,7 @@ use std::io::{Error, ErrorKind, Result};
 use std::vec::Vec;
 
 /// setup profile and user data dir with different disk setup
-pub fn rdr_read_disk(file_path: String) -> Result<String> {
+pub fn rdr_read_user_data_dir(file_path: String) -> Result<String> {
     let file = File::open(file_path.clone()).expect("file should open read only");
     let read_json = file_path + "should be proper JSON";
     let json: Value = from_reader(file).expect(&read_json);
