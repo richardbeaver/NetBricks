@@ -1120,5 +1120,33 @@ pub fn curate_unresolvable_records() -> HashSet<&'static str> {
     broken_urls.insert("cim.meebo.com");
     broken_urls.insert("biz5c.sandai.net");
 
+    //connection closed url
+    broken_urls.insert("802.tianya.cn");
+    broken_urls.insert("ad.103092804.com");
+    broken_urls.insert("ads.revsci.net");
+    broken_urls.insert("ads.sixapart.com");
+    broken_urls.insert("ads.specificmedia.com");
+    broken_urls.insert("bizad.nikkeibp.co.jp");
+    broken_urls.insert("blog.naver.com");
+    broken_urls.insert("cb.adbureau.net");
+    broken_urls.insert("cdngiftsmyspace.applatform.com");
+    broken_urls.insert("cheapflights.co.uk");
+    broken_urls.insert("cln.iupui.edu");
+    broken_urls.insert("cnt.v.sina.com.cn");
+    broken_urls.insert("deviantart.com");
+    broken_urls.insert("find.galegroup.com.proxy.ulib.iupui.edu");
+    broken_urls.insert("google.cn");
+    broken_urls.insert("google.com");
+    broken_urls.insert("i.cdn.turner.com");
+    broken_urls.insert("idsnews.com");
+    broken_urls.insert("pgatour.com");
+    broken_urls.insert("pn2.adserver.yahoo.com");
+    broken_urls.insert("pogo.com");
+    broken_urls.insert("simon.com");
+    broken_urls.insert("stumbleupon.com");
+    broken_urls.insert("teendestruction.com");
+    broken_urls.insert("translate.google.cn");
+    broken_urls.insert("vodguide.pps.tv");
+
     broken_urls
 }
