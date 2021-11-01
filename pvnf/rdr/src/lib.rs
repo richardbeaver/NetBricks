@@ -88,7 +88,7 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
         + &param.iter.to_string()
         + ".json";
     println!("{:?}", workload_path);
-    let num_of_secs = 200;
+    let num_of_secs = 180;
     let mut rdr_workload = rdr_load_workload(workload_path.to_string(), num_of_secs, rdr_users.clone()).unwrap();
     println!("Workload is generated",);
 
