@@ -4,10 +4,12 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::time::Instant;
 
-/// Time for the long experiment with instrumentation.
-pub const INST_MEASURE_TIME: u64 = 601;
 /// Time for the short experiment with instrumentation.
 pub const SHORT_MEASURE_TIME: u64 = 181;
+/// Time for the medium experiment with instrumentation.
+pub const MEDIUM_MEASURE_TIME: u64 = 301;
+/// Time for the long experiment with instrumentation.
+pub const LONG_MEASURE_TIME: u64 = 601;
 /// Time for the application experiment.
 pub const APP_MEASURE_TIME: u64 = 610;
 
@@ -95,7 +97,8 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
     };
     let expr_time = match &*mode.unwrap() {
         "short" => Some(SHORT_MEASURE_TIME),
-        "long" => Some(INST_MEASURE_TIME),
+        "medium" => Some(MEDIUM_MEASURE_TIME),
+        "long" => Some(LONG_MEASURE_TIME),
         _ => None,
     };
 
@@ -115,36 +118,6 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
     }
 }
 
-// /// Return the time span between submitting jobs to the faktory job queue
-// /// based on the setup value for running transcoder experiments.
-// ///
-// /// n = 1 / (u * 1.13/10)
-// pub fn xcdr_inst_retrieve_param(setup_val: usize) -> Option<u128> {
-//     let mut time_span = 0;
-//     let mut map = HashMap::new();
-//     // n: number of video jobs per second
-//     map.insert(1, 1);
-//     map.insert(2, 6);
-//     map.insert(3, 11);
-//     map.insert(4, 23);
-//     map.insert(5, 57);
-//     map.insert(6, 111);
-//
-//     // if setup_val <= 3 {
-//     // maps to milli second
-//     time_span = 1_000 / map.remove(&setup_val).unwrap();
-//     println!("setup: {:?} maps to time span: {:?} millisecond", setup_val, time_span);
-//     // } else if 3 < setup_val && setup_val <= 6 {
-//     //     // maps to micro second
-//     //     time_span = 1_000_000 / map.remove(&setup_val).unwrap();
-//     //     println!("setup: {:?} maps to time span: {:?} microsecond", setup_val, time_span);
-//     // } else {
-//     //     println!("setup value doesn't match to a valid param");
-//     // }
-//
-//     Some(time_span as u128)
-// }
-
 /// Return the time span between submitting jobs to the faktory job queue
 /// based on the setup value for running transcoder experiments.
 ///
@@ -154,15 +127,6 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
 ///     duration = 1 second [1000 milliseconds] / jobs_submitted_per_second
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
-    // map.insert(1, 10);
-    // map.insert(2, 50);
-    // map.insert(3, 100);
-    // map.insert(4, 200);
-    // map.insert(5, 500);
-    // map.insert(6, 1000);
-    // let jobs_submitted_per_second = map.remove(&setup_val).unwrap() * 1.13 / 10;
-    // let time_span = 1_000 / jobs_submitted_per_second;
-
     map.insert(1, 1);
     map.insert(2, 6);
     map.insert(3, 11);
@@ -176,22 +140,4 @@ pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     );
 
     Some(time_span as u128)
-}
-
-/// Wrapper for counting time elapsed.
-pub fn pvn_elapsed_deprecated(setup_val: usize, now: Instant) -> Option<u128> {
-    if setup_val <= 3 {
-        // maps to milli second
-        let t = now.elapsed().as_millis();
-        // println!("time elapsed: {:?} millisecond", t);
-        Some(t)
-    } else if 3 < setup_val && setup_val <= 6 {
-        // maps to micro second
-        let t = now.elapsed().as_micros();
-        // println!("time elapsed: {:?} mi", t);
-        Some(t)
-    } else {
-        println!("setup value doesn't match to a valid param");
-        None
-    }
 }

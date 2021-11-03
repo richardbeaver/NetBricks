@@ -17,10 +17,12 @@ pub const RDR_MEASURED_PKT: usize = 100_000_000;
 /// Estimated number of packets for allocating large size array.
 pub const TOTAL_MEASURED_PKT: usize = 200_000_000;
 
-/// Time for the long experiment with instrumentation.
-pub const INST_MEASURE_TIME: u64 = 601;
 /// Time for the short experiment with instrumentation.
 pub const SHORT_MEASURE_TIME: u64 = 181;
+/// Time for the medium experiment with instrumentation.
+pub const MEDIUM_MEASURE_TIME: u64 = 301;
+/// Time for the long experiment with instrumentation.
+pub const LONG_MEASURE_TIME: u64 = 601;
 /// Time for the application experiment.
 pub const APP_MEASURE_TIME: u64 = 610;
 
@@ -99,7 +101,8 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
     };
     let expr_time = match &*mode.unwrap() {
         "short" => Some(SHORT_MEASURE_TIME),
-        "long" => Some(INST_MEASURE_TIME),
+        "medium" => Some(MEDIUM_MEASURE_TIME),
+        "long" => Some(LONG_MEASURE_TIME),
         _ => None,
     };
 
