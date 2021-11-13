@@ -43,6 +43,9 @@ if [ -z "${CARGO}" ] || [ ! -e "${CARGO}" ]; then
 fi
 echo "Using Cargo from ${CARGO}"
 
+# We fix the Cargo toolchain
+declare toolchain=nightly-2020-12-15-x86_64-unknown-linux-gnu
+
 MUSL_DOWNLOAD_PATH="${DOWNLOAD_DIR}/musl.tar.gz"
 MUSL_RESULT="${EXT_BASE}/musl"
 MUSL_TEST="${TOOLS_BASE}/lib/libc.a"
@@ -288,7 +291,7 @@ case $TASK in
             echo "No Cargo.toml, not valid"
         fi
         pushd ${BASE_DIR}/test/${build_dir}
-            ${CARGO} build --release
+            ${CARGO} +"$toolchain" build --release
         popd
         ;;
     build_fmwk)
@@ -297,9 +300,9 @@ case $TASK in
         find_sctp
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} build --release --features "sctp"
+            ${CARGO} +"$toolchain" build --release --features "sctp"
         else
-            ${CARGO} build --release
+            ${CARGO} +"$toolchain" build --release
         fi
         popd
         ;;
@@ -312,9 +315,9 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} build --release --features "sctp"
+            ${CARGO} +"$toolchain" build --release --features "sctp"
         else
-            ${CARGO} build --release
+            ${CARGO} +"$toolchain" build --release
         fi
         popd
 
@@ -322,12 +325,12 @@ case $TASK in
             if [[ ${example} == *sctp* ]]; then
                 if [ ${SCTP_PRESENT} -eq 1 ]; then
                     pushd ${BASE_DIR}/${example}
-                    ${CARGO} build --release
+                    ${CARGO} +"$toolchain" build --release
                     popd
                 fi
             else
                 pushd ${BASE_DIR}/${example}
-                ${CARGO} build --release
+                ${CARGO} +"$toolchain" build --release
                 popd
             fi
         done
@@ -670,7 +673,7 @@ case $TASK in
         pushd $BASE_DIR/framework
         ${CARGO} clean
         ${CARGO} update # Clippy breaks with new compilers
-        ${CARGO} build --features dev --verbose
+        ${CARGO} +"$toolchain" build --features dev --verbose
         popd
         ;;
     dist_clean)
