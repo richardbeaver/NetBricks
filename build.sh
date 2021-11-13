@@ -147,7 +147,7 @@ print_examples () {
     echo "The following examples are available:"
     for eg in ${examples[@]}; do
         if [ -e ${BASE_DIR}/${eg}/Cargo.toml ]; then
-            target=$( ${CARGO} read-manifest --manifest-path ${BASE_DIR}/${eg}/Cargo.toml | ${BASE_DIR}/scripts/read-target.py - )
+            target=$( ${CARGO} +"$toolchain" read-manifest --manifest-path ${BASE_DIR}/${eg}/Cargo.toml | ${BASE_DIR}/scripts/read-target.py - )
             printf "\t %s\n" ${target}
         fi
     done
@@ -156,16 +156,16 @@ print_examples () {
 
 clean () {
     pushd $BASE_DIR/framework
-    ${CARGO} clean || true
+    ${CARGO} +"$toolchain" clean || true
     popd
 
     pushd $BASE_DIR/test/framework-test
-    ${CARGO} clean || true
+    ${CARGO} +"$toolchain" clean || true
     popd
 
     for example in ${examples[@]}; do
         pushd ${BASE_DIR}/$example
-        ${CARGO} clean || true
+        ${CARGO} +"$toolchain" clean || true
         popd
     done
     make clean -C ${BASE_DIR}/native
@@ -247,7 +247,7 @@ rust_fmt () {
     RUSTFMT=${BIN_DIR}/cargo-fmt
     echo "Checking if ${RUSTFMT} exists (${REQUIRE_RUSTFMT})"
     if [ ! -e "${RUSTFMT}" ]; then
-        ${CARGO} install --root ${TOOLS_BASE} rustfmt
+        ${CARGO} +"$toolchain" install --root ${TOOLS_BASE} rustfmt
         export RUSTFMT=${RUSTFMT}
     else
         export RUSTFMT=${RUSTFMT}
@@ -344,9 +344,9 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} clippy --release --features "sctp"
+            ${CARGO} +"$toolchain" clippy --release --features "sctp"
         else
-            ${CARGO} clippy --release
+            ${CARGO} +"$toolchain" clippy --release
         fi
         popd
 
@@ -354,12 +354,12 @@ case $TASK in
             if [[ ${example} == *sctp* ]]; then
                 if [ ${SCTP_PRESENT} -eq 1 ]; then
                     pushd ${BASE_DIR}/${example}
-                    ${CARGO} clippy --release
+                    ${CARGO} +"$toolchain" clippy --release
                     popd
                 fi
             else
                 pushd ${BASE_DIR}/${example}
-                ${CARGO} clippy --release
+                ${CARGO} +"$toolchain" clippy --release
                 popd
             fi
         done
@@ -373,9 +373,9 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} miri test --features "sctp"
+            ${CARGO} +"$toolchain" miri test --features "sctp"
         else
-            ${CARGO} miri test
+            ${CARGO} +"$toolchain" miri test
         fi
         popd
 
@@ -383,12 +383,12 @@ case $TASK in
             if [[ ${example} == *sctp* ]]; then
                 if [ ${SCTP_PRESENT} -eq 1 ]; then
                     pushd ${BASE_DIR}/${example}
-                    ${CARGO} miri test
+                    ${CARGO} +"$toolchain" miri test
                     popd
                 fi
             else
                 pushd ${BASE_DIR}/${example}
-                ${CARGO} miri test
+                ${CARGO} +"$toolchain" miri test
                 popd
             fi
         done
@@ -453,7 +453,7 @@ case $TASK in
     test)
         pushd $BASE_DIR/framework
         export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
-        ${CARGO} test --release
+        ${CARGO} +"$toolchain" test --release
         popd
 
         for testname in tcp_payload macswap; do
@@ -465,7 +465,7 @@ case $TASK in
     test-cov)
         pushd $BASE_DIR/framework
         export LD_LIBRARY_PATH="${NATIVE_LIB_PATH}:${DPDK_LD_PATH}:${TOOLS_BASE}:${LD_LIBRARY_PATH}"
-        ${CARGO} tarpaulin  -v
+        ${CARGO} +"$toolchain" tarpaulin  -v
         popd
         ;;
     run)
@@ -626,11 +626,11 @@ case $TASK in
     _fmt_travis)
         echo "Running _fmt_travis"
         pushd $BASE_DIR/framework
-        ${CARGO} fmt -- --config-path ${BASE_DIR}/.travis --write-mode=diff
+        ${CARGO} +"$toolchain" fmt -- --config-path ${BASE_DIR}/.travis --write-mode=diff
         popd
         for example in ${examples[@]}; do
             pushd ${BASE_DIR}/${example}
-            ${CARGO} fmt -- --config-path ${BASE_DIR}/.travis --write-mode=diff
+            ${CARGO} +"$toolchain" fmt -- --config-path ${BASE_DIR}/.travis --write-mode=diff
             popd
         done
         ;;
@@ -643,16 +643,16 @@ case $TASK in
     check_manifest)
         deps
         pushd ${BASE_DIR}
-        ${CARGO} verify-project --verbose
+        ${CARGO} +"$toolchain" verify-project --verbose
         popd
 
         pushd ${BASE_DIR}/framework
-        ${CARGO} verify-project | grep true
+        ${CARGO} +"$toolchain" verify-project | grep true
         popd
 
         for example in ${examples[@]}; do
             pushd ${BASE_DIR}/${example}
-            ${CARGO} verify-project | grep true
+            ${CARGO} +"$toolchain" verify-project | grep true
             popd
         done
         ;;
@@ -662,7 +662,7 @@ case $TASK in
     doc) # DEPRECATED
         deps
         pushd $BASE_DIR/framework
-        ${CARGO} rustdoc  -- \
+        ${CARGO} +"$toolchain" rustdoc  -- \
             --no-defaults --passes "collapse-docs" --passes \
             "unindent-comments" --document-private-items \
             -Z unstable-options --enable-index-page
@@ -671,8 +671,8 @@ case $TASK in
     lint)
         deps
         pushd $BASE_DIR/framework
-        ${CARGO} clean
-        ${CARGO} update # Clippy breaks with new compilers
+        ${CARGO} +"$toolchain" clean
+        ${CARGO} +"$toolchain" update # Clippy breaks with new compilers
         ${CARGO} +"$toolchain" build --features dev --verbose
         popd
         ;;
