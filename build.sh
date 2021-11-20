@@ -44,7 +44,7 @@ fi
 echo "Using Cargo from ${CARGO}"
 
 # We fix the Cargo toolchain
-declare toolchain=nightly-2020-12-15-x86_64-unknown-linux-gnu
+declare toolchain=nightly-2020-12-25-x86_64-unknown-linux-gnu
 
 MUSL_DOWNLOAD_PATH="${DOWNLOAD_DIR}/musl.tar.gz"
 MUSL_RESULT="${EXT_BASE}/musl"
