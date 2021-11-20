@@ -14,10 +14,11 @@ pub fn browser_create(usr_data_dir: &String) -> Fallible<Browser> {
     let options = LaunchOptionsBuilder::default()
         .headless(true)
         .user_data_dir(Some(usr_data_dir.to_string()))
-        .idle_browser_timeout(timeout)
+        // .idle_browser_timeout(timeout)
         .build()
         .expect("Couldn't find appropriate Chrome binary.");
     let browser = Browser::new(options)?;
+
     // let tab = browser.wait_for_initial_tab()?;
     // tab.set_default_timeout(std::time::Duration::from_secs(100));
     Ok(browser)
@@ -26,11 +27,12 @@ pub fn browser_create(usr_data_dir: &String) -> Fallible<Browser> {
 /// Simple user browse.
 pub fn simple_user_browse(current_browser: &Browser, hostname: &str, _user: &i64) -> Fallible<(usize, u128)> {
     let now = Instant::now();
-    let tabs = current_browser.get_tabs().lock().unwrap();
-    let current_tab = tabs.iter().next().unwrap();
+    let tab = browser.wait_for_initial_tab()?;
+    // let tabs = current_browser.get_tabs().lock().unwrap();
+    // let current_tab = tabs.iter().next().unwrap();
     let http_hostname = "http://".to_string() + &hostname;
 
-    current_tab.navigate_to(&http_hostname)?;
+    tab.navigate_to(&http_hostname)?;
 
     Ok((1, now.elapsed().as_millis()))
 }
