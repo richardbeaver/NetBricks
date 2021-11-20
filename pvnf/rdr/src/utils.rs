@@ -27,7 +27,7 @@ pub fn browser_create(usr_data_dir: &String) -> Fallible<Browser> {
 /// Simple user browse.
 pub fn simple_user_browse(current_browser: &Browser, hostname: &str, _user: &i64) -> Fallible<(usize, u128)> {
     let now = Instant::now();
-    let tab = browser.wait_for_initial_tab()?;
+    let tab = current_browser.wait_for_initial_tab()?;
     // let tabs = current_browser.get_tabs().lock().unwrap();
     // let current_tab = tabs.iter().next().unwrap();
     let http_hostname = "http://".to_string() + &hostname;
