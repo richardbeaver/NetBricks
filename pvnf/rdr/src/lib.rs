@@ -57,7 +57,9 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
 ) -> CompositionBatch {
     let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(param.setup).unwrap();
-    let rdr_users = rdr_read_rand_seed(num_of_users, param.iter).unwrap();
+
+    // let rdr_users = rdr_read_rand_seed(num_of_users, param.iter).unwrap();
+    let rdr_users = rdr_read_rand_seed(num_of_users, 1).unwrap();  // NOTE
     let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // Measurement code
