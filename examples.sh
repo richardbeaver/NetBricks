@@ -18,16 +18,16 @@ export examples=(
 	pvnf/p2p
 	pvnf/xcdr
 	# PVN chain
-	# test/co-tlsv-rdr
-	# test/co-rdr-p2p
-	# test/co-rdr-xcdr
-	# test/co-tlsv-p2p
-	# test/co-tlsv-xcdr
-	# test/co-xcdr-p2p
+	test/co-tlsv-rdr
+	test/co-rdr-p2p
+	test/co-rdr-xcdr
+	test/co-tlsv-p2p
+	test/co-tlsv-xcdr
+	test/co-xcdr-p2p
 	# New coresident NFs
-	# test/co-rdr-xcdr-p2p
-	# test/co-tlsv-rdr-p2p
-	# test/co-tlsv-p2p-xcdr
-	# test/co-tlsv-rdr-xcdr
-	# test/co-tlsv-rdr-p2p-xcdr
+	test/co-rdr-xcdr-p2p
+	test/co-tlsv-rdr-p2p
+	test/co-tlsv-p2p-xcdr
+	test/co-tlsv-rdr-xcdr
+	test/co-tlsv-rdr-p2p-xcdr
 )
