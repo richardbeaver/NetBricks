@@ -1,6 +1,6 @@
 //! Utils functions for the PVN RDR NF.
 use crate::pvn::unresolvable::curate_unresolvable_records;
-use serde_json::{from_reader, Value};
+use serde_json::{from_reader, Value, json};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Result};
