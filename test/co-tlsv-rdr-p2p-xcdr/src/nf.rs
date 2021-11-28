@@ -49,6 +49,7 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
     let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
     let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
+    let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // XCDR setup
     let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
@@ -105,7 +106,7 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
     let mut browser_list: HashMap<i64, Browser> = HashMap::new();
 
     for user in &rdr_users {
-        let browser = browser_create().unwrap();
+        let browser = browser_create(&usr_data_dir).unwrap();
         browser_list.insert(*user, browser);
     }
     println!("{} browsers are created ", num_of_users);
