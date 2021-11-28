@@ -13,9 +13,9 @@ pub fn rdr_read_user_data_dir(file_path: String) -> Result<String> {
     let json: Value = from_reader(file).expect(&read_json);
 
     let disk_type = match json.get("disk") {
-        Ok(val) => Some(val),
-        Err(e) => {
-            println!("disk setup should exist but not: {}, using hdd by default..", e);
+        Some(val) => Some(val),
+        None => {
+            println!("disk setup should exist but not, using hdd by default..");
             Some("hdd")
         }
     };
