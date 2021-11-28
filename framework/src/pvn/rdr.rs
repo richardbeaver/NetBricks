@@ -12,15 +12,14 @@ pub fn rdr_read_user_data_dir(file_path: String) -> Result<String> {
     let read_json = file_path + "should be proper JSON";
     let json: Value = from_reader(file).expect(&read_json);
 
-    let disk: Option<String> = match serde_json::from_value(json.get("disk").expect("disk setup should exist").clone())
-    {
+    let disk_type = match json.get("disk") {
         Ok(val) => Some(val),
         Err(e) => {
-            println!("Malformed JSON response: {}", e);
-            None
+            println!("disk setup should exist but not: {}, using hdd by default..", e);
+            Some("hdd")
         }
     };
-    match disk {
+    match disk_type {
         // --profile-directory="C:\temp\profile" --user-data-dir="C:\temp\profile\userdata"
         Some(val) => {
             if val == "hdd" {
