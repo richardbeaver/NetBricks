@@ -226,8 +226,8 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                                     let dns_name = name_cache.remove(&rev_flow);
                                     match dns_name {
                                         Some(name) => {
-                                            if tmp_payload_cache.contains_key(&rev_flow) {
-                                                unordered_validate(
+                                           if tmp_payload_cache.contains_key(&rev_flow) {
+                                                let try = unordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
@@ -236,17 +236,34 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
                                                     &mut tmp_seqnum_map,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
+                                                );
+                                                if try.is_err() {
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
                                             } else {
-                                                ordered_validate(
+                                                let try = ordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
                                                     &mut unsafe_connection,
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
-                                                )
-                                            }
+                                                );
+                                                if try.is_err() {
+                                                    // println!("flush everything");
+                                                    payload_cache.clear();
+                                                    tmp_payload_cache.clear();
+                                                    seqnum_map.clear();
+                                                    tmp_seqnum_map.clear();
+                                                    unsafe_connection.clear();
+                                                    name_cache.clear();
+                                                }
+                                            } 
                                         }
                                         None => {} // eprintln!("We are missing the dns name from the client hello",),
                                     }
