@@ -12,7 +12,7 @@ twox-hash = "=1.6.0"
 rustls = { git = "https://github.com/jethrosun/rustls", branch = "pvn-0.16", features = ["dangerous_configuration"] }
 webpki = "=0.21.0"
 webpki-roots = "=0.18.0"
-log = "=0.4.4"
+log = "=0.4"
 
 [features]
 default = []
