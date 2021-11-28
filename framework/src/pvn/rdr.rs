@@ -16,7 +16,7 @@ pub fn rdr_read_user_data_dir(file_path: String) -> Result<String> {
         Some(val) => Some(val),
         None => {
             println!("disk setup should exist but not, using hdd by default..");
-            Some("hdd")
+            Some(json!("hdd"))
         }
     };
     match disk_type {
