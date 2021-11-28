@@ -298,7 +298,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
                                                 );
-                                                if tr.is_err() {
+                                                if t.is_err() {
                                                     payload_cache.clear();
                                                     tmp_payload_cache.clear();
                                                     seqnum_map.clear();

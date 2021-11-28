@@ -269,7 +269,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                     match dns_name {
                                         Some(name) => {
                                            if tmp_payload_cache.contains_key(&rev_flow) {
-                                                let try = unordered_validate(
+                                                let t = unordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
@@ -279,7 +279,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
                                                 );
-                                                if try.is_err() {
+                                                if t.is_err() {
                                                     payload_cache.clear();
                                                     tmp_payload_cache.clear();
                                                     seqnum_map.clear();
@@ -288,7 +288,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                                     name_cache.clear();
                                                 }
                                             } else {
-                                                let try = ordered_validate(
+                                                let t = ordered_validate(
                                                     name,
                                                     &flow,
                                                     &mut cert_count,
@@ -296,8 +296,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                                     &mut payload_cache,
                                                     &mut seqnum_map,
                                                 );
-                                                if try.is_err() {
-                                                    // println!("flush everything");
+                                                if t.is_err() {
                                                     payload_cache.clear();
                                                     tmp_payload_cache.clear();
                                                     seqnum_map.clear();
