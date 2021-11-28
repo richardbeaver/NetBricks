@@ -1,6 +1,6 @@
 //! Utils functions for the PVN RDR NF.
 use crate::pvn::unresolvable::curate_unresolvable_records;
-use serde_json::{from_reader, Value, json};
+use serde_json::{from_reader, json, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Result};
@@ -13,7 +13,7 @@ pub fn rdr_read_user_data_dir(file_path: String) -> Result<String> {
     let json: Value = from_reader(file).expect(&read_json);
 
     let disk_type = match json.get("disk") {
-        Some(val) => Some(val),
+        Some(val) => Some(val.clone()),
         None => {
             println!("disk setup should exist but not, using hdd by default..");
             Some(json!("hdd"))
