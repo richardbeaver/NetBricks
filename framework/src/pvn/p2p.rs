@@ -90,14 +90,14 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
     let param = read_setup_param(fp_setup).unwrap();
 
-    let (mut p2p_ext_map, mut p2p_controlled_map, mut p2p_general_map) = construct_p2p_job().unwrap();
+    let (_, mut p2p_controlled_map, _) = construct_p2p_job().unwrap();
 
     println!("type: {}, setup: {}, iter: {}", p2p_type, param.setup, param.iter);
     match &*p2p_type {
         // "app_p2p-controlled" => return p2p_controlled_map.remove(&param.setup),
         // "app_p2p" => return p2p_general_map.remove(&param.setup),
         // "app_p2p-ext" => return p2p_general_map.remove(&param.setup),
-        p2p_controlled_map.remove(&param.setup)
+        return p2p_controlled_map.remove(&param.setup)
     }
 }
 
