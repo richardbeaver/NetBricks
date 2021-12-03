@@ -93,12 +93,10 @@ pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
     let (_, mut p2p_controlled_map, _) = construct_p2p_job().unwrap();
 
     println!("type: {}, setup: {}, iter: {}", p2p_type, param.setup, param.iter);
-    match &*p2p_type {
-        // "app_p2p-controlled" => return p2p_controlled_map.remove(&param.setup),
-        // "app_p2p" => return p2p_general_map.remove(&param.setup),
-        // "app_p2p-ext" => return p2p_general_map.remove(&param.setup),
-        return p2p_controlled_map.remove(&param.setup)
-    }
+    // "app_p2p-controlled" => return p2p_controlled_map.remove(&param.setup),
+    // "app_p2p" => return p2p_general_map.remove(&param.setup),
+    // "app_p2p-ext" => return p2p_general_map.remove(&param.setup),
+    p2p_controlled_map.remove(&param.setup)
 }
 
 /// Retrieve the p2p type param in the pvn setup config file.
