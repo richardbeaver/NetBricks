@@ -268,7 +268,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                     let dns_name = name_cache.remove(&rev_flow);
                                     match dns_name {
                                         Some(name) => {
-                                           if tmp_payload_cache.contains_key(&rev_flow) {
+                                            if tmp_payload_cache.contains_key(&rev_flow) {
                                                 let t = unordered_validate(
                                                     name,
                                                     &flow,
@@ -304,7 +304,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                                                     unsafe_connection.clear();
                                                     name_cache.clear();
                                                 }
-                                            } 
+                                            }
                                         }
                                         None => {} // eprintln!("We are missing the dns name from the client hello",),
                                     }
@@ -450,7 +450,7 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
             if now.elapsed().as_secs() >= xcdr_param.expr_time && metric_exec {
                 println!("Pivot/span: {:?}", pivot / time_span);
                 let w = latv_1.lock().unwrap();
-                println!("Metric: {:?}", w);
+                println!("XCDR_Metric: {:?}", w);
 
                 metric_exec = false;
             }

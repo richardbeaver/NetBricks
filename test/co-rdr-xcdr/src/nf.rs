@@ -226,16 +226,16 @@ pub fn rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
             if now.elapsed().as_secs() >= rdr_param.expr_time && metric_exec {
                 // Measurement: metric for the performance of the RDR proxy
                 println!(
-                    "Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
+                    "RDR_Metric: num_of_oks: {:?}, num_of_errs: {:?}, num_of_timeout: {:?}, num_of_closed: {:?}, num_of_visit: {:?}",
                     num_of_ok, num_of_err, num_of_timeout, num_of_closed, num_of_visit,
                 );
-                println!("Metric: Browsing Time: {:?}\n", elapsed_time);
+                println!("RDR_Metric: Browsing Time: {:?}\n", elapsed_time);
                 metric_exec = false;
 
                 // Measurement: metric for the performance of the XCDR
                 println!("Pivot/span: {:?}", pivot / time_span);
                 let w = latv_1.lock().unwrap();
-                println!("Metric: {:?}", w);
+                println!("XCDR_Metric: {:?}", w);
 
             }
 

@@ -136,7 +136,7 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 if now.elapsed().as_secs() >= param.expr_time && metric_exec {
                     println!("Pivot/span: {:?}", pivot / time_span);
                     let w = latv_1.lock().unwrap();
-                    println!("Metric: {:?}", w);
+                    println!("XCDR_Metric: {:?}", w);
 
                     if param.inst {
                         println!("pkt count {:?}", pkt_count);
