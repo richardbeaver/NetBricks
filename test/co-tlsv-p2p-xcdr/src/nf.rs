@@ -352,50 +352,17 @@ pub fn tlsv_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let fp_workload = p2p_fetch_workload("/home/jethros/setup".to_string()).unwrap();
 
                 println!("p2p type: {}", p2p_type);
-                match &*p2p_type {
-                    // use our shell wrapper to interact with qBitTorrent
-                    // FIXME: it would be nicer if we can employ a Rust crate for this
-                    "app_p2p-controlled"
-                    | "chain_tlsv_p2p"
-                    | "chain_rdr_p2p"
-                    | "chain_xcdr_p2p"
-                    | "co_tlsv_rdr_p2p"
-                    | "co_tlsv_p2p_xcdr"
-                    | "co_rdr_xcdr_p2p"
-                    | "co_tlsv_rdr_p2p_xcdr" => {
-                        println!("match p2p controlled before btrun");
-                        let p2p_torrents = p2p_read_rand_seed(
-                            num_of_torrents,
-                            p2p_param.iter.to_string(),
-                            "p2p_controlled".to_string(),
-                        )
-                        .unwrap();
+                println!("match p2p controlled before btrun");
+                let p2p_torrents = p2p_read_rand_seed(
+                    num_of_torrents,
+                    p2p_param.iter.to_string(),
+                    "p2p_controlled".to_string(),
+                )
+                .unwrap();
 
-                        let _ = bt_run_torrents(p2p_torrents);
+                let _ = bt_run_torrents(p2p_torrents);
 
-                        println!("bt run is not blocking");
-                        // workload_exec = false;
-                    }
-                    // use the transmission rpc for general and ext workload
-                    "app_p2p" | "app_p2p-ext" => {
-                        println!("match p2p general or ext ");
-                        let p2p_torrents =
-                            p2p_read_rand_seed(num_of_torrents, p2p_param.iter.to_string(), "p2p".to_string()).unwrap();
-                        let workload = p2p_load_json(fp_workload.to_string(), p2p_torrents);
-
-                        let mut rt = Runtime::new().unwrap();
-                        panic!("Implementation with transmission is completely unsupported");
-                        // match rt.block_on(add_all_torrents(num_of_torrents, workload, torrents_dir.to_string())) {
-                        //     Ok(_) => println!("Add torrents success"),
-                        //     Err(e) => println!("Add torrents failed with {:?}", e),
-                        // }
-                        // match rt.block_on(run_all_torrents()) {
-                        //     Ok(_) => println!("Run torrents success"),
-                        //     Err(e) => println!("Run torrents failed with {:?}", e),
-                        // }
-                    }
-                    _ => println!("Current P2P type: {:?} doesn't match to any workload we know", p2p_type),
-                }
+                println!("bt run is not blocking");
 
                 workload_exec = false;
             }
