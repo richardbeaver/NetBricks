@@ -9,7 +9,7 @@ use rustls::internal::msgs::{
 use rustls::{ProtocolVersion, RootCertStore, ServerCertVerifier, TLSError, WebPKIVerifier};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
-use webpki::{DNSName, DNSNameRef, Time};
+use webpki::{DNSName, Time};
 use webpki_roots;
 
 // TODO: move to failure crate!

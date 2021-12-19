@@ -38,17 +38,22 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
 
     // RDR setup
     let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    println!("RDR: {:?}", rdr_param);
+    let num_of_users = if rdr_param.rdr_setup != 0 {
+        rdr_retrieve_users(rdr_param.rdr_setup).unwrap()
+    } else {
+        rdr_retrieve_users(rdr_param.setup).unwrap()
+    };
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
     let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // XCDR setup
     let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
-    println!(
-        "Setup: {:?} port: {:?},  expr_num: {:?}",
-        xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
-    );
+    let time_span = if xcdr_param.xcdr_setup != 0 {
+        xcdr_retrieve_param(xcdr_param.xcdr_setup).unwrap()
+    } else {
+        xcdr_retrieve_param(xcdr_param.setup).unwrap()
+    };
     let latencyv = Arc::new(Mutex::new((Vec::<u128>::new())));
     let latv_1 = Arc::clone(&latencyv);
     let latv_2 = Arc::clone(&latencyv);
@@ -259,11 +264,10 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 let mut w = latv_2.lock().unwrap();
                 w.push(t);
 
-                let core_id = job_id % xcdr_param.setup;
+                let core_id = 1;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
                 append_job_faktory(pivot, c, core_id, xcdr_param.expr_num);
-                // println!("job: {}, core id: {}", job_id, core_id);
 
                 cur = Instant::now();
                 pivot += time_span;

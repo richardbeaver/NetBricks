@@ -18,12 +18,18 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
 ) -> CompositionBatch {
     // RDR setup
     let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    println!("RDR: {:?}", rdr_param);
+    let num_of_users = if rdr_param.rdr_setup != 0 {
+        rdr_retrieve_users(rdr_param.rdr_setup).unwrap()
+    } else {
+        rdr_retrieve_users(rdr_param.setup).unwrap()
+    };
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
     let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 
     // P2P setup
     let p2p_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    println!("P2P: {:?}", p2p_param);
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";
@@ -64,7 +70,7 @@ pub fn rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Size
         let browser = browser_create(&usr_data_dir).unwrap();
         browser_list.insert(*user, browser);
     }
-    println!("{} browsers are created ", num_of_users);
+    println!("{:?} browsers are created ", num_of_users);
 
     // Metrics for measurement
     let mut elapsed_time = Vec::new();

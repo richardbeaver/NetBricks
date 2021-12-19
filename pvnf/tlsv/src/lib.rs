@@ -9,7 +9,6 @@ extern crate rustls;
 extern crate time;
 extern crate webpki;
 extern crate webpki_roots;
-#[macro_use]
 extern crate log;
 
 use self::utils::{get_server_name, on_frame, ordered_validate, tlsf_update, unordered_validate};
@@ -69,6 +68,7 @@ pub fn validator<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     sched: &mut S,
 ) -> CompositionBatch {
     let param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    println!("TLSV: {:?}", param);
     let mut metric_exec = true;
 
     // New payload cache.

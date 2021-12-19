@@ -17,7 +17,12 @@ pub fn tlsv_rdr_chain<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
     let tlsv = validator(parent, sched);
 
     let rdr_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
-    let num_of_users = rdr_retrieve_users(rdr_param.setup).unwrap();
+    println!("RDR: {:?}", rdr_param);
+    let num_of_users = if rdr_param.rdr_setup != 0 {
+        rdr_retrieve_users(rdr_param.rdr_setup).unwrap()
+    } else {
+        rdr_retrieve_users(rdr_param.setup).unwrap()
+    };
     let rdr_users = rdr_read_rand_seed(num_of_users, rdr_param.iter).unwrap();
     let usr_data_dir = rdr_read_user_data_dir("/home/jethros/setup".to_string()).unwrap();
 

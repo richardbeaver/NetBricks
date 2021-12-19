@@ -19,7 +19,6 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
     sched: &mut S,
 ) -> CompositionBatch {
     // TLSV setup
-    //
     let mut payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
     // Temporary payload cache.
     let mut tmp_payload_cache = HashMap::<Flow, Vec<u8>>::with_hasher(Default::default());
@@ -36,6 +35,7 @@ pub fn tlsv_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Siz
 
     // P2P setup
     let p2p_param = read_setup_param("/home/jethros/setup".to_string()).unwrap();
+    println!("P2P: {:?}", p2p_param);
     let num_of_torrents = p2p_retrieve_param("/home/jethros/setup".to_string()).unwrap();
     let p2p_type = p2p_read_type("/home/jethros/setup".to_string()).unwrap();
     let torrents_dir = "/home/jethros/dev/pvn/utils/workloads/torrent_files/";

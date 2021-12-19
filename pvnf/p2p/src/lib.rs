@@ -17,7 +17,6 @@ extern crate tiny_http;
 
 use crate::utils::*;
 use e2d2::allocators::CacheAligned;
-
 use e2d2::headers::{IpHeader, MacHeader, NullHeader, TcpHeader};
 use e2d2::interface::*;
 use e2d2::operators::ReceiveBatch;
@@ -32,7 +31,6 @@ use tokio::runtime::Runtime;
 
 pub mod utils;
 
-// const CONVERSION_FACTOR: f64 = 1_000_000_000.;
 
 pub fn p2p<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
     parent: T,

@@ -2,7 +2,6 @@
 use serde_json::{from_reader, Value};
 use std::collections::HashMap;
 use std::fs::File;
-use std::time::Instant;
 
 /// Time for the short experiment with instrumentation.
 pub const SHORT_MEASURE_TIME: u64 = 181;
@@ -18,6 +17,8 @@ pub const APP_MEASURE_TIME: u64 = 610;
 pub struct XcdrExprParam {
     /// setup (workload level)
     pub setup: usize,
+    /// setup (workload level)
+    pub xcdr_setup: usize,
     /// iteration of this run
     pub iter: usize,
     /// whether we have turned on latency instrumentation
@@ -45,7 +46,16 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
             None
         }
     };
+    let xcdr_setup: Option<String> =
+        match serde_json::from_value(json.get("xcdr_setup").expect("file should have xcdr_setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response: {}", e);
+                Some("0".to_string())
+            }
+        };
     let setup = setup.unwrap().parse::<usize>();
+    let xcdr_setup = xcdr_setup.unwrap().parse::<usize>();
 
     let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have setup").clone()) {
         Ok(val) => Some(val),
@@ -102,11 +112,12 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
         _ => None,
     };
 
-    if let (Ok(setup), Ok(iter), Some(inst), Ok(port), Some(expr_time), Ok(expr_num)) =
-        (setup, iter, inst_val, port, expr_time, expr_num)
+    if let (Ok(setup), Ok(xcdr_setup), Ok(iter), Some(inst), Ok(port), Some(expr_time), Ok(expr_num)) =
+        (setup, xcdr_setup, iter, inst_val, port, expr_time, expr_num)
     {
         Some(XcdrExprParam {
             setup,
+            xcdr_setup,
             iter,
             inst,
             port,

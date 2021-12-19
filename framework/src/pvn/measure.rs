@@ -42,6 +42,14 @@ pub fn fake_flow() -> Flow {
 pub struct ExprParam {
     /// setup (workload level)
     pub setup: usize,
+    /// TLSV setup
+    pub tlsv_setup: usize,
+    /// RDR setup
+    pub rdr_setup: usize,
+    /// XCDR setup
+    pub xcdr_setup: usize,
+    /// P2P setup
+    pub p2p_setup: usize,
     /// iteration of this run
     pub iter: usize,
     /// whether we have turned on latency instrumentation
@@ -55,6 +63,8 @@ pub struct ExprParam {
 /// Currently returns: *setup* (which setup it is), *iter* (which iteration it
 /// is), *inst* (instrumentation for retrieving latencies for every packet),
 /// and *expr running time* (how long the NF will run).
+///
+/// This impl probably can be optimized.
 pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
     let file = File::open(file_path.clone()).expect("file should open read only");
     let read_json = file_path + "should be proper JSON";
@@ -64,11 +74,49 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
     {
         Ok(val) => Some(val),
         Err(e) => {
-            println!("Malformed JSON response: {}", e);
+            println!("Malformed JSON response for setup: {}", e);
             None
         }
     };
     let setup = setup.unwrap().parse::<usize>();
+
+    // setup all NF setups
+    let tlsv_setup: Option<String> =
+        match serde_json::from_value(json.get("tlsv_setup").expect("file could have tlsv setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response for tlsv_setup: {}", e);
+                Some("0".to_string())
+            }
+        };
+    let rdr_setup: Option<String> =
+        match serde_json::from_value(json.get("rdr_setup").expect("file should have rdr_setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response for rdr_setup: {}", e);
+                Some("0".to_string())
+            }
+        };
+    let xcdr_setup: Option<String> =
+        match serde_json::from_value(json.get("xcdr_setup").expect("file should have xcdr_setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response for xcdr_setup: {}", e);
+                Some("0".to_string())
+            }
+        };
+    let p2p_setup: Option<String> =
+        match serde_json::from_value(json.get("p2p_setup").expect("file should have p2p_setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response for p2p_setup: {}", e);
+                Some("0".to_string())
+            }
+        };
+    let tlsv_setup = tlsv_setup.unwrap().parse::<usize>();
+    let rdr_setup = rdr_setup.unwrap().parse::<usize>();
+    let xcdr_setup = xcdr_setup.unwrap().parse::<usize>();
+    let p2p_setup = p2p_setup.unwrap().parse::<usize>();
 
     let iter: Option<String> = match serde_json::from_value(json.get("iter").expect("file should have iter").clone()) {
         Ok(val) => Some(val),
@@ -106,9 +154,24 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
         _ => None,
     };
 
-    if let (Ok(setup), Ok(iter), Some(inst), Some(expr_time)) = (setup, iter, inst_val, expr_time) {
+    if let (
+        Ok(setup),
+        Ok(tlsv_setup),
+        Ok(rdr_setup),
+        Ok(xcdr_setup),
+        Ok(p2p_setup),
+        Ok(iter),
+        Some(inst),
+        Some(expr_time),
+    ) = (
+        setup, tlsv_setup, rdr_setup, xcdr_setup, p2p_setup, iter, inst_val, expr_time,
+    ) {
         Some(ExprParam {
             setup,
+            tlsv_setup,
+            rdr_setup,
+            xcdr_setup,
+            p2p_setup,
             iter,
             inst,
             expr_time,

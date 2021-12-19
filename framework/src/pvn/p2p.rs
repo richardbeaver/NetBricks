@@ -86,17 +86,15 @@ fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, 
 /// 30 torrent job in total -- 75% pktgen sending rate
 /// 40 torrent job in total -- 100% pktgen sending rate
 pub fn p2p_retrieve_param(fp_setup: String) -> Option<usize> {
-    println!("fetch param");
-    let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
+    // let p2p_type = p2p_read_type(fp_setup.clone()).unwrap();
     let param = read_setup_param(fp_setup).unwrap();
-
     let (_, mut p2p_controlled_map, _) = construct_p2p_job().unwrap();
 
-    println!("type: {}, setup: {}, iter: {}", p2p_type, param.setup, param.iter);
-    // "app_p2p-controlled" => return p2p_controlled_map.remove(&param.setup),
-    // "app_p2p" => return p2p_general_map.remove(&param.setup),
-    // "app_p2p-ext" => return p2p_general_map.remove(&param.setup),
-    p2p_controlled_map.remove(&param.setup)
+    if param.p2p_setup != 0 {
+        p2p_controlled_map.remove(&param.p2p_setup)
+    } else {
+        p2p_controlled_map.remove(&param.setup)
+    }
 }
 
 /// Retrieve the p2p type param in the pvn setup config file.
@@ -107,7 +105,7 @@ pub fn p2p_read_type(fp_setup: String) -> Option<String> {
     let json_data: Value = from_reader(file).expect(&read_json);
 
     let p2p_type: Option<String> =
-        match serde_json::from_value(json_data.get("p2p_type").expect("file should have setup").clone()) {
+        match serde_json::from_value(json_data.get("p2p_type").expect("file should have p2p type").clone()) {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for p2p_type: {}", e);
@@ -122,7 +120,6 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
     println!("fetch worklaod");
     let (mut p2p_ext_map, mut p2p_controlled_map, mut p2p_general_map) = construct_p2p_workload().unwrap();
 
-    // load setup param
     let file = File::open(fp_setup.clone()).expect("file should open read only");
     let read_json = fp_setup + "should be proper JSON";
     let json_data: Value = from_reader(file).expect(&read_json);
@@ -132,9 +129,18 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for setup: {}", e);
-                None
+                Some("0".to_string())
             }
         };
+    let p2p_setup: Option<String> =
+        match serde_json::from_value(json_data.get("p2p_setup").expect("file should have p2p_setup").clone()) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                println!("Malformed JSON response for setup: {}", e);
+                Some("0".to_string())
+            }
+        };
+    let setup = if p2p_setup.clone().unwrap() != "0" { p2p_setup } else { setup };
 
     let p2p_type: Option<String> =
         match serde_json::from_value(json_data.get("p2p_type").expect("file should have setup").clone()) {

@@ -43,11 +43,12 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
 
     // setup for this run
     let param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let time_span = xcdr_retrieve_param(param.setup).unwrap();
-    println!(
-        "Setup: {:?} port: {:?},  expr_num: {:?}",
-        param.setup, param.port, param.expr_num
-    );
+    let time_span = if param.xcdr_setup != 0 {
+        xcdr_retrieve_param(param.xcdr_setup).unwrap()
+    } else {
+        xcdr_retrieve_param(param.setup).unwrap()
+    };
+    println!("XCDR : {:?}", param);
 
     // faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
@@ -207,11 +208,11 @@ pub fn transcoder<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>
                 let mut w = latv_2.lock().unwrap();
                 w.push(t);
 
-                let core_id = job_id % param.setup;
+                // let core_id = job_id % param.setup;
+                let core_id = 1;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
                 append_job_faktory(pivot, c, core_id, param.expr_num);
-                // println!("job: {}, core id: {}", job_id, core_id);
 
                 cur = Instant::now();
                 pivot += time_span;

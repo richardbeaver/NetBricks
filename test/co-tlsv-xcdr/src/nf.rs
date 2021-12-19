@@ -38,11 +38,12 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
     let latv_2 = Arc::clone(&latencyv);
     println!("Latency vec uses millisecond");
     let xcdr_param = xcdr_read_setup("/home/jethros/setup".to_string()).unwrap();
-    let time_span = xcdr_retrieve_param(xcdr_param.setup).unwrap();
-    println!(
-        "Setup: {:?} port: {:?}, expr_num: {:?}",
-        xcdr_param.setup, xcdr_param.port, xcdr_param.expr_num
-    );
+    println!("XCDR: {:?}", xcdr_param);
+    let time_span = if xcdr_param.xcdr_setup != 0 {
+        xcdr_retrieve_param(xcdr_param.xcdr_setup).unwrap()
+    } else {
+        xcdr_retrieve_param(xcdr_param.setup).unwrap()
+    };
     // faktory job queue
     let fak_conn = Arc::new(Mutex::new(Producer::connect(None).unwrap()));
     // job id
@@ -355,11 +356,10 @@ pub fn tlsv_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Si
                 let mut w = latv_2.lock().unwrap();
                 w.push(t);
 
-                let core_id = job_id % xcdr_param.setup;
+                let core_id = 1;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
                 append_job_faktory(pivot, c, core_id, xcdr_param.expr_num);
-                // println!("job: {}, core id: {}", job_id, core_id);
 
                 cur = Instant::now();
                 pivot += time_span;
