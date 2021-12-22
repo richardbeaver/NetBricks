@@ -129,7 +129,7 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let p2p_setup: Option<String> =
@@ -137,7 +137,7 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let setup = if p2p_setup.clone().unwrap() != "0" { p2p_setup } else { setup };

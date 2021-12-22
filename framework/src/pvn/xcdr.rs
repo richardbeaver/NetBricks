@@ -51,7 +51,7 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let setup = setup.unwrap().parse::<usize>();

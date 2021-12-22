@@ -86,7 +86,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for tlsv_setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let rdr_setup: Option<String> =
@@ -94,7 +94,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for rdr_setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let xcdr_setup: Option<String> =
@@ -102,7 +102,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for xcdr_setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let p2p_setup: Option<String> =
@@ -110,7 +110,7 @@ pub fn read_setup_param(file_path: String) -> Option<ExprParam> {
             Ok(val) => Some(val),
             Err(e) => {
                 println!("Malformed JSON response for p2p_setup: {}", e);
-                Some("0".to_string())
+                None
             }
         };
     let tlsv_setup = tlsv_setup.unwrap().parse::<usize>();
