@@ -140,7 +140,11 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
                 None
             }
         };
-    let setup = if p2p_setup.clone().unwrap() != "0" { p2p_setup } else { setup };
+    let setup = if p2p_setup.clone().unwrap() != "0" {
+        p2p_setup
+    } else {
+        setup
+    };
 
     let p2p_type: Option<String> =
         match serde_json::from_value(json_data.get("p2p_type").expect("file should have setup").clone()) {
@@ -151,47 +155,7 @@ pub fn p2p_fetch_workload(fp_setup: String) -> Option<String> {
             }
         };
 
-    match p2p_type.clone().unwrap().as_ref() {
-        "app_p2p-ext" => {
-            println!("Got p2p_ext");
-            return p2p_ext_map.remove(&*setup.unwrap());
-        }
-        "app_p2p-controlled" => {
-            println!("\tworkload: Got p2p_controlled");
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "app_p2p" => {
-            println!("Got p2p_general");
-            return p2p_general_map.remove(&*setup.unwrap());
-        }
-        // chain
-        "chain_rdr_p2p" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "chain_tlsv_p2p" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "chain_xcdr_p2p" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        // coresident
-        "co_tlsv_rdr_p2p" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "co_tlsv_p2p_xcdr" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "co_rdr_xcdr_p2p" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        "co_tlsv_rdr_p2p_xcdr" => {
-            return p2p_controlled_map.remove(&*setup.unwrap());
-        }
-        &_ => {
-            println!("\tP2P type: {:?}, unable to fetch workload", p2p_type.unwrap());
-            return None;
-        }
-    }
+    p2p_controlled_map.remove(&*setup.unwrap())
 }
 
 /// Parse the given p2p json workload.
