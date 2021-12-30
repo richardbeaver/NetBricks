@@ -138,12 +138,20 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
 ///     duration = 1 second [1000 milliseconds] / jobs_submitted_per_second
 pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     let mut map = HashMap::new();
-    map.insert(1, 1);
-    map.insert(2, 6);
-    map.insert(3, 11);
-    map.insert(4, 23);
-    map.insert(5, 57);
-    map.insert(6, 111);
+    map.insert(1, 1); // 10
+    map.insert(2, 6); // 50
+    map.insert(3, 11); // 100
+    map.insert(4, 23); // 200
+    map.insert(5, 57); // 500
+    map.insert(6, 111); // 1000
+
+    // hack for task scheduling
+    map.insert(7, 11); // 100
+    map.insert(8, 23); // 200
+    map.insert(9, 34); // 300
+    map.insert(10, 45); // 400
+    map.insert(11, 57); // 500
+
     let time_span = 1_000 / map.remove(&setup_val).unwrap();
     println!(
         "setup: {:?} maps to time span: {:?} millisecond",

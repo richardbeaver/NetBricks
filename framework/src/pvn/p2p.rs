@@ -10,6 +10,7 @@ fn construct_p2p_workload() -> Option<(
     HashMap<&'static str, String>,
     HashMap<&'static str, String>,
 )> {
+    // deprecated
     let mut p2p_ext_map: HashMap<&str, String> = HashMap::new();
     let single_wl = "/home/jethros/dev/pvn/utils/workloads/p2p-single-workload-";
     p2p_ext_map.insert("11", single_wl.clone().to_owned() + "1.json");
@@ -31,7 +32,14 @@ fn construct_p2p_workload() -> Option<(
     p2p_controlled_map.insert("4", control_wl.to_owned());
     p2p_controlled_map.insert("5", control_wl.to_owned());
     p2p_controlled_map.insert("6", control_wl.to_owned());
+    // hack to add task scheduling ones
+    p2p_controlled_map.insert("7", control_wl.to_owned());
+    p2p_controlled_map.insert("8", control_wl.to_owned());
+    p2p_controlled_map.insert("9", control_wl.to_owned());
+    p2p_controlled_map.insert("10", control_wl.to_owned());
+    p2p_controlled_map.insert("11", control_wl.to_owned());
 
+    // deprecated
     let mut p2p_general_map: HashMap<&str, String> = HashMap::new();
     let p2p_wl = "/home/jethros/dev/pvn/utils/workloads/p2p-workload.json";
     p2p_general_map.insert("1", p2p_wl.to_owned());
@@ -45,10 +53,8 @@ fn construct_p2p_workload() -> Option<(
 }
 
 fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, HashMap<usize, usize>)> {
+    // deprecated
     let mut p2p_ext_map: HashMap<usize, usize> = HashMap::new();
-    let mut p2p_controlled_map: HashMap<usize, usize> = HashMap::new();
-    let mut p2p_general_map: HashMap<usize, usize> = HashMap::new();
-
     p2p_ext_map.insert(11, 1);
     p2p_ext_map.insert(12, 1);
     p2p_ext_map.insert(13, 1);
@@ -60,13 +66,22 @@ fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, 
     p2p_ext_map.insert(19, 1);
     p2p_ext_map.insert(20, 1);
 
+    let mut p2p_controlled_map: HashMap<usize, usize> = HashMap::new();
     p2p_controlled_map.insert(1, 1);
     p2p_controlled_map.insert(2, 2);
     p2p_controlled_map.insert(3, 4);
     p2p_controlled_map.insert(4, 6);
     p2p_controlled_map.insert(5, 8);
     p2p_controlled_map.insert(6, 10);
+    // hack for task scheduling
+    p2p_controlled_map.insert(7, 2);
+    p2p_controlled_map.insert(8, 4);
+    p2p_controlled_map.insert(9, 6);
+    p2p_controlled_map.insert(10, 8);
+    p2p_controlled_map.insert(11, 10);
 
+    // deprecated
+    let mut p2p_general_map: HashMap<usize, usize> = HashMap::new();
     p2p_general_map.insert(1, 1);
     p2p_general_map.insert(2, 10);
     p2p_general_map.insert(3, 50);

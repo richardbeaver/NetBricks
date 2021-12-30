@@ -92,6 +92,12 @@ pub fn rdr_retrieve_users(rdr_setup: usize) -> Option<usize> {
     map.insert(4, 40);
     map.insert(5, 80);
     map.insert(6, 100);
+    // hack for task scheduling
+    map.insert(7, 10);
+    map.insert(8, 20);
+    map.insert(9, 30);
+    map.insert(10, 40);
+    map.insert(11, 50);
 
     map.remove(&rdr_setup)
 }
