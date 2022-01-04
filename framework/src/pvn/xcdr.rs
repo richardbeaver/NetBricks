@@ -23,17 +23,13 @@ pub struct XcdrExprParam {
     pub iter: usize,
     /// whether we have turned on latency instrumentation
     pub inst: bool,
-    /// faktory port that we use to submit job to the queue
-    pub port: usize,
     /// running experiment time
     pub expr_time: u64,
     /// running experiment number
     pub expr_num: usize,
 }
 
-/// Read setup for transcoder NF. This function returns <setup, port, expr number, inst, measure time>.
-///
-/// We need to get the port number for faktory queue besides the setup value.
+/// Read setup for transcoder NF. This function returns <setup, expr number, inst, measure time>.
 pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
     let file = File::open(file_path).expect("file should open read only");
     let json: Value = from_reader(file).expect("file should be proper JSON");
@@ -79,15 +75,6 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
         _ => None,
     };
 
-    let port: Option<String> = match serde_json::from_value(json.get("port").expect("file should have port").clone()) {
-        Ok(val) => Some(val),
-        Err(e) => {
-            println!("Malformed JSON response: {}", e);
-            None
-        }
-    };
-    let port = port.unwrap().parse::<usize>();
-
     let expr_num: Option<String> =
         match serde_json::from_value(json.get("expr_num").expect("file should have expr_num").clone()) {
             Ok(val) => Some(val),
@@ -112,15 +99,14 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
         _ => None,
     };
 
-    if let (Ok(setup), Ok(xcdr_setup), Ok(iter), Some(inst), Ok(port), Some(expr_time), Ok(expr_num)) =
-        (setup, xcdr_setup, iter, inst_val, port, expr_time, expr_num)
+    if let (Ok(setup), Ok(xcdr_setup), Ok(iter), Some(inst), Some(expr_time), Ok(expr_num)) =
+        (setup, xcdr_setup, iter, inst_val, expr_time, expr_num)
     {
         Some(XcdrExprParam {
             setup,
             xcdr_setup,
             iter,
             inst,
-            port,
             expr_time,
             expr_num,
         })
