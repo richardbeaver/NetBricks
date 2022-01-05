@@ -75,16 +75,6 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
         _ => None,
     };
 
-    let expr_num: Option<String> =
-        match serde_json::from_value(json.get("expr_num").expect("file should have expr_num").clone()) {
-            Ok(val) => Some(val),
-            Err(e) => {
-                println!("Malformed JSON response: {}", e);
-                None
-            }
-        };
-    let expr_num = expr_num.unwrap().parse::<usize>();
-
     let mode: Option<String> = match serde_json::from_value(json.get("mode").expect("file should have setup").clone()) {
         Ok(val) => Some(val),
         Err(e) => {
@@ -99,8 +89,8 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
         _ => None,
     };
 
-    if let (Ok(setup), Ok(xcdr_setup), Ok(iter), Some(inst), Some(expr_time), Ok(expr_num)) =
-        (setup, xcdr_setup, iter, inst_val, expr_time, expr_num)
+    if let (Ok(setup), Ok(xcdr_setup), Ok(iter), Some(inst), Some(expr_time)) =
+        (setup, xcdr_setup, iter, inst_val, expr_time)
     {
         Some(XcdrExprParam {
             setup,
@@ -108,7 +98,6 @@ pub fn xcdr_read_setup(file_path: String) -> Option<XcdrExprParam> {
             iter,
             inst,
             expr_time,
-            expr_num,
         })
     } else {
         None
