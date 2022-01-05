@@ -13,7 +13,7 @@ pub fn append_job_faktory(pivot: u128, faktory_conn: Arc<Mutex<faktory::Producer
         .lock()
         .unwrap()
         .enqueue(Job::new(
-            "app-xcdr_".to_owned() + 0.to_string(),
+            "app-xcdr_".to_owned() + &0.to_string(),
             vec![infile.to_string(), outfile, width_height.to_string()],
         ))
         .unwrap();
