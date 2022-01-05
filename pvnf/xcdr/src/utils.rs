@@ -3,12 +3,7 @@ use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
 /// Append job to a faktory queue.
-pub fn append_job_faktory(
-    pivot: u128,
-    faktory_conn: Arc<Mutex<faktory::Producer<TcpStream>>>,
-    _core_id: usize,
-    expr_num: usize,
-) {
+pub fn append_job_faktory(pivot: u128, faktory_conn: Arc<Mutex<faktory::Producer<TcpStream>>>, _core_id: usize) {
     let infile = "/home/jethros/dev/pvn/utils/data/tiny.y4m";
     let width_height = "360x24";
     // let outfile = "/home/jethros/dev/pvn/utils/data/output_videos/".to_owned() + &pivot.to_string() + ".y4m";
@@ -18,8 +13,7 @@ pub fn append_job_faktory(
         .lock()
         .unwrap()
         .enqueue(Job::new(
-            // "app-xcdr_".to_owned() + &core_id.to_string() + "-" + expr_num,
-            "app-xcdr_".to_owned() + &expr_num.to_string(),
+            "app-xcdr_".to_owned() + 0.to_string(),
             vec![infile.to_string(), outfile, width_height.to_string()],
         ))
         .unwrap();

@@ -317,7 +317,7 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                 let core_id = 1;
                 // we append a job to the job queue every *time_span*
                 let c = Arc::clone(&fak_conn);
-                append_job_faktory(pivot, c, core_id, xcdr_param.expr_num);
+                append_job_faktory(pivot, c, core_id);
 
                 cur = Instant::now();
                 pivot += time_span;

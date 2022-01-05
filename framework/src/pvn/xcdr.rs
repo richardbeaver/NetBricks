@@ -25,8 +25,6 @@ pub struct XcdrExprParam {
     pub inst: bool,
     /// running experiment time
     pub expr_time: u64,
-    /// running experiment number
-    pub expr_num: usize,
 }
 
 /// Read setup for transcoder NF. This function returns <setup, expr number, inst, measure time>.
