@@ -69,15 +69,15 @@ fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, 
     let mut p2p_controlled_map: HashMap<usize, usize> = HashMap::new();
     p2p_controlled_map.insert(1, 1);
     p2p_controlled_map.insert(2, 2);
-    p2p_controlled_map.insert(3, 4);
-    p2p_controlled_map.insert(4, 6);
-    p2p_controlled_map.insert(5, 8);
-    p2p_controlled_map.insert(6, 10);
+    p2p_controlled_map.insert(3, 3);
+    p2p_controlled_map.insert(4, 4);
+    p2p_controlled_map.insert(5, 5);
+    p2p_controlled_map.insert(6, 6);
     // hack for task scheduling
-    p2p_controlled_map.insert(7, 2);
-    p2p_controlled_map.insert(8, 4);
-    p2p_controlled_map.insert(9, 6);
-    p2p_controlled_map.insert(10, 8);
+    p2p_controlled_map.insert(7, 7);
+    p2p_controlled_map.insert(8, 8);
+    p2p_controlled_map.insert(9, 9);
+    p2p_controlled_map.insert(10, 10);
     p2p_controlled_map.insert(11, 10);
 
     // deprecated
