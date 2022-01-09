@@ -74,10 +74,10 @@ fn construct_p2p_job() -> Option<(HashMap<usize, usize>, HashMap<usize, usize>, 
     p2p_controlled_map.insert(5, 8);
     p2p_controlled_map.insert(6, 10);
     // hack for task scheduling
-    p2p_controlled_map.insert(7, 2);
-    p2p_controlled_map.insert(8, 4);
-    p2p_controlled_map.insert(9, 6);
-    p2p_controlled_map.insert(10, 8);
+    p2p_controlled_map.insert(7, 3);
+    p2p_controlled_map.insert(8, 5);
+    p2p_controlled_map.insert(9, 7);
+    p2p_controlled_map.insert(10, 9);
     p2p_controlled_map.insert(11, 10);
 
     // p2p_controlled_map.insert(1, 1);
