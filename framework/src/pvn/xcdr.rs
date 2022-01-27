@@ -119,11 +119,11 @@ pub fn xcdr_retrieve_param(setup_val: usize) -> Option<u128> {
     map.insert(6, 111); // 1000
 
     // hack for task scheduling
-    map.insert(7, 11); // 100
-    map.insert(8, 23); // 200
-    map.insert(9, 34); // 300
-    map.insert(10, 45); // 400
-    map.insert(11, 57); // 500
+    map.insert(7, 23); // 200
+    map.insert(8, 45); // 400
+    map.insert(9, 68); // 600
+    map.insert(10, 90); // 800
+    map.insert(11, 111); // 1000
 
     let time_span = 1_000 / map.remove(&setup_val).unwrap();
     println!(
