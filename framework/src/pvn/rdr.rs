@@ -98,6 +98,10 @@ pub fn rdr_retrieve_users(rdr_setup: usize) -> Option<usize> {
     map.insert(9, 30);
     map.insert(10, 40);
     map.insert(11, 50);
+    map.insert(12, 60);
+    map.insert(13, 70);
+    map.insert(15, 90);
+    map.insert(16, 100);
 
     map.remove(&rdr_setup)
 }
