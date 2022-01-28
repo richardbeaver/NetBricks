@@ -38,6 +38,11 @@ fn construct_p2p_workload() -> Option<(
     p2p_controlled_map.insert("9", control_wl.to_owned());
     p2p_controlled_map.insert("10", control_wl.to_owned());
     p2p_controlled_map.insert("11", control_wl.to_owned());
+    p2p_controlled_map.insert("12", control_wl.to_owned());
+    p2p_controlled_map.insert("13", control_wl.to_owned());
+    p2p_controlled_map.insert("14", control_wl.to_owned());
+    p2p_controlled_map.insert("15", control_wl.to_owned());
+    p2p_controlled_map.insert("16", control_wl.to_owned());
 
     // deprecated
     let mut p2p_general_map: HashMap<&str, String> = HashMap::new();
