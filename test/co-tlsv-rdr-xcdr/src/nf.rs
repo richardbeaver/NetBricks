@@ -166,9 +166,7 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
                 //      rest: group 0
                 if f.proto == 6 {
                     if f.src_ip == match_ip || f.dst_ip == match_ip {
-                        if f.src_port == rdr_match_port || f.dst_port == rdr_match_port {
-                            matched = 1
-                        }
+                        matched = 1
                     }
                 } else if f.proto == 17 {
                     if f.src_ip == xcdr_match_src_ip
