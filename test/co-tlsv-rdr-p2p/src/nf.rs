@@ -144,12 +144,12 @@ pub fn tlsv_rdr_p2p_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler +
                 //      P2P packets: group 2,
                 //      rest to group 0
                 if f.proto == 6 {
-                    if (f.src_ip == match_ip || f.dst_ip == match_ip)
-                        && (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port))
-                    {
-                        matched = 2
-                    } else {
-                        matched = 1
+                    if (f.src_ip == match_ip || f.dst_ip == match_ip) {
+                        if (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port)) {
+                            matched = 2
+                        } else {
+                            matched = 1
+                        }
                     }
                 }
 

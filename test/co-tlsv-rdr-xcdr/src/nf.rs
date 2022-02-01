@@ -162,7 +162,7 @@ pub fn tlsv_rdr_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Scheduler 
 
                 // Match:
                 //      TLSV/RDR packets: group 1
-                //      P2P packets: group 2
+                //      XCDR packets: group 2
                 //      rest: group 0
                 if f.proto == 6 {
                     if f.src_ip == match_ip || f.dst_ip == match_ip {

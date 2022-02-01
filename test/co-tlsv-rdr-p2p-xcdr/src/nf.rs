@@ -178,12 +178,12 @@ pub fn tlsv_rdr_p2p_xcdr_test<T: 'static + Batch<Header = NullHeader>, S: Schedu
                 //      XCDR packet: group 3,
                 //      rest: group 0
                 if f.proto == 6 {
-                    if (f.src_ip == match_ip || f.dst_ip == match_ip)
-                        && (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port))
-                    {
-                        matched = 2
-                    } else {
-                        matched = 1
+                    if (f.src_ip == match_ip || f.dst_ip == match_ip) {
+                        if (p2p_match_port.contains(&f.src_port) || p2p_match_port.contains(&f.dst_port)) {
+                            matched = 2
+                        } else {
+                            matched = 1
+                        }
                     }
                 } else if f.proto == 17
                     && ((f.src_ip == xcdr_match_src_ip
