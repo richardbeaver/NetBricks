@@ -2,7 +2,7 @@
 
 # Authors:
 #       Autojit Panda
-#       Jethro Shuwen Sun
+#       Shuwen Sun
 
 # Stop on any errors
 set -e
