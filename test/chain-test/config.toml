@@ -1,0 +1,29 @@
+secondary = false
+primary_core = 0
+cores = [0,1,2,3]
+strict = false
+pool_size = 3072
+cache_size = 32
+duration = 200
+[[ports]]
+  name = "0000:01:00.0"
+  rxq = 0
+  txq = 0
+  rx_cores = [1]
+  tx_cores = [1]
+  rxd = 128
+  txd = 128
+  loopback = false
+  tso = false
+  csum = false
+[[ports]]
+  name = "0000:01:00.1"
+  rxq = 0
+  txq = 0
+  rx_cores = [2]
+  tx_cores = [2]
+  rxd = 128
+  txd = 128
+  loopback = false
+  tso = false
+  csum = false

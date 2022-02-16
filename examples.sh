@@ -6,7 +6,7 @@ export examples=(
 	# test/nat
 	# test/acl-fw
 	# test/maglev
-	# test/chain-test
+	test/chain-test
 	# PVN application
 	test/app-tlsv_t
 	test/app-rdr_t

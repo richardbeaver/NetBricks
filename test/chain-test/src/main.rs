@@ -33,7 +33,7 @@ where
     T: PacketRx + PacketTx + Display + Clone + 'static,
     S: Scheduler + Sized,
 {
-    println!("Receiving started");
+    println!("Receiving started {}", ports[0]);
     for port in &ports {
         println!("Receiving port {} on chain len {} pos {}", port, chain_len, chain_pos);
     }
@@ -42,6 +42,14 @@ where
         .iter()
         .map(|port| chain(ReceiveBatch::new(port.clone()), chain_len, chain_pos).send(port.clone()))
         .collect();
+
+    // let port0 = ports[0].clone();
+    // let port1 = ports[1].clone();
+    // let pipelines = vec![
+    //     chain(ReceiveBatch::new(port1.clone()), chain_len, chain_pos).send(port0.clone()),
+    //     chain(ReceiveBatch::new(port0), chain_len, chain_pos).send(port1),
+    // ];
+
     println!("Running {} pipelines", pipelines.len());
     for pipeline in pipelines {
         sched.add_task(pipeline).unwrap();
@@ -59,6 +67,7 @@ fn main() {
         Err(f) => panic!(f.to_string()),
     };
     let configuration = read_matches(&matches, &opts);
+    println!("{:?}", configuration.ports);
 
     let chain_len = matches
         .opt_str("l")
@@ -82,8 +91,8 @@ fn main() {
 
             let mut pkts_so_far = (0, 0);
             let mut last_printed = 0.;
-            const MAX_PRINT_INTERVAL: f64 = 60.;
-            const PRINT_DELAY: f64 = 30.;
+            const MAX_PRINT_INTERVAL: f64 = 5.;
+            const PRINT_DELAY: f64 = 1.;
             let sleep_delay = (PRINT_DELAY / 2.) as u64;
             let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
             println!("Start time is: {}", start);
