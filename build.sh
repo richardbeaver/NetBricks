@@ -29,6 +29,7 @@ DPDK_HOME="${BASE_DIR}/3rdparty/dpdk"
 DPDK_LD_PATH="${DPDK_HOME}/build/lib"
 DPDK_CONFIG_FILE=${DPDK_CONFIG_FILE-"${EXT_BASE}/dpdk-confs/common_linuxapp-${DPDK_VER}"}
 if grep "CONFIG_RTE_BUILD_SHARED_LIB=y" ${DPDK_CONFIG_FILE}; then
+    
     DPDK="${DPDK_HOME}/build/lib/libdpdk.so"
 else
     DPDK="${DPDK_HOME}/build/lib/libdpdk.a"

@@ -10,12 +10,12 @@ export examples=(
 	# PVN application
 	# test/app-tlsv_t
 	# test/app-rdr_t
-	# test/app-p2p_t
+	test/app-p2p_t
 	# test/app-xcdr_t
 	# PVN NF libraries
 	# pvnf/tlsv
 	# pvnf/rdr
-	# pvnf/p2p
+	pvnf/p2p
 	# pvnf/xcdr
 	# PVN chain
 	# test/co-tlsv-rdr
