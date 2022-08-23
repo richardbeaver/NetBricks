@@ -21,7 +21,7 @@ getopts = "=0.2.21"
 # NIX restricts us to just unix for now, we can fix this if someone cares at a later point.
 nix = "=0.19.1"
 # Figure out if we want this permanently or just for now.
-rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
+# rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
 toml = "=0.5.8"
 # Hack for SHM
 error-chain = "=0.12.4"
@@ -35,7 +35,7 @@ default = []
 performance = []
 dev = ["clippy"]
 packet_offset = []
-sctp = ["rust-sctp"]
+# sctp = ["rust-sctp"]
 
 [build-dependencies]
 # Use Bindgen to generate DPDK structures.
