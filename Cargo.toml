@@ -17,7 +17,7 @@ members=["framework",
         # "test/config-test",
         # "test/reset-parse",
         # ZCSI examples
-        # "test/chain-test",
+        "test/chain-test",
         "test/nat",
         "test/lpm",
         "test/maglev",

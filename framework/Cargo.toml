@@ -21,21 +21,29 @@ getopts = "=0.2.21"
 # NIX restricts us to just unix for now, we can fix this if someone cares at a later point.
 nix = "=0.19.1"
 # Figure out if we want this permanently or just for now.
-# rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
+#rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
 toml = "=0.5.8"
 # Hack for SHM
 error-chain = "=0.12.4"
 clippy = { version = "=0.0.302", optional = true }
-statrs = "=0.13.0"
+#statrs = "=0.13.0"
 serde_json = "=1.0.64"
 
+
+
+# Version used by default
+# nalgebra = "=0.19.0"
+# Min version used by default in `statrs`
+# nalgebra = "=0.29"
+# Curent version as of 4/12/24 - 0.32.5
+# nalgebra = "=0.32.5"
 
 [features]
 default = []
 performance = []
 dev = ["clippy"]
 packet_offset = []
-# sctp = ["rust-sctp"]
+#sctp = ["rust-sctp"]
 
 [build-dependencies]
 # Use Bindgen to generate DPDK structures.

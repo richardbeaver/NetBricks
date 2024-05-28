@@ -21,7 +21,7 @@ if [ ! -e ${TOOLS_BASE} ]; then
     mkdir -p ${TOOLS_BASE}
 fi
 
-TARGET_DIR="/home/jethros/data/cargo-target/release"
+TARGET_DIR="/home/beaver.r/data/cargo-target/release"
 
 # setup the DPDK version
 DPDK_VER=17.08
@@ -46,6 +46,10 @@ echo "Using Cargo from ${CARGO}"
 
 # We fix the Cargo toolchain
 declare toolchain=nightly-2022-08-15-x86_64-unknown-linux-gnu
+# declare toolchain=stable
+# declare toolchain=stable-2022-09-22
+# declare toolchain=stable-2023-03-28
+# declare toolchain=nightly-2023-03-28
 
 MUSL_DOWNLOAD_PATH="${DOWNLOAD_DIR}/musl.tar.gz"
 MUSL_RESULT="${EXT_BASE}/musl"
@@ -301,7 +305,7 @@ case $TASK in
         find_sctp
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} +"$toolchain" build --release --features "sctp"
+            ${CARGO} +"$toolchain" build --release # --features "sctp"
         else
             ${CARGO} +"$toolchain" build --release
         fi
@@ -316,7 +320,7 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} +"$toolchain" build --release --features "sctp"
+            ${CARGO} +"$toolchain" build --release # --features "sctp"
         else
             ${CARGO} +"$toolchain" build --release
         fi
@@ -345,7 +349,7 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} +"$toolchain" clippy --release --features "sctp"
+            ${CARGO} +"$toolchain" clippy --release # --features "sctp"
         else
             ${CARGO} +"$toolchain" clippy --release
         fi
@@ -374,7 +378,7 @@ case $TASK in
 
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
-            ${CARGO} +"$toolchain" miri test --features "sctp"
+            ${CARGO} +"$toolchain" miri test # --features "sctp"
         else
             ${CARGO} +"$toolchain" miri test
         fi

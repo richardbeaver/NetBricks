@@ -18,6 +18,6 @@ stages:
         branch: expr
         job_name: build_deploy_doc
         github:
-          user: jethrosun
-          email: jethro.sun7@gmail.com
+          user: richardbeaver
+          email: richardbeaver3@gmail.com
           repo: https://github.com/jethrosun/NetBricks

@@ -7,7 +7,7 @@
 // #![warn(missing_debug_implementations)] // Consider disable missing debug because dpdk bindgen and several components in framework.
 #![warn(missing_docs, rust_2018_idioms, broken_intra_doc_links)]
 #![recursion_limit = "1024"]
-#![feature(llvm_asm)]
+// #![feature(llvm_asm)]
 #![feature(log_syntax)]
 #![feature(box_syntax)]
 #![feature(min_specialization)]

@@ -1,8 +1,8 @@
 //! Utils functions for measuring the PVN NFs.
 use crate::utils::Flow;
 use serde_json::{from_reader, Value};
-use statrs::statistics::{Max, Mean, Median, Min};
-use statrs::statistics::{OrderStatistics, Variance};
+// use statrs::statistics::{Max, Mean, Median, Min};
+// use statrs::statistics::{OrderStatistics, Variance};
 use std::collections::HashMap;
 use std::fs::File;
 use std::time::Instant;
@@ -217,54 +217,54 @@ pub fn merge_ts(
 
 /// Compute statistics for the latency results collected.
 pub fn compute_stat(mut tmp_results: Vec<u128>) {
-    tmp_results.sort_unstable();
-    let mut results: Vec<f64> = tmp_results.into_iter().map(|item| item as f64).collect();
-    let bar = results.percentile(99);
-    let (rest, mut main): (_, Vec<_>) = results.into_iter().partition(|x| x >= &bar);
-    println!("sorting and then type casting done",);
-
-    println!("Details of the results in rest",);
-    let rest_chunk_size = rest.len() / 100 + 1;
-    //generate 100 groups
-    for (rest_count, rest_chunk) in rest.chunks(rest_chunk_size).enumerate() {
-        println!(
-            "Rest_group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
-            rest_count,
-            rest_chunk.median(),
-            rest_chunk.mean(),
-            rest_chunk.std_dev()
-        );
-    }
-
-    println!("Details of the results in main",);
-    let main_chunk_size = main.len() / 100 + 1;
-    //generate 100 groups
-    for (main_count, main_chunk) in main.chunks(main_chunk_size).enumerate() {
-        println!(
-            "Group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
-            main_count,
-            main_chunk.median(),
-            main_chunk.mean(),
-            main_chunk.std_dev()
-        );
-    }
-
-    let min = main.min();
-    let max = main.max();
-    println!(
-        "Stat_extra, mean: {:?}, median: {:?}, std: {:?}, 90%iles: {:?}, 95%iles: {:?}, ",
-        main.mean(),
-        main.median(),
-        main.std_dev(),
-        main.percentile(90),
-        main.percentile(95),
-    );
-    println!(
-        "Stat, min: {:?}, 25%iles: {:?}, 50%iles: {:?}, 75%iles: {:?}, max: {:?}",
-        min,
-        main.percentile(25),
-        main.percentile(50),
-        main.percentile(75),
-        max,
-    );
+    // tmp_results.sort_unstable();
+    // let mut results: Vec<f64> = tmp_results.into_iter().map(|item| item as f64).collect();
+    // let bar = results.percentile(99);
+    // let (rest, mut main): (_, Vec<_>) = results.into_iter().partition(|x| x >= &bar);
+    // println!("sorting and then type casting done",);
+    //
+    // println!("Details of the results in rest",);
+    // let rest_chunk_size = rest.len() / 100 + 1;
+    // //generate 100 groups
+    // for (rest_count, rest_chunk) in rest.chunks(rest_chunk_size).enumerate() {
+    //     println!(
+    //         "Rest_group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
+    //         rest_count,
+    //         rest_chunk.median(),
+    //         rest_chunk.mean(),
+    //         rest_chunk.std_dev()
+    //     );
+    // }
+    //
+    // println!("Details of the results in main",);
+    // let main_chunk_size = main.len() / 100 + 1;
+    // //generate 100 groups
+    // for (main_count, main_chunk) in main.chunks(main_chunk_size).enumerate() {
+    //     println!(
+    //         "Group {:?}, median: {:02?}, mean: {:02?}, std dev: {:02?}",
+    //         main_count,
+    //         main_chunk.median(),
+    //         main_chunk.mean(),
+    //         main_chunk.std_dev()
+    //     );
+    // }
+    //
+    // let min = main.min();
+    // let max = main.max();
+    // println!(
+    //     "Stat_extra, mean: {:?}, median: {:?}, std: {:?}, 90%iles: {:?}, 95%iles: {:?}, ",
+    //     main.mean(),
+    //     main.median(),
+    //     main.std_dev(),
+    //     main.percentile(90),
+    //     main.percentile(95),
+    // );
+    // println!(
+    //     "Stat, min: {:?}, 25%iles: {:?}, 50%iles: {:?}, 75%iles: {:?}, max: {:?}",
+    //     min,
+    //     main.percentile(25),
+    //     main.percentile(50),
+    //     main.percentile(75),
+    //     max,
+    // );
 }

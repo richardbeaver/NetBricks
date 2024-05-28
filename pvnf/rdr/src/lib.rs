@@ -182,6 +182,8 @@ pub fn rdr<T: 'static + Batch<Header = NullHeader>, S: Scheduler + Sized>(
                     }
                 }
 
+                //
+
                 // Measurement: instrumentation to collect latency metrics
                 if pkt_count > NUM_TO_IGNORE {
                     let mut w = t2_1.lock().unwrap();
